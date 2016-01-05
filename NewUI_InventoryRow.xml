@@ -1,0 +1,14 @@
+<GuiXml>
+    <Controls>
+        <Control name="NewUI_ItemListRow_Gamepad" inherits="ZO_TradingHouse_ItemListRow_Gamepad" virtual="true" override="true">
+            <Controls>
+               <Label name="$(parent)UnitPrice" font="ZoFontGamepad27" text=" " horizontalAlignment="RIGHT" relativeTo="$(parent)Price" verticalAlignment="BOTTOM">
+                    <Anchor point="TOPRIGHT" offsetY="40"/>
+                </Label>
+                <Label name="$(parent)BuyingAdvice" font="ZoFontGamepad27" text="0.00%" horizontalAlignment="RIGHT" relativeTo="$(parent)UnitPrice" verticalAlignment="BOTTOM">
+                    <Anchor point="TOPRIGHT" offsetY="60"/>
+                </Label>
+            </Controls>
+        </Control>
+    </Controls>
+</GuiXml>
