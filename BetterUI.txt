@@ -7,18 +7,13 @@
 ## Description: Improved gamepad interface
 ## APIVersion: 100013
 ## Author: prasoc
-## Version: 0.05
+## Version: 0.1
 ## DependsOn:
-## OptionalDependsOn: LibAddonMenu-2.0
+## OptionalDependsOn: LibAddonMenu-2.0, LibExecutionQueue-1.0
 ## SavedVariables: BetterUISavedVars
-;
-; The below lua files are loaded in this order
-; see http://www.esoui.com/downloads/cat53.html
-; see http://www.esoui.com/downloads/info44-LibStub.html
+
 lib\LibStub\LibStub.lua
 
-; library menu files
-; see http://www.esoui.com/downloads/info7-LibAddonMenu.html
 lib\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
 lib\LibAddonMenu-2.0\controls\panel.lua
 lib\LibAddonMenu-2.0\controls\submenu.lua
@@ -33,12 +28,7 @@ lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 
-lib\LibScroll\LibScroll.lua
-
-; debug library, see http://www.esoui.com/downloads/info348-LibDebug.html
-
 ; lua files for this addon, they are declared in this order so functions are declared prior to use
-; This separation of functions in files was borrowed from Rare Fish Tracker
 bindings.xml
 BetterUI.lua
 NewUI_InventoryRow.xml

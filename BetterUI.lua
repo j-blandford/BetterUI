@@ -5,7 +5,7 @@ local _
 if BUI == nil then BUI = {} end
 
 BUI.name = "BetterUI"
-BUI.version = "0.05"
+BUI.version = "0.1"
 
 local LAM = LibStub:GetLibrary("LibAddonMenu-2.0")
 
@@ -72,8 +72,6 @@ local function PostHook(control, method, postHookFunction, overwriteOriginal)
 		if(overwriteOriginal == false) then originalMethod(self, ...) end
 		postHookFunction(self, ...)
 	end
-
-	d(zo_strformat("[NUI] Successfully hooked into :<<2>>(...)",control,method))
 end
 
 
@@ -111,7 +109,7 @@ local function SetupGStoreListing(control, data, selected, selectedDuringRebuild
     if(BUI.settings.showUnitPrice) then
 	   	if(data.stackCount ~= 1) then 
 	    	unitPriceControl:SetHidden(false)
-	    	unitPriceControl:SetText(zo_strformat("@<<1>> |t16:16:EsoUI/Art/currency/currency_gold.dds|t",data.purchasePrice/data.stackCount))
+	    	unitPriceControl:SetText(zo_strformat("@<<1>>|t16:16:EsoUI/Art/currency/currency_gold.dds|t",data.purchasePrice/data.stackCount))
 	    else 
 	    	unitPriceControl:SetHidden(true)
 	    end
@@ -128,6 +126,37 @@ local function SetupGStoreListing(control, data, selected, selectedDuringRebuild
     end
 end
 
+local mystyle = { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1, }
+
+local function AddInfo_Gamepad(tooltip, itemLink)
+	if itemLink then
+
+		local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
+
+		tooltip:AddLine(zo_strformat("<<1>>",tipLine), mystyle, tooltip:GetStyle("bodySection"))
+	end
+end
+
+local function TooltipHook_Gamepad(tooltipControl, method, linkFunc)
+	local origMethod = tooltipControl[method]
+
+	tooltipControl[method] = function(self, ...)
+		origMethod(self, ...)
+		AddInfo_Gamepad(self, linkFunc(...))
+	end
+end
+
+-- This helper function is just there in case the position of the item-link will change
+local function ReturnItemLink(itemLink)
+	return itemLink
+end
+
+function BUI.HookBagTips()
+	TooltipHook_Gamepad(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_LEFT_TOOLTIP), "LayoutItem", ReturnItemLink)
+	TooltipHook_Gamepad(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_RIGHT_TOOLTIP), "LayoutItem", ReturnItemLink)
+	TooltipHook_Gamepad(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_MOVABLE_TOOLTIP), "LayoutItem", ReturnItemLink)
+end
+
 function BUI.SetupMMIntegration() 
   	if MasterMerchant.LibAddonInit == nil then 
   		BUI.MMIntegration = false
@@ -137,6 +166,9 @@ function BUI.SetupMMIntegration()
   	MasterMerchant.initSellingAdvice = function(self, ...) end
   	MasterMerchant.AddBuyingAdvice = function(rowControl, result) end
   	MasterMerchant.AddSellingAdvice = function(rowControl, result)	end
+
+  	BUI.HookBagTips()
+
   	BUI.MMIntegration = true
 end
 
@@ -151,6 +183,41 @@ function BUI.SetupCustomGuildResults()
             equalityFunction = function(l,r) return l == r end,
             hasHeader = false,
         }
+
+     PostHook(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS, "UpdateRightTooltip", function(self, selectedData)
+     	--d("[BUI] Changed guild store selection, and hooked into the update!")
+     	end, false)
+
+     PostHook(UNIT_FRAMES.staticFrames.reticleover,"RefreshControls", function(self) 
+     	if(self.hidden) then
+	        self.dirty = true
+	    else
+	        if(self.hasTarget) then
+	            if self.nameLabel then
+	                local name
+	                if IsInGamepadPreferredMode() and IsUnitPlayer(self.unitTag) then
+	                    name = zo_strformat("|cff6600<<1>>|r<<2>>",ZO_FormatUserFacingDisplayName(GetUnitName(self.unitTag)),GetUnitDisplayName(self.unitTag))
+	                else
+	                    name = GetUnitName(self.unitTag)
+	                end
+	                self.nameLabel:SetText(name)
+	            end
+	            self:UpdateUnitReaction()
+	            self:UpdateLevel()
+	            self:UpdateCaption()
+	            local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
+	            self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
+	            for i = 1, NUM_POWER_POOLS do
+	                local powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)
+	                self:UpdatePowerBar(i, powerType, cur, max, FORCE_INIT)
+	            end
+	            self:UpdateStatus(IsUnitDead(self.unitTag), IsUnitOnline(self.unitTag))
+	            self:UpdateRank()
+	            self:UpdateDifficulty()
+	            self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), IsUnitOnline(self.unitTag), IsUnitGroupLeader(unitTag))
+	        end
+    	end
+     end, true)
 
     -- overwrite old results add entry function to use the new scrolllist datatype:
 	PostHook(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS, "AddEntryToList", function(self, itemData) 
@@ -171,15 +238,21 @@ end
 
 
 function BUI.Initialize(event, addon)
-    -- filter for just NUI addon event
+    -- filter for just BUI addon event
 	if addon ~= BUI.name then return end
 
 	-- load our saved variables
 	BUI.settings = ZO_SavedVars:New("BetterUISavedVars", 1, nil, BUI.defaults)
 	em:UnregisterForEvent("BetterUIInitialize", EVENT_ADD_ON_LOADED)
 
-	BUI.SetupCustomGuildResults()
-	BUI.SetupMMIntegration()
+	if(IsInGamepadPreferredMode()) then
+		BUI.SetupCustomGuildResults()
+		BUI.SetupMMIntegration()
+
+	else
+		d("[BUI] Not Loaded: gamepad mode disabled.")
+	end
+
 	BUI.SetupOptionsMenu()
 end
 
