@@ -7,7 +7,7 @@
 ## Description: Improved gamepad interface
 ## APIVersion: 100013
 ## Author: prasoc
-## Version: 0.1
+## Version: 0.2
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0, LibExecutionQueue-1.0
 ## SavedVariables: BetterUISavedVars
@@ -30,5 +30,6 @@ lib\LibAddonMenu-2.0\controls\texture.lua
 
 ; lua files for this addon, they are declared in this order so functions are declared prior to use
 bindings.xml
-BetterUI.lua
 NewUI_InventoryRow.xml
+BUI_WritsPanel.xml
+BetterUI.lua

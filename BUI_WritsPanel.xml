@@ -1,0 +1,32 @@
+<GuiXml>
+	<Controls>
+        <Control name="BUI_WritsPanel" inherits="ZO_GamepadGrid_NavQuadrant_1_Anchors"  virtual="true">
+            <Controls>
+                <Control name="$(parent)SlotContainer">
+                    <Dimensions x="325" y="200" />
+                    <Anchor point="TOPLEFT" relativeTo="GuiRoot" offsetX="580" offsetY="50"/>
+                    <Controls>
+                        <Button name="$(parent)ExtractionSlot">
+                            <Anchor point="TOP" relativePoint="TOP"/>
+                            <Controls>
+								 <Backdrop name="$(parent)Bg" inherits="ZO_DefaultBackdrop_Gamepad" excludeFromResizeToFitExtents="true">
+									<Anchor point="TOPLEFT" offsetX="-190" offsetY="-22" />
+                                    <Anchor point="BOTTOMRIGHT" offsetX="200" offsetY="147" />
+								</Backdrop>
+
+                                <Label name="$(parent)WritName" font="$(GAMEPAD_MEDIUM_FONT)|30|soft-shadow-thick" horizontalAlignment="LEFT" inherits="ZO_TooltipIfTruncatedLabel" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
+                                    <Dimensions x="325" />
+                                    <Anchor point="TOP" relativePoint="BOTTOM" />
+                                </Label>
+                                <Label name="$(parent)WritDesc" font="$(GAMEPAD_MEDIUM_FONT)|24|soft-shadow-thick" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" hidden="false">
+                                    <Dimensions x="325"/>
+                                    <Anchor point="TOP" relativePoint="BOTTOM" offsetY="40" offsetX="35"/>
+                                </Label>
+                            </Controls>
+                        </Button>
+                    </Controls>
+                </Control>
+            </Controls>
+        </Control>
+    </Controls>
+</GuiXml>
