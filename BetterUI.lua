@@ -85,39 +85,15 @@ function BUI.Hook(control, method, postHookFunction, overwriteOriginal)
 	end
 end
 
-local function AddInfo_Gamepad(tooltip, itemLink)
-	if itemLink then
-
-		local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
-
-		tooltip:AddLine(zo_strformat("<<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
-	end
-end
-
-local function TooltipHook(tooltipControl, method, linkFunc)
-	local origMethod = tooltipControl[method]
-
-	tooltipControl[method] = function(self, ...)
-		origMethod(self, ...)
-		AddInfo_Gamepad(self, linkFunc(...))
-	end
-end
-
-local function ReturnItemLink(itemLink)
-	return itemLink
-end
-
-function BUI.HookBagTips()
-	TooltipHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_LEFT_TOOLTIP), "LayoutItem", ReturnItemLink)
-	TooltipHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_RIGHT_TOOLTIP), "LayoutItem", ReturnItemLink)
-	TooltipHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_MOVABLE_TOOLTIP), "LayoutItem", ReturnItemLink)
-end
-
 function BUI.RGBToHex(rgba)
 	r,g,b,a = unpack(rgba)
 	return string.format("%02x%02x%02x", r*255, g*255, b*255)
 end
 
+function BUI.DisplayNumber(number)
+	-- TODO: Create this function: turns "255555" into "255.5k", etc.
+	return tostring(number)
+end
 
 function BUI.Initialize(event, addon)
     -- filter for just BUI addon event
@@ -131,6 +107,7 @@ function BUI.Initialize(event, addon)
 		BUI.GuildStore.SetupCustomResults()
 		BUI.GuildStore.SetupMM()
 		BUI.Writs.Setup()
+		BUI.Tooltips.Setup()
 	else
 		d("[BUI] Not Loaded: gamepad mode disabled.")
 	end

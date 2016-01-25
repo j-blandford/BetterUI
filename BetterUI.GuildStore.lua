@@ -59,8 +59,6 @@ function BUI.GuildStore.SetupMM()
   	MasterMerchant.AddBuyingAdvice = function(rowControl, result) end
   	MasterMerchant.AddSellingAdvice = function(rowControl, result)	end
 
-  	BUI.HookBagTips()
-
   	BUI.MMIntegration = true
 end
 
@@ -75,41 +73,6 @@ function BUI.GuildStore.SetupCustomResults()
             equalityFunction = function(l,r) return l == r end,
             hasHeader = false,
         }
-
-     BUI.Hook(UNIT_FRAMES.staticFrames.reticleover,"RefreshControls", function(self) 
-     	if(self.hidden) then
-	        self.dirty = true
-	    else
-	        if(self.hasTarget) then
-	            if self.nameLabel then
-	                local name
-	                if IsInGamepadPreferredMode() and IsUnitPlayer(self.unitTag) then
-	                	if BUI.settings.showAccountName then
-	                    	name = zo_strformat("|c<<1>><<2>>|r<<3>>",BUI.RGBToHex(BUI.settings.showCharacterColor),ZO_FormatUserFacingDisplayName(GetUnitName(self.unitTag)),GetUnitDisplayName(self.unitTag))
-	                    else
-	                    	name = ZO_FormatUserFacingDisplayName(GetUnitName(self.unitTag))
-	                    end
-	                else
-	                    name = GetUnitName(self.unitTag)
-	                end
-	                self.nameLabel:SetText(name)
-	            end
-	            self:UpdateUnitReaction()
-	            self:UpdateLevel()
-	            self:UpdateCaption()
-	            local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
-	            self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
-	            for i = 1, NUM_POWER_POOLS do
-	                local powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)
-	                self:UpdatePowerBar(i, powerType, cur, max, FORCE_INIT)
-	            end
-	            self:UpdateStatus(IsUnitDead(self.unitTag), IsUnitOnline(self.unitTag))
-	            self:UpdateRank()
-	            self:UpdateDifficulty()
-	            self:DoAlphaUpdate(IsUnitInGroupSupportRange(self.unitTag), IsUnitOnline(self.unitTag), IsUnitGroupLeader(unitTag))
-	        end
-    	end
-     end, true)
 
     -- overwrite old results add entry function to use the new scrolllist datatype:
 	BUI.Hook(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS, "AddEntryToList", function(self, itemData) 
