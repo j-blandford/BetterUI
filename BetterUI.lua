@@ -67,7 +67,14 @@ function BUI.SetupOptionsMenu()
 					getFunc = function() return unpack(BUI.settings.showCharacterColor) end,
 					setFunc = function(r,g,b,a) BUI.settings.showCharacterColor={r,g,b,a} end,
 					width = "full",	--or "half" (optional)
-				}
+				},
+				[3] = {
+					type = "checkbox",
+					name = "Display the health value (text) on the target?",
+					getFunc = function() return BUI.settings.showHealthText end,
+					setFunc = function(value) BUI.settings.showHealthText = value end,
+					width = "full",
+				},
 			}
 		}
 	}
@@ -91,8 +98,14 @@ function BUI.RGBToHex(rgba)
 end
 
 function BUI.DisplayNumber(number)
-	-- TODO: Create this function: turns "255555" into "255.5k", etc.
-	return tostring(number)
+	local formatted = number
+ 	while true do  
+    	formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+    	if (k==0) then
+     		break
+    	end
+  	end
+  return formatted
 end
 
 function BUI.Initialize(event, addon)

@@ -20,7 +20,7 @@ local function AddInventoryInfo(tooltip, itemLink)
 
 		--GetString("SI_ITEMTRAITTYPE", traitType))
 
-		tooltip:AddLine(zo_strformat("<<1>> (<<2>>)",string.upper(GetString("SI_ITEMSTYLE", style)),traitString),{ fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("title"))
+		--tooltip:AddLine(zo_strformat("<<1>> (<<2>>)",string.upper(GetString("SI_ITEMSTYLE", style)),traitString),{ fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("title"))
 	end
 end
 
@@ -65,9 +65,14 @@ function BUI.Tooltips.Setup()
 	                else
 	                    name = GetUnitName(self.unitTag)
 	                end
-	                local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
-	                self.nameLabel:SetText(name)
-	                BUI_targetFrame_healthLabel:SetText(BUI.DisplayNumber(health).."/"..BUI.DisplayNumber(maxHealth))
+	                if BUI.settings.showHealthText then
+	                	local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
+		                self.nameLabel:SetText(name)
+		                BUI_targetFrame_healthLabel:SetText(BUI.DisplayNumber(health).." ("..BUI.DisplayNumber(100*health/maxHealth).."%)")
+	                	BUI_targetFrame_healthLabel:SetHidden(false)
+	                else
+	                	BUI_targetFrame_healthLabel:SetHidden(true)
+	                end
 	            end
 	            self:UpdateUnitReaction()
 	            self:UpdateLevel()

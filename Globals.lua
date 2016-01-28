@@ -1,7 +1,7 @@
 if BUI == nil then BUI = {} end
 
 BUI.name = "BetterUI"
-BUI.version = "0.3"
+BUI.version = "0.32"
 
 -- pseudo-Class definitions
 BUI.Writs = {}
@@ -23,5 +23,6 @@ BUI.defaults = {
 	showMMPrice=true,
 	showWritHelper=true,
 	showAccountName = true,
+	showHealthText=true,
 	showCharacterColor={1,0.5,0,1}
 }
