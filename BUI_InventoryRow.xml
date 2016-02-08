@@ -1,0 +1,41 @@
+<GuiXml>
+    <Controls>
+        <Control name="BUI_ItemListRow_GamepadCondensed" inherits="ZO_TradingHouse_ItemListRow_Gamepad" virtual="true" override="true">
+             <Dimensions x="600" y="15" />
+            <Controls>
+                <Texture name="$(parent)Icon" override="true">
+                    <Anchor point="CENTER" relativePoint="LEFT" offsetX="20" offsetY="-20"/>
+                    <Dimensions x="25" y="25" />
+                </Texture>
+                <Label name="$(parent)Label" override="true" wrapMode="ELLIPSIS" font="ZoFontGamepad20">
+                    <Dimensions x="285" y="25" />
+                </Label>
+               <Label name="$(parent)UnitPrice" font="ZoFontGamepad20" text=" " horizontalAlignment="RIGHT" relativeTo="$(parent)Price" verticalAlignment="BOTTOM">
+                    <Anchor point="TOPRIGHT" relativeTo="($parent)Price" offsetY="30"/>
+                </Label>
+                <Label name="$(parent)Price" font="ZoFontGamepad24" override="true">
+                    <Anchor point="TOPRIGHT" offsetY="10"/>
+                </Label>
+                <Label name="$(parent)BuyingAdvice" font="ZoFontGamepad20" text="0.00%" horizontalAlignment="RIGHT" relativeTo="$(parent)Price" verticalAlignment="BOTTOM">
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)Price" offsetY="20" offsetX="-80"/>
+                </Label>
+                 <Label name="$(parent)TimeLeft" font="ZoFontGamepad20" override="true" relativeTo="$(parent)Icon" text="Unknown" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Icon" offsetY="35" offsetX="10" />
+                </Label>
+                <Label name="$(parent)SellerName" font="ZoFontGamepad20" override="true" text="Unknown" wrapMode="ELLIPSIS"  horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+                    <Dimensions x="265" y="30" />
+                </Label>
+            </Controls>
+        </Control>
+         <Control name="BUI_ItemListRow_Gamepad" inherits="ZO_TradingHouse_ItemListRow_Gamepad" virtual="true" override="true">
+            <Controls>
+               <Label name="$(parent)UnitPrice" font="ZoFontGamepad27" text=" " horizontalAlignment="RIGHT" relativeTo="$(parent)Price" verticalAlignment="BOTTOM">
+                    <Anchor point="TOPRIGHT" offsetY="40"/>
+                </Label>
+                <Label name="$(parent)BuyingAdvice" font="ZoFontGamepad27" text="0.00%" horizontalAlignment="RIGHT" relativeTo="$(parent)UnitPrice" verticalAlignment="BOTTOM">
+                    <Anchor point="TOPRIGHT" offsetY="60"/>
+                </Label>
+            </Controls>
+        </Control>
+    </Controls>
+</GuiXml>

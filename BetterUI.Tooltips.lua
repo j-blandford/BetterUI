@@ -4,7 +4,11 @@ local function AddInventoryInfo(tooltip, itemLink)
 	if itemLink  then
 		if BUI.MMIntegration and BUI.settings.showMMPrice then
 			local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
-			tooltip:AddLine(zo_strformat("<<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+			if(tipLine ~= nil) then
+				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+			else 
+				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+			end
 		end
 		--d(itemLink)
 		local style = GetItemLinkItemStyle(itemLink)
@@ -24,6 +28,47 @@ local function AddInventoryInfo(tooltip, itemLink)
 	end
 end
 
+local function BUI_UpdateAttributeBar(self, current, max, effectiveMax)
+    if self.externalVisibilityRequirement and not self.externalVisibilityRequirement() then
+        return false
+    end
+    local forceInit = false
+    if(current == nil or max == nil or effectiveMax == nil) then        
+        current, max, effectiveMax = GetUnitPower(self:GetEffectiveUnitTag(), self.powerType)
+        forceInit = true
+    end
+    if self.current == current and self.max == max and self.effectiveMax == effectiveMax then
+        return
+    end
+    self.current = current
+    self.max = max
+    self.effectiveMax = effectiveMax
+    local barMax = max
+    local barCurrent = current
+    if #self.barControls > 1 then
+        barMax = barMax / 2
+        barCurrent = barCurrent / 2
+    end
+    for _, control in pairs(self.barControls) do
+        ZO_StatusBar_SmoothTransition(control, barCurrent, barMax, forceInit)
+    end
+    if not forceInit then
+        self:ResetFadeOutDelay()
+    end
+    self:UpdateContextualFading()
+    if(self.textEnabled) then
+        self.label:SetText(zo_strformat(SI_UNIT_FRAME_BARVALUE, current, max))
+    end
+
+    if(BUI.settings.attributeLabels) then
+    	self.control.BUI_labelRef:SetText(BUI.DisplayNumber(current).." ("..string.format("%.0f",100*current/max).."%)")
+    	self.control.BUI_labelRef:SetHidden(false)
+    else
+    	self.control.BUI_labelRef:SetHidden(true)
+    end
+end
+
+
 function BUI.InventoryHook(tooltipControl, method, linkFunc)
 	local origMethod = tooltipControl[method]
 
@@ -37,17 +82,34 @@ function BUI.ReturnItemLink(itemLink)
 	return itemLink
 end
 
+function BUI.Tooltips.CreateBarLabel(name, controller, anchor)
+	local labelTxt = BUI.WindowManager:CreateControl(name, controller, CT_LABEL)
+    labelTxt:SetFont("$(GAMEPAD_MEDIUM_FONT)|20|soft-shadow-thick")
+    labelTxt:SetText("100/100 (100%)")
+    labelTxt:SetColor(1, 1, 1, 1)
+    labelTxt:SetAnchor(CENTER, anchor, TOP, 0,10)
+    controller.BUI_labelRef = labelTxt
+end
+
+function BUI.Tooltips.CreateAttributeLabels()
+	BUI.Tooltips.CreateBarLabel("BUI_playerFrame_healthLabel",PLAYER_ATTRIBUTE_BARS.bars[1].control,ZO_PlayerAttributeHealth)
+	BUI.Tooltips.CreateBarLabel("BUI_playerFrame_magickaLabel",PLAYER_ATTRIBUTE_BARS.bars[3].control,ZO_PlayerAttributeMagicka)
+	BUI.Tooltips.CreateBarLabel("BUI_playerFrame_staminaLabel",PLAYER_ATTRIBUTE_BARS.bars[5].control,ZO_PlayerAttributeStamina)
+
+	PLAYER_ATTRIBUTE_BARS.bars[1].UpdateStatusBar = BUI_UpdateAttributeBar
+	PLAYER_ATTRIBUTE_BARS.bars[3].UpdateStatusBar = BUI_UpdateAttributeBar
+	PLAYER_ATTRIBUTE_BARS.bars[5].UpdateStatusBar = BUI_UpdateAttributeBar
+end
+
 function BUI.Tooltips.Setup()
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_LEFT_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_RIGHT_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_MOVABLE_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
 
-    healthLbl = BUI.WindowManager:CreateControl("BUI_targetFrame_healthLabel", UNIT_FRAMES.staticFrames.reticleover.frame, CT_LABEL)
-    healthLbl:SetFont("$(GAMEPAD_MEDIUM_FONT)|20|soft-shadow-thick")
-    healthLbl:SetText("0/0")
-    healthLbl:SetColor(1, 1, 1, 1)
-    healthLbl:SetAnchor(CENTER, ZO_CompassFrame, TOP, 0,-3)
+	BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
 
+	BUI.Tooltips.CreateAttributeLabels(BUI.settings.attributeLabels)
+    
 	BUI.Hook(UNIT_FRAMES.staticFrames.reticleover,"RefreshControls", function(self) 
      	if(self.hidden) then
 	        self.dirty = true
@@ -56,7 +118,7 @@ function BUI.Tooltips.Setup()
 	            if self.nameLabel then
 	                local name
 
-	                if IsInGamepadPreferredMode() and IsUnitPlayer(self.unitTag) then
+	                if IsInGamepadPreferredMode()  then
 	                	if BUI.settings.showAccountName then
 	                    	name = zo_strformat("|c<<1>><<2>>|r<<3>>",BUI.RGBToHex(BUI.settings.showCharacterColor),ZO_FormatUserFacingDisplayName(GetUnitName(self.unitTag)),GetUnitDisplayName(self.unitTag))
 	                    else
@@ -65,10 +127,12 @@ function BUI.Tooltips.Setup()
 	                else
 	                    name = GetUnitName(self.unitTag)
 	                end
+	                self.nameLabel:SetText(name)
+
 	                if BUI.settings.showHealthText then
 	                	local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
-		                self.nameLabel:SetText(name)
-		                BUI_targetFrame_healthLabel:SetText(BUI.DisplayNumber(health).." ("..BUI.DisplayNumber(100*health/maxHealth).."%)")
+		                
+		                BUI_targetFrame_healthLabel:SetText(BUI.DisplayNumber(health).." ("..string.format("%.0f",100*health/maxHealth).."%)")
 	                	BUI_targetFrame_healthLabel:SetHidden(false)
 	                else
 	                	BUI_targetFrame_healthLabel:SetHidden(true)

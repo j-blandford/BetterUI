@@ -11,7 +11,7 @@ function BUI.SetupOptionsMenu()
 		version = BUI.version,
 		slashCommand = "/bui",	--(optional) will register a keybind to open to this panel
 		registerForRefresh = true,	--boolean (optional) (will refresh all options controls when a setting is changed and when the panel is shown)
-		registerForDefaults = false,	--boolean (optional) (will set all options controls back to default values)
+		registerForDefaults = true,	--boolean (optional) (will set all options controls back to default values)
 	}
 
 	local optionsTable = {
@@ -21,28 +21,6 @@ function BUI.SetupOptionsMenu()
 			width = "full",
 		},
 		[2] = {
-			type = "description",
-			title = nil,
-			text = "Toggle main addon functions here",
-			width = "full",
-		},
-		[3] = {
-			type = "checkbox",
-			name = "Unit Price in Guild Store",
-			tooltip = "Displays a price per unit in guild store listings",
-			getFunc = function() return BUI.settings.showUnitPrice end,
-			setFunc = function(value) BUI.settings.showUnitPrice = value end,
-			width = "full",
-		},
-		[4] = {
-			type = "checkbox",
-			name = "MasterMerchant Price in Guild Store",
-			tooltip = "Displays the MM percentage in guild store listings",
-			getFunc = function() return BUI.settings.showMMPrice end,
-			setFunc = function(value) BUI.settings.showMMPrice = value end,
-			width = "full",
-		},
-		[5] = {
 			type = "checkbox",
 			name = "Display Daily Writ helper unit",
 			tooltip = "Displays the daily writ, and progress, at each crafting station",
@@ -50,7 +28,25 @@ function BUI.SetupOptionsMenu()
 			setFunc = function(value) BUI.settings.showWritHelper = value end,
 			width = "full",
 		},
-		[6] = {
+		[3] = {
+			type = "checkbox",
+			name = "Display value labels on Attribute bars",
+			tooltip = "Displays the Health, Stamina and Magicka values on your attribute bars",
+			getFunc = function() return BUI.settings.attributeLabels end,
+			setFunc = function(value) 
+						BUI.settings.attributeLabels = value 
+						end,
+			width = "full",
+		},
+		[4] = {
+				type = "checkbox",
+				name = "Display MasterMerchant price and percentage",
+				tooltip = "Displays the MM price on any item and the percentage profit in guild store listings",
+				getFunc = function() return BUI.settings.showMMPrice end,
+				setFunc = function(value) BUI.settings.showMMPrice = value end,
+				width = "full",
+			},
+		[5] = {
 			type = "submenu",
 			name = "Target Frame Display Options",
 			controls = {
@@ -74,6 +70,48 @@ function BUI.SetupOptionsMenu()
 					getFunc = function() return BUI.settings.showHealthText end,
 					setFunc = function(value) BUI.settings.showHealthText = value end,
 					width = "full",
+				},
+			}
+		},
+		[6] = {
+			type = "submenu",
+			name = "Guild Store Options",
+			controls = {
+				[1] = {
+					type="checkbox",
+					name="Flip sort and select buttons (A+X)",
+					tooltip="Switches the default A=Sort and X=Select to be A=Select and X=Sort",
+					getFunc = function() return BUI.settings.flipGSbuttons end,
+					setFunc = function(value) BUI.settings.flipGSbuttons = value
+											ReloadUI() end,
+					width="full",
+					warning="Reloads the UI for the change to propagate"
+				},
+				[2] = {
+					type = "checkbox",
+					name = "Unit Price in Guild Store",
+					tooltip = "Displays a price per unit in guild store listings",
+					getFunc = function() return BUI.settings.showUnitPrice end,
+					setFunc = function(value) BUI.settings.showUnitPrice = value end,
+					width = "full",
+				},
+				[3] = {
+					type = "checkbox",
+					name = "Disable scrolling animation",
+					getFunc = function() return BUI.settings.scrollingDisable end,
+					setFunc = function(value) BUI.settings.scrollingDisable = value 
+											BUI.GuildStore.DisableAnimations(value) end,
+					width = "full",
+				},
+				[4] = {
+					type = "checkbox",
+					name = "Condense listing view",
+					tooltip = "Allows more items to be seen at once whilst browsing",
+					getFunc = function() return BUI.settings.condensedListings end,
+					setFunc = function(value) BUI.settings.condensedListings = value 
+											ReloadUI() end,
+					width = "full",
+					warning="Reloads the UI for the change to propagate"
 				},
 			}
 		}
