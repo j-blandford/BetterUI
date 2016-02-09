@@ -1,7 +1,7 @@
 if BUI == nil then BUI = {} end
 
 BUI.name = "BetterUI"
-BUI.version = "0.5"
+BUI.version = "0.51"
 
 -- pseudo-Class definitions
 BUI.Writs = {}
@@ -16,6 +16,7 @@ BUI.settings = {}
 --BUI.inventory = {}
 BUI.Writs.List = {}
 BUI.Player.ResearchTraits = {}
+BUI.Player.CraftingSkillTypes = { CRAFTING_TYPE_BLACKSMITHING, CRAFTING_TYPE_CLOTHIER, CRAFTING_TYPE_WOODWORKING }
 
 -- Default settings applied on install
 BUI.defaults = {

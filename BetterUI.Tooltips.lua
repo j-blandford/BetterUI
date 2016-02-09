@@ -1,6 +1,6 @@
 local _
 
-local function AddInventoryInfo(tooltip, itemLink)
+local function AddInventoryPostInfo(tooltip, itemLink)
 	if itemLink  then
 		if BUI.MMIntegration and BUI.settings.showMMPrice then
 			local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
@@ -10,17 +10,21 @@ local function AddInventoryInfo(tooltip, itemLink)
 				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			end
 		end
-		--d(itemLink)
+	end
+end
+
+local function AddInventoryPreInfo(tooltip, itemLink)
+	if itemLink  then
 		local style = GetItemLinkItemStyle(itemLink)
 		local traitType, traitDescription, traitSubtype, traitSubtypeName, traitSubtypeDescription = GetItemLinkTraitInfo(itemLink)
 
 		local traitString
 
-		if BUI.Player.IsResearchable(itemLink) then
-			traitString = "|c00FF00Researchable|r"
-		else
-			traitString = "|cFF0000Known|r"
-		end
+		-- if BUI.Player.IsResearchable(itemLink) then
+		-- 	traitString = "|c00FF00Researchable|r"
+		-- else
+		-- 	traitString = "|cFF0000Known|r"
+		-- end
 
 		--GetString("SI_ITEMTRAITTYPE", traitType))
 
@@ -73,8 +77,9 @@ function BUI.InventoryHook(tooltipControl, method, linkFunc)
 	local origMethod = tooltipControl[method]
 
 	tooltipControl[method] = function(self, ...)
+		AddInventoryPreInfo(self, linkFunc(...))
 		origMethod(self, ...)
-		AddInventoryInfo(self, linkFunc(...))
+		AddInventoryPostInfo(self, linkFunc(...))
 	end
 end
 
@@ -108,7 +113,7 @@ function BUI.Tooltips.Setup()
 
 	BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
 
-	BUI.Tooltips.CreateAttributeLabels(BUI.settings.attributeLabels)
+	BUI.Tooltips.CreateAttributeLabels()
     
 	BUI.Hook(UNIT_FRAMES.staticFrames.reticleover,"RefreshControls", function(self) 
      	if(self.hidden) then

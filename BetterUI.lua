@@ -159,6 +159,7 @@ function BUI.Initialize(event, addon)
 		BUI.GuildStore.SetupMM()
 		BUI.Writs.Setup()
 		BUI.Tooltips.Setup()
+		--BUI.Player.GetResearch()
 	else
 		d("[BUI] Not Loaded: gamepad mode disabled.")
 	end
