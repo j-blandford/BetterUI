@@ -47,6 +47,14 @@ function BUI.SetupOptionsMenu()
 				width = "full",
 			},
 		[5] = {
+				type = "checkbox",
+				name = "Display item style and trait knowledge",
+				tooltip = "On items, displays the style of the item and whether the trait can be researched",
+				getFunc = function() return BUI.settings.showStyleTrait end,
+				setFunc = function(value) BUI.settings.showStyleTrait = value end,
+				width = "full",
+			},
+		[6] = {
 			type = "submenu",
 			name = "Target Frame Display Options",
 			controls = {
@@ -73,7 +81,7 @@ function BUI.SetupOptionsMenu()
 				},
 			}
 		},
-		[6] = {
+		[7] = {
 			type = "submenu",
 			name = "Guild Store Options",
 			controls = {
@@ -159,7 +167,7 @@ function BUI.Initialize(event, addon)
 		BUI.GuildStore.SetupMM()
 		BUI.Writs.Setup()
 		BUI.Tooltips.Setup()
-		--BUI.Player.GetResearch()
+		BUI.Player.GetResearch()
 	else
 		d("[BUI] Not Loaded: gamepad mode disabled.")
 	end

@@ -14,21 +14,21 @@ local function AddInventoryPostInfo(tooltip, itemLink)
 end
 
 local function AddInventoryPreInfo(tooltip, itemLink)
-	if itemLink  then
+	if itemLink and BUI.settings.showStyleTrait then
 		local style = GetItemLinkItemStyle(itemLink)
 		local traitType, traitDescription, traitSubtype, traitSubtypeName, traitSubtypeDescription = GetItemLinkTraitInfo(itemLink)
 
-		local traitString
-
-		-- if BUI.Player.IsResearchable(itemLink) then
-		-- 	traitString = "|c00FF00Researchable|r"
-		-- else
-		-- 	traitString = "|cFF0000Known|r"
-		-- end
-
-		--GetString("SI_ITEMTRAITTYPE", traitType))
-
-		--tooltip:AddLine(zo_strformat("<<1>> (<<2>>)",string.upper(GetString("SI_ITEMSTYLE", style)),traitString),{ fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("title"))
+		if(traitType ~= ITEM_TRAIT_TYPE_NONE) then 
+			local traitString
+			if BUI.Player.IsResearchable(itemLink) then
+				traitString = "|c00FF00Researchable|r"
+			else
+				traitString = "|cFF0000Known|r"
+			end
+			tooltip:AddLine(zo_strformat("<<1>> (<<2>>)",string.upper(GetString("SI_ITEMSTYLE", style)),traitString),{ fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("title"))
+		else
+			tooltip:AddLine(zo_strformat("<<1>>",string.upper(GetString("SI_ITEMSTYLE", style))),{ fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("title"))
+		end
 	end
 end
 

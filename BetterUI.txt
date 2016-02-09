@@ -7,7 +7,7 @@
 ## Description: Improved gamepad interface
 ## APIVersion: 100013
 ## Author: prasoc
-## Version: 0.51
+## Version: 0.60
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0, LibExecutionQueue-1.0
 ## SavedVariables: BetterUISavedVars
@@ -33,6 +33,7 @@ Globals.lua
 bindings.xml
 BUI_InventoryRow.xml
 BUI_WritsPanel.xml
+BetterUI.CONST.lua
 BetterUI.Player.lua
 BetterUI.Tooltips.lua
 BetterUI.Writs.lua

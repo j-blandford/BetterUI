@@ -1,9 +1,10 @@
 if BUI == nil then BUI = {} end
 
 BUI.name = "BetterUI"
-BUI.version = "0.51"
+BUI.version = "0.60"
 
 -- pseudo-Class definitions
+BUI.CONST = {}
 BUI.Writs = {}
 BUI.GuildStore = {}
 BUI.Tooltips = {}
@@ -16,7 +17,6 @@ BUI.settings = {}
 --BUI.inventory = {}
 BUI.Writs.List = {}
 BUI.Player.ResearchTraits = {}
-BUI.Player.CraftingSkillTypes = { CRAFTING_TYPE_BLACKSMITHING, CRAFTING_TYPE_CLOTHIER, CRAFTING_TYPE_WOODWORKING }
 
 -- Default settings applied on install
 BUI.defaults = {
@@ -28,5 +28,6 @@ BUI.defaults = {
 	flipGSbuttons=true,
 	scrollingDisable = false,
 	attributeLabels=true,
+	showStyleTrait=true,
 	showCharacterColor={1,0.5,0,1}
 }
