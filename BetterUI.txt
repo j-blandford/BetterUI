@@ -1,20 +1,16 @@
-; This file is the Hello World Skeleton manifest file.  The details of the file layout can be found at the addon wiki:
-; http://wiki.esoui.com/Addon_manifest_%28.txt%29_format
-;
-; This file has the basic parts: metadata, comments, library files, source files
-;
 ## Title: BetterUI
 ## Description: Improved gamepad interface
 ## APIVersion: 100013
 ## Author: prasoc
-## Version: 0.60
+## Version: 1.0
 ## DependsOn:
-## OptionalDependsOn: LibAddonMenu-2.0, LibExecutionQueue-1.0
+## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
 
 lib\LibStub\LibStub.lua
 
 lib\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
+
 lib\LibAddonMenu-2.0\controls\panel.lua
 lib\LibAddonMenu-2.0\controls\submenu.lua
 lib\LibAddonMenu-2.0\controls\button.lua
@@ -27,15 +23,44 @@ lib\LibAddonMenu-2.0\controls\editbox.lua
 lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
+lib\LibAddonMenu-2.0\controls\iconpicker.lua
 
-; lua files for this addon, they are declared in this order so functions are declared prior to use
 Globals.lua
-bindings.xml
-BUI_InventoryRow.xml
-BUI_WritsPanel.xml
 BetterUI.CONST.lua
+bindings.xml
+BUI_Shared.xml
+
+; Module: Inventory Enhancement
+Modules\Inventory\Images\inv_select_grad.dds
+Modules\Inventory\Images\inv_equip.dds
+Modules\Inventory\Images\inv_equip_backup.dds
+Modules\Inventory\Images\inv_equip_quickslot.dds
+Modules\Inventory\Images\inv_stolen.dds
+Modules\Inventory\Images\inv_enchanted.dds
+Modules\Inventory\Images\inv_setitem.dds
+Modules\Inventory\Templates\GenericHeader.xml
+Modules\Inventory\GenericHeader.lua
+Modules\Inventory\Templates\GenericFooter.xml
+Modules\Inventory\GenericFooter.lua
+Modules\Inventory\Templates\ParametricScrollListTemplates.xml
+Modules\Inventory\ParametricScrollListTemplates.lua
+Modules\Inventory\Templates\GamepadInventory.xml
+Modules\Inventory\Inventory.lua
+Modules\Inventory\Module.lua
+
+; Module: General Interface Improvements
+Modules\GeneralInterface\Tooltips.lua
+Modules\GeneralInterface\Module.lua
+
+; Module: Guild Store (+MM)
+Modules\GuildStore\Templates\InventoryRow.xml
+Modules\GuildStore\GuildStore.lua
+Modules\GuildStore\Module.lua
+
+; Module: Writ Unit
+Modules\WritUnit\Templates\WritsPanel.xml
+Modules\WritUnit\Writ.lua
+Modules\WritUnit\Module.lua
+
 BetterUI.Player.lua
-BetterUI.Tooltips.lua
-BetterUI.Writs.lua
-BetterUI.GuildStore.lua
 BetterUI.lua

@@ -1,6 +1,8 @@
 local _
 
 function BUI.Player.FindByTrait(craftType, researchIndex, traitType)
+	if(rIndex == -1) then return -1 end
+
 	local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftType, researchIndex)
 
 	for traitIndex=1,numTraits do
@@ -37,14 +39,27 @@ function BUI.Player.IsResearchable(itemLink)
 	local craftType,rIndex,traitIndex
 	
 	if(GetItemLinkItemType(itemLink) == ITEMTYPE_ARMOR) then
-		local armorType = GetItemLinkArmorType(itemLink) 
-		local equipType = GetItemLinkEquipType(itemLink)
-		craftType = GetSkillType(armorType, BUI.CONST.armorCraftMap)
-		rIndex = BUI.CONST.armorRImap[armorType][equipType]
+		local armorType = GetItemLinkArmorType(itemLink)
+		if(armorType ~= nil) then
+			local equipType = GetItemLinkEquipType(itemLink)
+			craftType = GetSkillType(armorType, BUI.CONST.armorCraftMap)
+			
+			if(BUI.CONST.armorRImap[armorType] ~= nil) then
+				rIndex = BUI.CONST.armorRImap[armorType][equipType]
+			else
+				return false
+			end
+		else
+			return false
+		end
 	else
 		local weaponType = GetItemLinkWeaponType(itemLink)
 		craftType = GetSkillType(weaponType, BUI.CONST.weaponCraftMap)
-		rIndex = BUI.CONST.weaponRImap[weaponType]
+		if(BUI.CONST.weaponRImap[weaponType] ~= nil) then
+			rIndex = BUI.CONST.weaponRImap[weaponType]
+		else
+			return false
+		end
 	end
 
 	traitIndex = BUI.Player.FindByTrait(craftType,rIndex,traitType)

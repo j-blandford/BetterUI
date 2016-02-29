@@ -14,6 +14,9 @@ local function BUI_SetMenuEntryFontFace(label, selected)
     label:SetFont(selected and "ZoFontGamepad27" or "ZoFontGamepad27")
 end
 
+local SCROLL_LIST_HEADER_OFFSET_VALUE = 0
+local SCROLL_LIST_SELECTED_OFFSET_VALUE = 20
+
 local function SetupListing(control, data, selected, selectedDuringRebuild, enabled, activated)
     ZO_SharedGamepadEntry_OnSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
 
@@ -187,9 +190,9 @@ function BUI.GuildStore.CondenseListings(toggleValue)
 
 		GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:GetList().maxOffset=0
 		GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:GetList().universalPostPadding=-25
-		GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:GetList().headerDefaultPadding=0
-		GAMEPAD_DEFAULT_POST_PADDING = 0
-		GAMEPAD_HEADER_DEFAULT_PADDING=40
+		--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:GetList().headerDefaultPadding=0
+		--GAMEPAD_DEFAULT_POST_PADDING = 0
+		--GAMEPAD_HEADER_DEFAULT_PADDING=40
 		GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.footer.control:SetDimensions(390,0)
 		ZO_TradingHouse_BrowseResults_GamepadHeaders:SetAnchor(3,ZO_TradingHouse_BrowseResults_Gamepad,3,0,260)
 		ZO_TradingHouse_BrowseResults_GamepadListListScreenCenterIsAlongTopListScreenCenter:SetAnchor(128,ZO_TradingHouse_BrowseResults_GamepadListListScreenCenterIsAlongTop,9,0,-30)

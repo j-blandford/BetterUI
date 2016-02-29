@@ -1,0 +1,10 @@
+<GuiXml>
+    <Controls>
+        <TopLevelControl name="BUI_GamepadInventoryTopLevel" inherits="BUI_Gamepad_ParametricList_Screen">
+            <OnInitialized>
+            	-- Commented out so we can manually initialize it, allows us to switch the whole interface OFF!!
+                -- BUI_GamepadInventory_OnInitialize(self)
+            </OnInitialized>
+        </TopLevelControl>
+    </Controls>
+</GuiXml>
