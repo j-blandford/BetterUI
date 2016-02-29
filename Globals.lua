@@ -1,7 +1,7 @@
 if BUI == nil then BUI = {} end
 
 BUI.name = "BetterUI"
-BUI.version = "1.0"
+BUI.version = "1.05"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -38,11 +38,12 @@ BUI.defaults = {
 	showStyleTrait=true,
 	showCharacterColor={1,0.5,0,1},
 	Inventory = { savePosition = true, enableJunk = true, attributeIcons = true, enableWrapping = true, triggerSpeed = 10 },
+	GuildStore = { saveFilters = true, },
 }
 
 function ddebug(str)
 	--if(ZO_ChatWindowTemplate1Buffer ~= nil) then ZO_ChatWindowTemplate1Buffer:SetMaxHistoryLines(15000) end
-	-- return d("|c0066ff[BUI]|r "..str)
+	--return d("|c0066ff[BUI]|r "..str)
 end
 
 function BUI.Lib.Checkbox(checkName, checkDesc, checkValue)

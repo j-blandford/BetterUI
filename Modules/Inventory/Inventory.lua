@@ -511,7 +511,7 @@ function BUI.Inventory.RefreshCategoryList(self)
         end
     end
     do
-        if(BUI.settings.Inventory.enableJunk) then
+        if(BUI.settings.Inventory.enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
             local isListEmpty = self:IsItemListEmpty(nil, nil)
             if not isListEmpty then
                 local name = BUI.Lib.GetString("INV_ITEM_JUNK")

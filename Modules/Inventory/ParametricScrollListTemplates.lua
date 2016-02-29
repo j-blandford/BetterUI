@@ -61,6 +61,7 @@ function BUI_VerticalParametricScrollList:New(...)
     local list = ZO_ParametricScrollList.New(self, ...)
 
     list.EnsureValidGradient = function(self)
+    ddebug("Ensuring valid gradient")
         if self.validateGradient and self.validGradientDirty then
             if self.mode == PARAMETRIC_SCROLL_LIST_VERTICAL then
                 local listStart = GetStartOfControl(self.mode, self.scrollControl)
@@ -101,6 +102,7 @@ function BUI_VerticalParametricScrollList:New(...)
             end
             self.validGradientDirty = false
         end
+            ddebug("END Ensuring valid gradient")
     end
     return list
 end
