@@ -1,6 +1,11 @@
 local _
 local LAM = LibStub:GetLibrary("LibAddonMenu-2.0")
 
+local GENERAL_COLOR_WHITE = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1
+local GENERAL_COLOR_GREY = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_2
+local GENERAL_COLOR_OFF_WHITE = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_3
+local GENERAL_COLOR_RED = GAMEPAD_TOOLTIP_COLOR_FAILED
+
 
 local function Init(mId, moduleName)
 	local panelData = Init_ModulePanel(moduleName, "Inventory Improvement Settings")
@@ -61,6 +66,16 @@ local function Init(mId, moduleName)
 			setFunc = function(value) BUI.settings.Inventory.attributeIcons = value end,
 			width = "full",
 		},
+        {
+            type = "checkbox",
+            name = "Reduce the font size of the item tooltip",
+            tooltip = "Allows much more item information to be displayed at once on the tooltips",
+            getFunc = function() return BUI.settings.Inventory.condenseLTooltip end,
+            setFunc = function(value) BUI.settings.Inventory.condenseLTooltip = value
+                                        ReloadUI() end,
+            width = "full",
+            warning="Reloads the UI for the change to propagate"
+        },
 
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
@@ -263,6 +278,38 @@ function BUI.Inventory.Setup()
         end
     end)
 
+    if(BUI.settings.Inventory.condenseLTooltip) then
+        ZO_TOOLTIP_STYLES["topSection"] = {
+            layoutPrimaryDirection = "up",
+            layoutSecondaryDirection = "right",
+            widthPercent = 100,
+            childSpacing = 1,
+            fontSize = 22,
+            height = 64,
+            uppercase = true,
+            fontColorField = GENERAL_COLOR_OFF_WHITE,
+        }
+
+        ZO_TOOLTIP_STYLES["statValuePairStat"] = {
+            fontSize = 22,
+            uppercase = true,
+            fontColorField = GENERAL_COLOR_OFF_WHITE,
+        }
+        ZO_TOOLTIP_STYLES["statValuePairValue"] =
+        {
+            fontSize = 30,
+            fontColorField = GENERAL_COLOR_WHITE,
+        }
+        ZO_TOOLTIP_STYLES["title"] = {
+            fontSize = 36,
+            customSpacing = 8,
+            uppercase = true,
+            fontColorField = GENERAL_COLOR_WHITE,
+        }
+        ZO_TOOLTIP_STYLES["bodyDescription"] =    {
+            fontSize = 22,
+        }
+    end
 
     -- Now to link our changes back to the original GAMEPAD_INVENTORY. Will try to add compatibility patches in future updates, as this alteration changes the *whole interface* (right the way from initialize!)
    GAMEPAD_INVENTORY = BUI_GAMEPAD_INVENTORY

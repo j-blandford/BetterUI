@@ -1,7 +1,7 @@
 if BUI == nil then BUI = {} end
 
 BUI.name = "BetterUI"
-BUI.version = "1.05"
+BUI.version = "1.1"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -28,6 +28,7 @@ BUI.defaults = {
 	moduleInterface= false,
 	moduleTooltips=false,
 	moduleGS = false,
+	moduleQuickslot = false,
 	showUnitPrice=true,
 	showMMPrice=true,
 	showAccountName = true,
@@ -37,7 +38,7 @@ BUI.defaults = {
 	attributeLabels=true,
 	showStyleTrait=true,
 	showCharacterColor={1,0.5,0,1},
-	Inventory = { savePosition = true, enableJunk = true, attributeIcons = true, enableWrapping = true, triggerSpeed = 10 },
+	Inventory = { savePosition = true, enableJunk = true, attributeIcons = true, enableWrapping = true, triggerSpeed = 10, condenseLTooltip = true },
 	GuildStore = { saveFilters = true, },
 }
 
