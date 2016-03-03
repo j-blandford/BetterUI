@@ -38,18 +38,18 @@
                 <Control name="$(parent)SelectBg" hidden="true">
                     <Controls>
                         <Texture name="$(parent)Left" textureFile="BetterUI/Modules/Inventory/Images/inv_select_grad.dds">
-                            <Dimensions x="30" y="30" />
+                            <Dimensions x="30" y="36" />
                             <TextureCoords left="0" right="0.25" top="0" bottom="1" />
                             <Anchor point="LEFT" relativeTo="GuiRoot" relativePoint="LEFT" offsetX="BUI_GAMEPAD_LIST_SCREEN_X_OFFSET" offsetY="0"/>
                         </Texture>
                         <Texture name="$(parent)Middle" textureFile="BetterUI/Modules/Inventory/Images/inv_select_grad.dds">
-                            <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH_AFTER_INDENT" y="30" />
+                            <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH_AFTER_INDENT" y="36" />
                             <TextureCoords left="0.25" right="0.75" top="0" bottom="1" />
                             <Anchor point="LEFT" relativeTo="$(parent)Left" offsetX="30" />
                             <Anchor point="RIGHT" relativeTo="$(parent)Left" relativePoint="LEFT" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH" />
                         </Texture>
                         <Texture name="$(parent)Right" textureFile="BetterUI/Modules/Inventory/Images/inv_select_grad.dds">
-                            <Dimensions x="30" y="30" />
+                            <Dimensions x="30" y="36" />
                             <TextureCoords left="0.75" right="1" top="0" bottom="1" />
                             <Anchor point="RIGHT" relativeTo="$(parent)Middle" offsetX="30"/>
                         </Texture>
@@ -73,12 +73,14 @@
         <Control name="BUI_Gamepad_ParametricList_Screen_ListContainer" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors" virtual="true">
             <Controls>
                 <Control name="$(parent)List" inherits="BUI_VerticalParametricScrollListTemplate">
+                    <AnchorFill />
+
                     <OnInitialized>
                         self:GetParent().list = self
                     </OnInitialized>
 
                     <Anchor point="TOPLEFT" relativeTo="$(grandparent)HeaderContainerHeader" relativePoint="BOTTOMLEFT" offsetX="-50" offsetY="-25"/>
-                    <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" offsetX="0" offsetY="ZO_GAMEPAD_CONTENT_BOTTOM_OFFSET" />
+                    <Anchor point="BOTTOMRIGHT" relativeTo="$(grandparent)FooterContainerFooter" relativePoint="TOPRIGHT" offsetX="0" offsetY="10" />
                   
                     <Controls>
                         <Label name="$(parent)NoItemsLabel"  font="ZoFontGamepadCondensed36" horizontalAlignment="CENTER" verticalAlignment="CENTER">
@@ -90,7 +92,7 @@
             </Controls>
         </Control>
 
-        <Control name="BUI_Gamepad_ParametricList_Screen" inherits="BUI_GamepadGrid_NavQuadrant_1_Anchors" hidden="true" virtual="true">
+        <Control name="BUI_Gamepad_ParametricList_Screen" inherits="BUI_GamepadGrid_NavQuadrant_1_Anchors" hidden="true" virtual="true" inheritScale="false">
             <Controls>
                 <Scroll name="$(parent)Mask">
                     <AnchorFill />

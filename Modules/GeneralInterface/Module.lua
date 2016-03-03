@@ -56,6 +56,16 @@ local function Init(mId, moduleName)
 						end,
 			width = "full",
 		},
+		        {
+            type = "editbox",
+            name = "Chat window history size",
+            tooltip = "Alters how many lines to store in the chat buffer, default=200",
+            getFunc = function() return BUI.settings.Tooltips.chatHistory end,
+            setFunc = function(value) BUI.settings.Tooltips.chatHistory = tonumber(value) 
+            							if(ZO_ChatWindowTemplate1Buffer ~= nil) then ZO_ChatWindowTemplate1Buffer:SetMaxHistoryLines(BUI.settings.Tooltips.chatHistory) end end,
+            default=200,
+            width = "full",
+        },  
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable) 
@@ -109,6 +119,8 @@ function BUI.Tooltips.Setup()
 	BUI.Tooltips.CreateAttributeLabels()
 
 	ZO_PreHook(UNIT_FRAMES,"UpdateGroupAnchorFrames", BUI.Tooltips.UpdateGroupAnchorFrames)
+
+	if(ZO_ChatWindowTemplate1Buffer ~= nil) then ZO_ChatWindowTemplate1Buffer:SetMaxHistoryLines(BUI.settings.Tooltips.chatHistory) end
 
 	--UNIT_FRAMES.CreateFrame = BUI.Tooltips.CreateFrame
 	UNIT_FRAMES.staticFrames.reticleover.healthBar.UpdateText = BUI.Tooltips.UpdateText

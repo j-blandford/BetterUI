@@ -302,8 +302,8 @@ end
 
 
 
-ZO_TABBAR_ICON_WIDTH = 50
-ZO_TABBAR_ICON_HEIGHT = 50
+ZO_TABBAR_ICON_WIDTH = 75
+ZO_TABBAR_ICON_HEIGHT = 75
 BUI_TabBarScrollList = BUI_HorizontalParametricScrollList:Subclass()
 function BUI_TabBarScrollList:New(control, leftIcon, rightIcon, data, onActivatedChangedFunction, onCommitWithItemsFunction, onClearedFunction)
     local list = BUI_HorizontalParametricScrollList.New(self, control, onActivatedChangedFunction, onCommitWithItemsFunction, onClearedFunction)

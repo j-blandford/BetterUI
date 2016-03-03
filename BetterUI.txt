@@ -2,7 +2,7 @@
 ## Description: Improved gamepad interface
 ## APIVersion: 100013
 ## Author: prasoc
-## Version: 1.1
+## Version: 1.25
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars

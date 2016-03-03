@@ -42,7 +42,7 @@ local function BUI_GamepadMenuEntryTemplateParametricListFunction(control, dista
 
 local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selected)
     if label then
-        label:SetFont("ZoFontGamepad20")
+        label:SetFont("$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick")
         if data.modifyTextType then
             label:SetModifyTextType(data.modifyTextType)
         end
@@ -286,6 +286,12 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+-- A function which can rescale the whole inventory interface
+function BUI.Inventory.RescaleControls(self)
+    --self.control:SetWidth
+end
+
+
 -- Allows the inventory to return to the last position selected in the interface
 function BUI.Inventory.ToSavedPosition(self)
     if(BUI.settings.Inventory.savePosition) then
@@ -469,20 +475,6 @@ function BUI.Inventory.RefreshCategoryList(self)
         end
     end
     do
-        local isListEmpty = self:IsItemListEmpty(nil, ITEMFILTERTYPE_CRAFTING)
-        if not isListEmpty then
-            local name = BUI.Lib.GetString("INV_ITEM_MATERIALS")
-            local iconFile = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds"
-            local hasAnyNewItems = SHARED_INVENTORY:AreAnyItemsNew(ZO_InventoryUtils_DoesNewItemMatchFilterType, ITEMFILTERTYPE_CRAFTING, BAG_BACKPACK)
-            local data = ZO_GamepadEntryData:New(name, iconFile, nil, nil, hasAnyNewItems)
-            data.filterType = ITEMFILTERTYPE_CRAFTING
-            data:SetIconTintOnSelection(true)
-            self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
-            BUI.GenericHeader.AddToList(self.header, data)
-            if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
-        end
-    end
-    do
         local isListEmpty = self:IsItemListEmpty(nil, ITEMFILTERTYPE_WEAPONS)
         if not isListEmpty then
             local name = BUI.Lib.GetString("INV_ITEM_WEAPONS")
@@ -509,6 +501,61 @@ function BUI.Inventory.RefreshCategoryList(self)
             BUI.GenericHeader.AddToList(self.header, data)
             if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
         end
+    end 
+    do
+        local isListEmpty = self:IsItemListEmpty(nil, ITEMFILTERTYPE_CONSUMABLE)
+        if not isListEmpty then
+            local name = BUI.Lib.GetString("INV_ITEM_CONSUMABLE")
+            local iconFile = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_consumables.dds"
+            local hasAnyNewItems = SHARED_INVENTORY:AreAnyItemsNew(ZO_InventoryUtils_DoesNewItemMatchFilterType, ITEMFILTERTYPE_CONSUMABLE, BAG_BACKPACK)
+            local data = ZO_GamepadEntryData:New(name, iconFile, nil, nil, hasAnyNewItems)
+            data.filterType = ITEMFILTERTYPE_CONSUMABLE
+            data:SetIconTintOnSelection(true)
+            self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+            BUI.GenericHeader.AddToList(self.header, data)
+            if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
+        end
+    end
+    do
+        local isListEmpty = self:IsItemListEmpty(nil, ITEMFILTERTYPE_CRAFTING)
+        if not isListEmpty then
+            local name = BUI.Lib.GetString("INV_ITEM_MATERIALS")
+            local iconFile = "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds"
+            local hasAnyNewItems = SHARED_INVENTORY:AreAnyItemsNew(ZO_InventoryUtils_DoesNewItemMatchFilterType, ITEMFILTERTYPE_CRAFTING, BAG_BACKPACK)
+            local data = ZO_GamepadEntryData:New(name, iconFile, nil, nil, hasAnyNewItems)
+            data.filterType = ITEMFILTERTYPE_CRAFTING
+            data:SetIconTintOnSelection(true)
+            self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+            BUI.GenericHeader.AddToList(self.header, data)
+            if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
+        end
+    end
+    do
+        local isListEmpty = self:IsItemListEmpty(nil, ITEMFILTERTYPE_MISCELLANEOUS)
+        if not isListEmpty then
+            local name = BUI.Lib.GetString("INV_ITEM_MISC")
+            local iconFile = "esoui/art/inventory/gamepad/gp_inventory_icon_miscellaneous.dds"
+            local hasAnyNewItems = SHARED_INVENTORY:AreAnyItemsNew(ZO_InventoryUtils_DoesNewItemMatchFilterType, ITEMFILTERTYPE_MISCELLANEOUS, BAG_BACKPACK)
+            local data = ZO_GamepadEntryData:New(name, iconFile, nil, nil, hasAnyNewItems)
+            data.filterType = ITEMFILTERTYPE_MISCELLANEOUS
+            data:SetIconTintOnSelection(true)
+            self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+            BUI.GenericHeader.AddToList(self.header, data)
+            if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
+        end
+    end
+    do
+        local questCache = SHARED_INVENTORY:GenerateFullQuestCache()
+        if next(questCache) then
+            local name = GetString(SI_GAMEPAD_INVENTORY_QUEST_ITEMS)
+            local iconFile = "/esoui/art/notifications/gamepad/gp_notificationicon_quest.dds"
+            local data = ZO_GamepadEntryData:New(name, iconFile)
+            data.filterType = ITEMFILTERTYPE_QUEST
+            data:SetIconTintOnSelection(true)
+            self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data) 
+            BUI.GenericHeader.AddToList(self.header, data) 
+            if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end          
+        end
     end
     do
         if(BUI.settings.Inventory.enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
@@ -524,19 +571,6 @@ function BUI.Inventory.RefreshCategoryList(self)
                 BUI.GenericHeader.AddToList(self.header, data)
                 if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
             end
-        end
-    end
-    do
-        local questCache = SHARED_INVENTORY:GenerateFullQuestCache()
-        if next(questCache) then
-            local name = GetString(SI_GAMEPAD_INVENTORY_QUEST_ITEMS)
-            local iconFile = "/esoui/art/notifications/gamepad/gp_notificationicon_quest.dds"
-            local data = ZO_GamepadEntryData:New(name, iconFile)
-            data.filterType = ITEMFILTERTYPE_QUEST
-            data:SetIconTintOnSelection(true)
-            self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data) 
-            BUI.GenericHeader.AddToList(self.header, data) 
-            if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end          
         end
     end
      do
@@ -611,7 +645,7 @@ function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
                 local equipSucceeds, possibleError = IsEquipable(bag, index)
                 if(equipSucceeds) then
                     self:SaveListPosition()
-                    EquipItem(bag, index) -- > for future reference, maybe need CSP(...) here upon API changes
+                    BUI.Inventory.TryEquipItem(self, self.itemActions.inventorySlot) -- > My own equip function, alters the functionality to allow main hand and off hand dialog
                     self:ToSavedPosition()
                     return true
                 end
@@ -626,16 +660,45 @@ function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
         }
     end
 
-    -- Finally, overwrite the default primary keybinds with a custom version that routes through self.primaryCallbacks
-    if self.itemActions.actionName then
-        self.itemActions[PRIMARY_ACTION][PRIMARY_ACTION].callback = function(...) 
-            -- First, check whether we're in the action list interface, if so, just pass the function through!
-            if(self.itemActions.selectedAction) then
-                self.itemActions:DoSelectedAction(...)
+    local INDEX_ACTION_NAME = 1
+    local INDEX_ACTION_CALLBACK = 2
+    local INDEX_ACTION_TYPE = 3
+    local INDEX_ACTION_VISIBILITY = 4
+    local INDEX_ACTION_OPTIONS = 5
+    local PRIMARY_ACTION_KEY = 1
+
+    -- We have to overwrite the DoPrimaryAction() function, replacing certain commands with the CallSecureProtected equivalent ("Use" is one that needs to be overriddem)
+    self.itemActions.slotActions.DoPrimaryAction = function(options)
+        local self = self
+        local primaryAction = self.itemActions.slotActions:GetAction(PRIMARY_ACTION_KEY, "primary", options)
+        local success = false
+        if(primaryAction) then
+            success = true
+            if IsUnitDead("player") then    
+                local actionOptions = primaryAction[INDEX_ACTION_OPTIONS]
+                if actionOptions and actionOptions.visibleWhenDead == true then
+                    -- We also have to let other functions through, as many addons add new keybinds
+                    if(self.primaryCallbacks[self.itemActions.actionName] == nil) then
+                        self:SaveListPosition() -- allows other addons' keybinds to return to the current item slot index.
+                        primaryAction[INDEX_ACTION_CALLBACK]()
+                    else
+                        self.primaryCallbacks[self.itemActions.actionName]()
+                    end
+                else
+                    ZO_AlertEvent(EVENT_UI_ERROR, SI_CANNOT_DO_THAT_WHILE_DEAD)
+                end
             else
-                self.primaryCallbacks[self.itemActions.actionName](...)
+                if self.itemActions.slotActions:CheckPrimaryActionVisibility(options) then
+                    if(self.primaryCallbacks[self.itemActions.actionName] == nil) then
+                        self:SaveListPosition()
+                        primaryAction[INDEX_ACTION_CALLBACK]()
+                    else
+                        self.primaryCallbacks[self.itemActions.actionName]()
+                    end
+                end
             end
         end
+        return success
     end
 
     self.itemActions:RefreshKeybindStrip()
@@ -742,7 +805,7 @@ function BUI.Inventory.TryEquipItem(self, inventorySlot)
 
     -- Check if the current item is an armour (or two handed, where it doesn't need a dialog menu), if so, then just equip into it's slot
     local armorType = GetItemArmorType(inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex)
-    if armorType ~= ARMORTYPE_NONE or equipType == EQUIP_TYPE_TWO_HAND then
+    if armorType ~= ARMORTYPE_NONE or equipType == EQUIP_TYPE_TWO_HAND or equipType == EQUIP_TYPE_NECK then
         CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
     else
         -- Else, it's a weapon, so show a dialog so the user can pick either slot!
@@ -804,7 +867,6 @@ end
 
 function BUI.Inventory.InitializeFooter(self)
     local function RefreshFooter()
-        ddebug("RefreshFooter")
         self:RefreshFooter()
     end
 

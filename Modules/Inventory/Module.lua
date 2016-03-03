@@ -58,6 +58,19 @@ local function Init(mId, moduleName)
 			name = "Enhanced Inventory Display",
 			width = "full",
 		},
+        -- {
+        --     type = "slider",
+        --     name = "Inventory global Scale",
+        --     tooltip = "Alters the inventory's scale. |cFF6600This is *independent* of the global UI scale!!|r",
+        --     min = 0.25,
+        --     max = 2,
+        --     step = 0.25,
+        --     default = 1,
+        --     decimals = 2,
+        --     getFunc = function() return BUI.settings.Inventory.uiScale end,
+        --     setFunc = function(value) BUI.settings.Inventory.uiScale = value end,
+        --     width = "full",
+        -- },
 		{
 			type = "checkbox",
 			name = "Display attribute icons next to the item name",
@@ -127,14 +140,14 @@ function BUI.Inventory.Setup()
     ZO_InventorySlot_InitiateDestroyItem = function(inventorySlot)
         SetCursorItemSoundsEnabled(false)
         local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
-        CallSecureProtected("PickupInventoryItem",bag, index) -- > Here is the key change! No error now :)
+        CallSecureProtected("PickupInventoryItem",bag, index) -- > Here is the key change!
         SetCursorItemSoundsEnabled(true)
 
         CallSecureProtected("PlaceInWorldLeftClick") -- DESTROY! (also needs to be a secure call)
         return true
     end
     
-    -- Hook and replace methods used in ZO_GamepadInventory with my own custom versions...    
+    -- Hook and replace methods used in ZO_GamepadInventory
     BUI_GAMEPAD_INVENTORY.AddList = BUI.Inventory.AddList
     BUI_GAMEPAD_INVENTORY.SaveListPosition = BUI.Inventory.SaveListPosition
     BUI_GAMEPAD_INVENTORY.ToSavedPosition = BUI.Inventory.ToSavedPosition
@@ -161,7 +174,7 @@ function BUI.Inventory.Setup()
     BUI_GAMEPAD_INVENTORY.populatedCategoryPos = false
 
     -- Force the main screen for the inventory to be the ITEM page, not the CATEGORY page
-    ZO_MainMenu_GamepadMaskContainerMainList.scrollList.dataList[3].scene = "gamepad_inventory_item_filter"
+    --ZO_MainMenu_GamepadMaskContainerMainList.scrollList.dataList[3].scene = "gamepad_inventory_item_filter"
 
     -- Just some modification to the Nav_1_Quadrant to be wider and cleaner
     GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("LeftDivider"):SetWidth(4)
@@ -177,7 +190,7 @@ function BUI.Inventory.Setup()
 
             -- Setup the larger and offset LEFT_TOOLTIP and background fragment so that the new inventory fits!
             GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-            GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 736, 54)
+            GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 936, 54)
             self:RefreshFooter()
         elseif(newState == SCENE_SHOWN) then
             SCENE_MANAGER:Push("gamepad_inventory_item_filter")
@@ -199,7 +212,7 @@ function BUI.Inventory.Setup()
         local self = BUI_GAMEPAD_INVENTORY
         if newState == SCENE_SHOWING then
             GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-            GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 736, 54)
+            GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 936, 54)
 
             self:PerformDeferredInitialization()
             self:RefreshCategoryList()
@@ -243,7 +256,7 @@ function BUI.Inventory.Setup()
                 self.clearNewStatusOnSelectionChanged = true
                 -- Setup the larger and offset LEFT_TOOLTIP and background fragment so that the new inventory fits!
                 GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-                GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 736, 54)
+                GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 936, 54)
             else
                 GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
                 GAMEPAD_TOOLTIPS:Reset(GAMEPAD_RIGHT_TOOLTIP)

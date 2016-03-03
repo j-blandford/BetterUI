@@ -1,7 +1,7 @@
 if BUI == nil then BUI = {} end
 
 BUI.name = "BetterUI"
-BUI.version = "1.1"
+BUI.version = "1.25"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -40,10 +40,10 @@ BUI.defaults = {
 	showCharacterColor={1,0.5,0,1},
 	Inventory = { savePosition = true, enableJunk = true, attributeIcons = true, enableWrapping = true, triggerSpeed = 10, condenseLTooltip = true },
 	GuildStore = { saveFilters = true, },
+	Tooltips = { chatHistory = 200, },
 }
 
 function ddebug(str)
-	--if(ZO_ChatWindowTemplate1Buffer ~= nil) then ZO_ChatWindowTemplate1Buffer:SetMaxHistoryLines(15000) end
 	--return d("|c0066ff[BUI]|r "..str)
 end
 
@@ -77,6 +77,8 @@ BUI.Lib.stringTable = {
 	INV_ITEM_QUICKSLOT = "|cFF6600Quickslot|r",
 	INV_ITEM_WEAPONS = "Weapons",
 	INV_ITEM_APPAREL = "Apparel",
+	INV_ITEM_CONSUMABLE = "Consumable",
+	INV_ITEM_MISC = "Miscellaneous",
 	INV_ITEM_JUNK = "Junk",
 	TEXTURE_EQUIP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip.dds",
 	TEXTURE_EQUIP_BACKUP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_backup.dds",
@@ -85,8 +87,8 @@ BUI.Lib.stringTable = {
 	SI_INV_EQUIPSLOT_PROMPT = "Which <<1>> hand slot should the weapon go into?",
 	SI_INV_EQUIPSLOT_MAIN = "Main",
 	SI_INV_EQUIPSLOT_OFFHAND = "Off",
-	INV_EQUIP_PROMPT_MAIN = "Main Slot",
-	INV_EQUIP_PROMPT_BACKUP = "Backup Slot",
+	INV_EQUIP_PROMPT_MAIN = "Main Hand",
+	INV_EQUIP_PROMPT_BACKUP = "Off Hand",
 	INV_EQUIP_PROMPT_CANCEL = "Cancel",
 	SI_INV_SWITCH_EQUIPSLOT = "Switch Slot",
 	SI_INV_EQUIPSLOT = "|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_weapons.dds|t |c0066FF<<1>>|r",
