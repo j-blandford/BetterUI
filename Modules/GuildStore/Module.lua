@@ -29,6 +29,28 @@ local function Init(mId, moduleName)
 			width = "full",
 		},
 		{
+			type = "checkbox",
+			name = "MasterMerchant integration",
+			tooltip = "Hooks MasterMerchant into the guild store and item tooltips",
+			getFunc = function() return BUI.settings.GuildStore.mmIntegration end,
+			setFunc = function(value) BUI.settings.GuildStore.mmIntegration = value 
+									ReloadUI() end,
+			disabled = function() return MasterMerchant ~= nil end,
+			width = "full",
+			warning="Reloads the UI for the change to propagate"
+		},	
+		{
+			type = "checkbox",
+			name = "dataDaedra integration",
+			tooltip = "Hooks dataDaedra into the guild store and item tooltips",
+			getFunc = function() return BUI.settings.GuildStore.ddIntegration end,
+			setFunc = function(value) BUI.settings.GuildStore.ddIntegration = value 
+									ReloadUI() end,
+			disabled = function() return dataDaedra ~= nil end,
+			width = "full",
+			warning="Reloads the UI for the change to propagate"
+		},		
+		{
 			type = "header",
 			name = "|c0066FF[Improved Guild Store]|r Display Settings",
 			width = "full",
@@ -60,7 +82,8 @@ function BUI.GuildStore.Setup()
 
 	Init("GS", "Guild Store")
 	BUI.settings.condensedListings = false -- force backward compatibility with versions < 1.0
-	BUI.GuildStore.SetupCustomResults()
+	BUI.GuildStore.BrowseResults.Setup()
+	BUI.GuildStore.Listings.Setup()
 	BUI.GuildStore.SetupMM()
 
 	if(BUI.settings.GuildStore.saveFilters) then

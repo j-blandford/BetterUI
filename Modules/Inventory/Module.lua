@@ -29,14 +29,6 @@ local function Init(mId, moduleName)
 			setFunc = function(value) BUI.settings.Inventory.savePosition = value end,
 			width = "full",
 		},
-		{
-			type = "checkbox",
-			name = "Enable \"Junk\" feature",
-			tooltip = "Allows items to be marked as \"junk\" as a filter to de-clutter the inventory",
-			getFunc = function() return BUI.settings.Inventory.enableJunk end,
-			setFunc = function(value) BUI.settings.Inventory.enableJunk = value end,
-			width = "full",
-		},
         {
             type = "checkbox",
             name = "Enable category wrapping",
@@ -45,14 +37,6 @@ local function Init(mId, moduleName)
             setFunc = function(value) BUI.settings.Inventory.enableWrapping = value end,
             width = "full",
         },      
-        {
-            type = "editbox",
-            name = "Number of lines to skip on trigger",
-            tooltip = "Change how quickly the menu skips when pressing the triggers.",
-            getFunc = function() return BUI.settings.Inventory.triggerSpeed end,
-            setFunc = function(value) BUI.settings.Inventory.triggerSpeed = value end,
-            width = "full",
-        },  
 		{
 			type = "header",
 			name = "Enhanced Inventory Display",
@@ -71,24 +55,6 @@ local function Init(mId, moduleName)
         --     setFunc = function(value) BUI.settings.Inventory.uiScale = value end,
         --     width = "full",
         -- },
-		{
-			type = "checkbox",
-			name = "Display attribute icons next to the item name",
-			tooltip = "Allows you to see enchanted, set and stolen items quickly",
-			getFunc = function() return BUI.settings.Inventory.attributeIcons end,
-			setFunc = function(value) BUI.settings.Inventory.attributeIcons = value end,
-			width = "full",
-		},
-        {
-            type = "checkbox",
-            name = "Reduce the font size of the item tooltip",
-            tooltip = "Allows much more item information to be displayed at once on the tooltips",
-            getFunc = function() return BUI.settings.Inventory.condenseLTooltip end,
-            setFunc = function(value) BUI.settings.Inventory.condenseLTooltip = value
-                                        ReloadUI() end,
-            width = "full",
-            warning="Reloads the UI for the change to propagate"
-        },
 
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)

@@ -1,4 +1,4 @@
-local _
+﻿local _
 
 -- A modified header class for the inventory system. 
 -- Has the added functionality of a tabbar (of type BUI_TabBarScrollList)

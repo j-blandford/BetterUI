@@ -10,6 +10,17 @@ local function AddInventoryPostInfo(tooltip, itemLink)
 				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			end
 		end
+
+        if ddDataDaedra ~= nil then
+            local ddData = ddDataDaedra:GetKeyedItem(itemLink)
+            if(ddData ~= nil) then
+                if(ddData.wAvg ~= nil) then
+                    --local dealPercent = (unitPrice/wAvg.wAvg*100)-100
+                    tipLine = "dataDaedra: wAvg="..ddData.wAvg
+                    tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+                end
+            end
+        end
 	end
 end
 

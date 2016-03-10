@@ -1,0 +1,61 @@
+<GuiXml>
+	<Controls>
+        <Label name="BUI_GenericColumn_TextTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
+
+		<Label name="BUI_GenericColumn_Label" inherits="BUI_GenericColumn_TextTemplate BUI_GamepadHeaderTitleAnchors" text="..." virtual="true">
+                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+<!--                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" /> -->
+         </Label>
+
+        <Control name="BUI_GenericInterface_ListContainer" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors" virtual="true">
+            <Controls>
+                <Control name="$(parent)List" inherits="BUI_VerticalParametricScrollListTemplate">
+                    <AnchorFill />
+
+                    <OnInitialized>
+                        self:GetParent().list = self
+                    </OnInitialized>
+
+                    <Anchor point="TOPLEFT" relativeTo="$(grandparent)HeaderContainer" relativePoint="BOTTOMLEFT" offsetX="-50" offsetY="-25"/>
+                    <Anchor point="BOTTOMRIGHT" relativeTo="$(grandparent)ContainerFooter" relativePoint="TOPRIGHT" offsetX="0" offsetY="10" />
+                  
+                    <Controls>
+                        <Label name="$(parent)NoItemsLabel"  font="ZoFontGamepadCondensed36" horizontalAlignment="CENTER" text="Nothing in list" verticalAlignment="CENTER">
+                            <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
+                            <Anchor point="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
+                        </Label>
+                    </Controls>
+                </Control>
+            </Controls>
+        </Control>
+
+        <Control name="BUI_GenericInterfaceContainer" inherits="BUI_GamepadGrid_NavQuadrant_1_Anchors" override="true" virtual="true">
+            <Controls>
+                <Control name="$(parent)Container" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors BUI_GenericInterface_ListContainer">
+                    <Controls>
+                        <Control name="$(grandparent)List" inherits="BUI_VerticalParametricScrollListTemplate">
+                            <Anchor point="TOPLEFT" relativeTo="$(parent)Container" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_INDENT"/>
+                        </Control>
+                    </Controls>
+                </Control>
+            </Controls>
+        </Control>
+
+		<TopLevelControl name="BUI_GenericInterface" inherits="BUI_GenericInterfaceContainer" hidden="true" override="true" virtual="true">
+            <Controls>
+                <Control name="$(parent)Loading" hidden="true" inherits="ZO_GamepadCenteredLoadingIconAndLabelTemplate" text="Loading list..." />
+
+                <Control name="$(parent)Container" override="true" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
+                    <Controls>
+                        <Control name="$(parent)Footer" inherits="BUI_GamepadGenericScreenFooter" />
+                        <Control name="$(parent)Header" inherits="BUI_GenericHeader_Container BUI_GamepadGrid_NavQuadrant_1_Anchors">
+		                    <Controls>
+		                        <Control name="$(parent)HeaderColumnBar" inherits="BUI_GamepadHeaderTitleAnchors" />
+		                   </Controls>
+		                </Control>
+                    </Controls>
+                </Control>
+            </Controls>
+        </TopLevelControl>
+	</Controls>
+</GuiXml>

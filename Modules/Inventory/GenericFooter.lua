@@ -1,7 +1,7 @@
 local _
 
 function BUI.GenericFooter.Initialize(self)
-	self.footer = self.control.container:GetNamedChild("FooterContainer").footer
+	if(self.footer == nil) then self.footer = self.control.container:GetNamedChild("FooterContainer").footer end
 
 	BUI.GenericFooter.Refresh(self)
 end

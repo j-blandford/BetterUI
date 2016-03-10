@@ -1,0 +1,143 @@
+<GuiXml>
+    <Controls>
+        <Label name="BUI_PagedListLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE" verticalAlignment="CENTER" virtual="true" />
+        <Label name="BUI_PagedListValueTemplate" font="$(GAMEPAD_MEDIUM_FONT)|22|soft-shadow-thick" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" verticalAlignment="CENTER" virtual="true" />
+        <Control name="BUI_PagedListFooterBar" virtual="true">
+            <Dimensions y="14" />
+            <Anchor point="BOTTOMLEFT" offsetY="-100" />
+            <Anchor point="BOTTOMRIGHT" offsetY="-90" />
+            <Controls>
+                <Label name="$(parent)PageNumberText" inherits="BUI_PagedListLabelTemplate">
+                    <Anchor point="CENTER" />
+                </Label>
+                
+                <Button name="$(parent)PreviousButton">
+                    <Anchor point="RIGHT" relativeTo="$(parent)PageNumberText" relativePoint="LEFT" offsetX="-10" />
+                    <Dimensions x="50" y="50"/>
+                    <OnInitialized>
+                        self:SetNormalTexture(ZO_Keybindings_GetTexturePathForKey(KEY_GAMEPAD_LEFT_TRIGGER))
+                        self:SetDisabledTexture(ZO_GAMEPAD_LEFT_TRIGGER_DISABLED)
+                    </OnInitialized>
+                    <OnClicked>
+                        GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:PreviousPageRequest()
+                    </OnClicked>
+                </Button>
+
+                <Button name="$(parent)NextButton">
+                    <Anchor point="LEFT" relativeTo="$(parent)PageNumberText" relativePoint="RIGHT" offsetX="10" />
+                    <Dimensions x="50" y="50"/>
+                    <OnInitialized>
+                        self:SetNormalTexture(ZO_Keybindings_GetTexturePathForKey(KEY_GAMEPAD_RIGHT_TRIGGER))
+                        self:SetDisabledTexture(ZO_GAMEPAD_RIGHT_TRIGGER_DISABLED)
+                    </OnInitialized>
+                    <OnClicked>
+                        GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:NextPageRequest()
+                    </OnClicked>
+                </Button>
+            </Controls>
+        </Control>
+
+        <Control name="BUI_SortHeader" inherits="ZO_SortHeaderBehavior" virtual="true">
+            <Dimensions y="0" />
+            <Controls>
+                <Label name="$(parent)Name" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL"  modifyTextType="UPPERCASE" horizontalAlignment="CENTER" verticalAlignment="CENTER" wrapMode="ELLIPSIS">
+                    <AnchorFill />
+                </Label>
+            </Controls>
+        </Control>
+
+        <Control name="BUI_TradingHouse_SortPriceHeader" inherits="BUI_SortHeader" virtual="true">
+            <OnInitialized>
+                ZO_SortableParametricList_InitSortHeader(self, SI_TRADING_HOUSE_SORT_TYPE_TIME, TEXT_ALIGN_CENTER, ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME)
+            </OnInitialized>
+            <Anchor point="TOPRIGHT" offsetX="-ZO_GAMEPAD_CONTENT_INSET_X"/>
+            <Dimensions x="195" y="30"/>
+            <Controls>
+                <Label name="$(parent)Name" font="ZoFontGamepad27" override="true" hidden="true"/>
+            </Controls>
+        </Control>
+
+        <Control name="BUI_TradingHouse_ItemList_Gamepad" inherits="BUI_GamepadGrid_NavQuadrant_1_Anchors" hidden="true" virtual="true">
+            <Controls>
+                <Control name="$(parent)Container" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
+                    <Controls>
+                        <Control name="$(grandparent)List" inherits="BUI_VerticalParametricScrollListTemplate">
+                            <Anchor point="TOPLEFT" relativeTo="$(parent)Container" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_INDENT"/>
+                        </Control>
+                    </Controls>
+                </Control>
+            </Controls>
+        </Control>
+
+
+
+        <TopLevelControl name="BUI_BrowseResults" inherits="BUI_TradingHouse_ItemList_Gamepad" hidden="true" override="true">
+            <Controls>
+                <Control name="$(parent)HeaderContainer" inherits="BUI_GenericHeader_Container BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
+                    <Controls>
+                        <Control name="$(parent)HeaderColumnBar" inherits="BUI_GamepadHeaderTitleAnchors">
+                            <Controls>
+                                <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" text="|cFF6600Search Results|r" hidden="false">
+                                    <Anchor point="CENTER" offsetY="40" />   
+                                </Label>
+                                 <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+                                        <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                                 </Label>
+                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Seller">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="385" />
+                                        <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                                 </Label>
+                                 <Label name="$(parent)Column3Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Time Left">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="535" />
+                                        <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                                 </Label>
+                                 <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Profit">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="630" />
+                                        <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                                 </Label>
+                                 <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Price">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="775" />
+                                        <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                                 </Label>
+                            </Controls>
+                       </Control>
+                   </Controls>
+                </Control>
+                <Control name="$(parent)Loading" hidden="true" inherits="ZO_GamepadCenteredLoadingIconAndLabelTemplate">
+                    <Controls>
+                        <Control name="$(parent)Container" override="true">
+                            <Controls>
+                                <Label name="$(parent)Text" text="SI_INVENTORY_RETRIEVING_ITEMS" override="true"/>
+                            </Controls>
+                        </Control>
+                    </Controls>
+                </Control>
+
+                <Control name="$(parent)Headers" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors" hidden="true">
+                    <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH" />
+                    <Anchor point="TOPLEFT" relativeTo="GuiRoot" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="26"/>
+                    <Controls>
+                        <Control name="$(parent)Price" inherits="BUI_TradingHouse_SortPriceHeader" >
+                            <Anchor point="TOP"/>
+                            <OnInitialized>
+                                ZO_SortableParametricList_InitSortHeader(self, SI_TRADING_HOUSE_SORT_TYPE_PRICE, TEXT_ALIGN_CENTER, ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE)
+                            </OnInitialized>
+                        </Control>
+                    </Controls>
+                </Control>
+
+                <Control name="$(parent)Container" override="true" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
+                    <Controls>
+                        <Control name="$(grandparent)Footer" inherits="BUI_PagedListFooterBar BUI_GamepadGenericScreenFooter" />
+                        
+                        <Control name="$(grandparent)List" override="true">
+                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="0" offsetY="90"/>
+                            <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="15" />
+                        </Control>
+                    </Controls>
+                </Control>
+            </Controls>
+        </TopLevelControl>
+    </Controls>
+</GuiXml>

@@ -1,8 +1,8 @@
 ## Title: BetterUI
 ## Description: Improved gamepad interface
-## APIVersion: 100013
+## APIVersion: 100014
 ## Author: prasoc
-## Version: 1.25
+## Version: 1.5
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
@@ -26,24 +26,31 @@ lib\LibAddonMenu-2.0\controls\texture.lua
 lib\LibAddonMenu-2.0\controls\iconpicker.lua
 
 Globals.lua
+
+
 BetterUI.CONST.lua
 bindings.xml
 BUI_Shared.xml
 
-; Module: Inventory Enhancement
-Modules\Inventory\Images\inv_select_grad.dds
-Modules\Inventory\Images\inv_equip.dds
-Modules\Inventory\Images\inv_equip_backup.dds
-Modules\Inventory\Images\inv_equip_quickslot.dds
-Modules\Inventory\Images\inv_stolen.dds
-Modules\Inventory\Images\inv_enchanted.dds
-Modules\Inventory\Images\inv_setitem.dds
-Modules\Inventory\Templates\GenericHeader.xml
-Modules\Inventory\GenericHeader.lua
-Modules\Inventory\Templates\GenericFooter.xml
-Modules\Inventory\GenericFooter.lua
-Modules\Inventory\Templates\ParametricScrollListTemplates.xml
-Modules\Inventory\ParametricScrollListTemplates.lua
+; Module: Common Interface Module
+Modules\CIM\Images\inv_select_grad.dds
+Modules\CIM\Images\inv_equip.dds
+Modules\CIM\Images\inv_equip_backup.dds
+Modules\CIM\Images\inv_equip_quickslot.dds
+Modules\CIM\Images\inv_stolen.dds
+Modules\CIM\Images\inv_enchanted.dds
+Modules\CIM\Images\inv_setitem.dds
+Modules\CIM\Templates\GenericHeader.xml
+Modules\CIM\GenericHeader.lua
+Modules\CIM\Templates\GenericFooter.xml
+Modules\CIM\GenericFooter.lua
+Modules\CIM\Templates\ParametricScrollListTemplates.xml
+Modules\CIM\ParametricScrollListTemplates.lua
+Modules\CIM\Templates\InterfaceLibrary.xml
+Modules\CIM\InterfaceLibrary.lua
+Modules\CIM\Module.lua
+
+; Module: Inventory Enhanced
 Modules\Inventory\Templates\GamepadInventory.xml
 Modules\Inventory\Inventory.lua
 Modules\Inventory\Module.lua
@@ -54,6 +61,9 @@ Modules\GeneralInterface\Module.lua
 
 ; Module: Guild Store (+MM)
 Modules\GuildStore\Templates\InventoryRow.xml
+Modules\GuildStore\Templates\BrowseResults.xml
+Modules\GuildStore\Templates\Listings.xml
+Modules\GuildStore\Templates\CreateListing.xml
 Modules\GuildStore\GuildStore.lua
 Modules\GuildStore\Module.lua
 

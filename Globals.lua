@@ -1,16 +1,22 @@
-if BUI == nil then BUI = {} end
+BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "1.25"
+BUI.version = "1.5"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
 BUI.Lib = {}
+BUI.Lib.CIM = {}
 BUI.GenericHeader = {}
 BUI.GenericFooter = {}
+BUI.Interface = {}
+BUI.Interface.Window = {}
 BUI.Inventory = {}
 BUI.Writs = {}
 BUI.GuildStore = {}
+BUI.GuildStore.BrowseResults = {}
+BUI.GuildStore.Listings = {}
+BUI.GuildStore.Sell = {}
 BUI.Tooltips = {}
 BUI.Player = {}
 
@@ -44,7 +50,7 @@ BUI.defaults = {
 }
 
 function ddebug(str)
-	--return d("|c0066ff[BUI]|r "..str)
+	return d("|c0066ff[BUI]|r "..str)
 end
 
 function BUI.Lib.Checkbox(checkName, checkDesc, checkValue)

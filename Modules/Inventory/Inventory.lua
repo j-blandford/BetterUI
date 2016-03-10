@@ -594,6 +594,17 @@ function BUI.Inventory.RefreshCategoryList(self)
     self.header.tabBar:Activate()
 end
 
+local function CanUseItemQuestItem(inventorySlot)
+    if inventorySlot then
+        if inventorySlot.toolIndex then
+            return CanUseQuestTool(inventorySlot.questIndex, inventorySlot.toolIndex)
+        elseif inventorySlot.conditionIndex then
+            return CanUseQuestItem(inventorySlot.questIndex, inventorySlot.stepIndex, inventorySlot.conditionIndex)
+        end
+    end
+    return false
+end
+
 
 function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
     if SCENE_MANAGER:IsShowing("gamepad_inventory_item_actions") then
@@ -635,7 +646,16 @@ function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
 
                 if usable and not onlyFromActionSlot then
                     self:SaveListPosition()
-                    CallSecureProtected("UseItem",bag, index) -- > this is a key alteration. we've replaced the inventory completely, so even ZOS's own code won't function without CSP(...)
+                   if CanUseItemQuestItem(self.itemActions.inventorySlot.dataSource) then
+                       CallSecureProtected("UseItem",bag, index) -- > this is a key alteration. we've replaced the inventory completely, so even ZOS's own code won't function without CSP(...)
+                    else
+                        if self.itemActions.inventorySlot.dataSource.toolIndex then
+                            CallSecureProtected("UseQuestTool", self.itemActions.inventorySlot.dataSource.questIndex, self.itemActions.inventorySlot.dataSource.toolIndex)
+                        elseif self.itemActions.inventorySlot.conditionIndex then
+                            CallSecureProtected("UseQuestItem", self.itemActions.inventorySlot.dataSource.questIndex, self.itemActions.inventorySlot.dataSource.stepIndex, self.itemActions.inventorySlot.dataSource.conditionIndex)
+                        end
+                        --CallSecureProtected("UseQuestItem", self.itemActions.inventorySlot.questIndex, self.itemActions.inventorySlot.stepIndex, self.itemActions.inventorySlot.conditionIndex)
+                    end
                     self:ToSavedPosition()
                     return true
                 end
@@ -730,7 +750,7 @@ function BUI.Inventory.InitializeItemList(self)
     local function OnInventoryUpdated(bagId)
         self:MarkDirty()
         if SCENE_MANAGER:IsShowing("gamepad_inventory_item_actions") then
-            --self:OnUpdate() --don't wait for next update loop in case item was destroyed and scene/keybinds need immediate update
+
         end
         if SCENE_MANAGER:IsShowing("gamepad_inventory_root") then
             self:RefreshCategoryList()
@@ -892,7 +912,7 @@ function BUI.Inventory.CreateListTriggerKeybindDescriptors(list, optionalHeaderC
                 list = list()
             end
             if not list:IsEmpty() then
-                list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.settings.Inventory.triggerSpeed))
+                list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.settings.CIM.triggerSpeed))
             end
         end
     }
@@ -904,7 +924,7 @@ function BUI.Inventory.CreateListTriggerKeybindDescriptors(list, optionalHeaderC
                 list = list()
             end
             if not list:IsEmpty() then
-                list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.settings.Inventory.triggerSpeed))
+                list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.settings.CIM.triggerSpeed))
             end
         end,
     }

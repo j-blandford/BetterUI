@@ -2,6 +2,8 @@ local _
 local LAM = LibStub:GetLibrary("LibAddonMenu-2.0")
 local dirtyModules = false
 
+if BUI == nil then BUI = {} end
+
 
 function BUI.InitModuleOptions()
 
@@ -15,20 +17,31 @@ function BUI.InitModuleOptions()
 		},
 		{
 			type = "checkbox",
-			name = "Enable Guild Store Improvements",
-			tooltip = "Improvements to the guild store, and MaterMerchant integration",
-			getFunc = function() return BUI.settings.moduleGS end,
-			setFunc = function(value) BUI.settings.moduleGS = value 
+			name = "Enable Common Interface Module (CIM)",
+			tooltip = "Enables the use of the completely redesigned \"Enhanced\" interfaces!",
+			getFunc = function() return BUI.settings.moduleCIM end,
+			setFunc = function(value) BUI.settings.moduleCIM = value 
 									dirtyModules = true end,
 			width = "full",
 		},
 		{
 			type = "checkbox",
-			name = "Enable Inventory Improvements",
-			tooltip = "Completely redesigns the gamepad's interface",
+			name = "Enable |c0066FFEnhanced Guild Store|r",
+			tooltip = "Complete overhaul of the guild store, and MaterMerchant/dataDaedra integration",
+			getFunc = function() return BUI.settings.moduleGS end,
+			setFunc = function(value) BUI.settings.moduleGS = value 
+									dirtyModules = true end,
+			disabled = function() return not BUI.settings.moduleCIM end,
+			width = "full",
+		},
+		{
+			type = "checkbox",
+			name = "Enable |c0066FFEnhanced Inventory|r",
+			tooltip = "Completely redesigns the gamepad's inventory interface",
 			getFunc = function() return BUI.settings.moduleInterface end,
 			setFunc = function(value) BUI.settings.moduleInterface = value 
 									dirtyModules = true  end,
+			disabled = function() return not BUI.settings.moduleCIM end,
 			width = "full",
 		},
 		{
@@ -85,11 +98,14 @@ function BUI.Initialize(event, addon)
 	BUI.EventManager:UnregisterForEvent("BetterUIInitialize", EVENT_ADD_ON_LOADED)
 
 	if(IsInGamepadPreferredMode()) then
-		if(BUI.settings.moduleGS) then 
-			BUI.GuildStore.Setup()
-		end
-		if(BUI.settings.moduleInterface) then 
-			BUI.Inventory.Setup() 
+		if(BUI.settings.moduleCIM) then
+			BUI.Lib.CIM.Setup()
+			if(BUI.settings.moduleGS) then 
+				BUI.GuildStore.Setup()
+			end
+			if(BUI.settings.moduleInterface) then 
+				BUI.Inventory.Setup() 
+			end
 		end
 		if(BUI.settings.moduleWrit) then 
 			BUI.Writs.Setup()
