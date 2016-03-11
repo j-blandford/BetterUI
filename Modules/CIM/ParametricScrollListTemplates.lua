@@ -348,7 +348,7 @@ function BUI_TabBarScrollList:InitializeKeybindStripDescriptors()
             ethereal = true,
             callback = function()
                 if self.active then
-                    self:MovePrevious(BUI.settings.CIM.enableWrapping)
+                    self:MovePrevious(BUI.Settings.Modules["CIM"].enableWrapping)
                 end
             end,
         },
@@ -357,7 +357,7 @@ function BUI_TabBarScrollList:InitializeKeybindStripDescriptors()
             ethereal = true,
             callback = function()
                 if self.active then
-                    self:MoveNext(BUI.settings.CIM.enableWrapping)
+                    self:MoveNext(BUI.Settings.Modules["CIM"].enableWrapping)
                 end
             end,
         },

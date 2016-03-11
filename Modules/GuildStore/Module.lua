@@ -7,15 +7,15 @@ local function Init(mId, moduleName)
 	local optionsTable = {
 		{
 			type = "header",
-			name = "|c0066FF[Improved Guild Store]|r Behaviour Settings",
+			name = "|c0066FF[Enhanced Guild Store]|r Behaviour Settings",
 			width = "full",
 		},
 		{
 			type="checkbox",
 			name="Flip sort and select buttons (A+X)",
 			tooltip="Switches the default A=Sort and X=Select to be A=Select and X=Sort",
-			getFunc = function() return BUI.settings.flipGSbuttons end,
-			setFunc = function(value) BUI.settings.flipGSbuttons = value
+			getFunc = function() return BUI.Settings.Modules["GuildStore"].flipGSbuttons end,
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].flipGSbuttons = value
 									ReloadUI() end,
 			width="full",
 			warning="Reloads the UI for the change to propagate"
@@ -23,8 +23,8 @@ local function Init(mId, moduleName)
 		{
 			type = "checkbox",
 			name = "Disable scrolling animation",
-			getFunc = function() return BUI.settings.scrollingDisable end,
-			setFunc = function(value) BUI.settings.scrollingDisable = value 
+			getFunc = function() return BUI.Settings.Modules["GuildStore"].scrollingDisable end,
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].scrollingDisable = value 
 									BUI.GuildStore.DisableAnimations(value) end,
 			width = "full",
 		},
@@ -32,10 +32,10 @@ local function Init(mId, moduleName)
 			type = "checkbox",
 			name = "MasterMerchant integration",
 			tooltip = "Hooks MasterMerchant into the guild store and item tooltips",
-			getFunc = function() return BUI.settings.GuildStore.mmIntegration end,
-			setFunc = function(value) BUI.settings.GuildStore.mmIntegration = value 
+			getFunc = function() return BUI.Settings.Modules["GuildStore"].mmIntegration end,
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].mmIntegration = value 
 									ReloadUI() end,
-			disabled = function() return MasterMerchant ~= nil end,
+			disabled = function() return MasterMerchant == nil end,
 			width = "full",
 			warning="Reloads the UI for the change to propagate"
 		},	
@@ -43,24 +43,24 @@ local function Init(mId, moduleName)
 			type = "checkbox",
 			name = "dataDaedra integration",
 			tooltip = "Hooks dataDaedra into the guild store and item tooltips",
-			getFunc = function() return BUI.settings.GuildStore.ddIntegration end,
-			setFunc = function(value) BUI.settings.GuildStore.ddIntegration = value 
+			getFunc = function() return BUI.Settings.Modules["GuildStore"].ddIntegration end,
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].ddIntegration = value 
 									ReloadUI() end,
-			disabled = function() return dataDaedra ~= nil end,
+			disabled = function() return ddDataDaedra == nil end,
 			width = "full",
 			warning="Reloads the UI for the change to propagate"
 		},		
 		{
 			type = "header",
-			name = "|c0066FF[Improved Guild Store]|r Display Settings",
+			name = "|c0066FF[Enhanced Guild Store]|r Display Settings",
 			width = "full",
 		},
 		{
 			type = "checkbox",
 			name = "Stop guild browse filters resetting",
 			tooltip = "Stops the reset of item browse filters between guilds and binds \"Reset Filters\" to Left Stick click",
-			getFunc = function() return BUI.settings.GuildStore.saveFilters end,
-			setFunc = function(value) BUI.settings.GuildStore.saveFilters = value 
+			getFunc = function() return BUI.Settings.Modules["GuildStore"].saveFilters end,
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].saveFilters = value 
 									ReloadUI() end,
 			width = "full",
 			warning="Reloads the UI for the change to propagate"
@@ -69,8 +69,8 @@ local function Init(mId, moduleName)
 			type = "checkbox",
 			name = "Unit Price in Guild Store",
 			tooltip = "Displays a price per unit in guild store listings",
-			getFunc = function() return BUI.settings.showUnitPrice end,
-			setFunc = function(value) BUI.settings.showUnitPrice = value end,
+			getFunc = function() return BUI.Settings.Modules["GuildStore"].unitPrice end,
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].unitPrice = value end,
 			width = "full",
 		},
 	}
@@ -78,15 +78,23 @@ local function Init(mId, moduleName)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
 end
 
+function BUI.GuildStore.InitModule(m_options)
+	m_options["saveFilters"] = true
+	m_options["ddIntegration"] = true
+	m_options["mmIntegration"] = true
+	m_options["unitPrice"] = true
+	m_options["scrollingDisable"] = false
+	m_options["flipGSbuttons"] = true
+	return m_options
+end
+
 function BUI.GuildStore.Setup()
 
 	Init("GS", "Guild Store")
-	BUI.settings.condensedListings = false -- force backward compatibility with versions < 1.0
 	BUI.GuildStore.BrowseResults.Setup()
 	BUI.GuildStore.Listings.Setup()
-	BUI.GuildStore.SetupMM()
 
-	if(BUI.settings.GuildStore.saveFilters) then
+	if(BUI.Settings.Modules["GuildStore"].saveFilters) then
 
 		-- Now set up the "reset filter" button, keybind to the Left Stick Click
 		GAMEPAD_TRADING_HOUSE_BROWSE.keybindStripDescriptor[#GAMEPAD_TRADING_HOUSE_BROWSE.keybindStripDescriptor+1] = {

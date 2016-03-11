@@ -4,7 +4,7 @@ BUI_TEST_SCENE_NAME = "BUI_TEST_SCENE"
 
 BUI.Interface.Window = ZO_Object:Subclass()
 
-function BUI.Lib.CIM.SetTooltipWidth(width)
+function BUI.CIM.SetTooltipWidth(width)
     -- Setup the larger and offset LEFT_TOOLTIP and background fragment so that the new inventory fits!
     GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(width)
     GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, width+66, 54)
@@ -46,9 +46,9 @@ function BUI.Interface.Window:InitializeScene(SCENE_NAME)
 
     local function SceneStateChange(oldState, newState)
         if(newState == SCENE_SHOWING) then
-        	BUI.Lib.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
+        	BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
         elseif(newState == SCENE_HIDING) then
-           BUI.Lib.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
+           BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
         elseif(newState == SCENE_HIDDEN) then
 
         end
@@ -62,14 +62,14 @@ function BUI.Interface.Window:ToggleScene()
 	SCENE_MANAGER:Toggle(BUI_TEST_SCENE_NAME)
 end
 
-testWindow = BUI.Interface.Window:New("BUI_TestWindow")
-testWindow.Initialize = BUI.Interface.Window.Initialize
-testWindow.InitializeFragment = BUI.Interface.Window.InitializeFragment
-testWindow.InitializeScene = BUI.Interface.Window.InitializeScene
-testWindow.ToggleScene = BUI.Interface.Window.ToggleScene
+-- testWindow = BUI.Interface.Window:New("BUI_TestWindow")
+-- testWindow.Initialize = BUI.Interface.Window.Initialize
+-- testWindow.InitializeFragment = BUI.Interface.Window.InitializeFragment
+-- testWindow.InitializeScene = BUI.Interface.Window.InitializeScene
+-- testWindow.ToggleScene = BUI.Interface.Window.ToggleScene
 
-testWindow:Initialize()
-testWindow:InitializeFragment("BUI_TEST_FRAGMENT")
-testWindow:InitializeScene(BUI_TEST_SCENE)
+-- testWindow:Initialize()
+-- testWindow:InitializeFragment("BUI_TEST_FRAGMENT")
+-- testWindow:InitializeScene(BUI_TEST_SCENE)
 
-testWindow:ToggleScene()
+-- testWindow:ToggleScene()

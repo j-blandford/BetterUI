@@ -1,8 +1,8 @@
 ## Title: BetterUI
-## Description: Improved gamepad interface
+## Description: Makes the gamepad interface usable!
 ## APIVersion: 100014
 ## Author: prasoc
-## Version: 1.5
+## Version: 1.55
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
@@ -26,8 +26,6 @@ lib\LibAddonMenu-2.0\controls\texture.lua
 lib\LibAddonMenu-2.0\controls\iconpicker.lua
 
 Globals.lua
-
-
 BetterUI.CONST.lua
 bindings.xml
 BUI_Shared.xml

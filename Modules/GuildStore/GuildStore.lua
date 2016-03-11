@@ -57,13 +57,10 @@ local SORT_OPTIONS = {
 local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selected)
     if label then
         label:SetFont("$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick")
-        -- if data.modifyTextType then
-        --     label:SetModifyTextType(data.modifyTextType)
-        -- end
 
         local labelTxt = data.text
 
-        if(BUI.settings.CIM.attributeIcons) then
+        if(BUI.Settings.Modules["CIM"].attributeIcons) then
             local itemData = data.dataSource.itemLink
 
             local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
@@ -164,7 +161,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
     	sellerName = data.sellerName
    	end
 
-    if(BUI.settings.showMMPrice and BUI.MMIntegration) then
+    if(BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
 	    dealValue = tonumber(dealString)
 
 	    local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, dealValue)
@@ -179,8 +176,10 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
         end   		
 	end
 
-	if(ddDataDaedra ~= nil) then
-		local wAvg = ddDataDaedra:GetKeyedItem(data.dataSource.itemLink)
+	if(ddDataDaedra ~= nil and BUI.Settings.Modules["GuildStore"].ddIntegration) then
+
+		local wAvg
+		if(data.dataSource.itemLink ~= nil) then wAvg = ddDataDaedra:GetKeyedItem(data.dataSource.itemLink) else wAvg = ddDataDaedra:GetKeyedItem(GetTradingHouseListingItemLink(data.dataSource.slotIndex)) end
 		local unitPrice = data.purchasePrice/data.stackCount
 		if(wAvg ~= nil) then
 			if(wAvg.wAvg ~= nil) then
@@ -207,7 +206,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
 
 	sellerControl:SetText(ZO_FormatUserFacingDisplayName(sellerName))
 
-    if(BUI.settings.showUnitPrice) then
+    if(BUI.Settings.Modules["GuildStore"].showUnitPrice) then
 	   	if(data.stackCount ~= 1) then 
 	    	unitPriceControl:SetHidden(false)
 	    	unitPriceControl:SetText(zo_strformat("@<<1>>",data.purchasePrice/data.stackCount))
@@ -227,7 +226,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
     end
 end
 
-function BUI.GuildStore.SetupMM() 
+function BUI.GuildStore.FixMM() 
   	if MasterMerchant == nil then 
   		BUI.MMIntegration = false
   		return 
@@ -241,7 +240,7 @@ function BUI.GuildStore.SetupMM()
 end
 
 function BUI.GuildStore.HookResultsKeybinds()
-	if BUI.settings.flipGSbuttons then
+	if BUI.Settings.Modules["GuildStore"].flipGSbuttons then
 	    BUI.Hook(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS, "InitializeKeybindStripDescriptors", function(self)
 		    local function NotAwaitingResponse() 
 		        return not self.awaitingResponse
@@ -391,18 +390,15 @@ function BUI.GuildStore.SetupCallbacks(self, scene)
                ZO_GamepadGenericHeader_SetActiveTabIndex(self.m_header, self:GetCurrentMode())
                --self.m_header:SetHidden(true)
             self:RefreshHeaderData()
-            BUI.Lib.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
             self:RegisterForSceneEvents()
         elseif newState == SCENE_SHOWN then
             if self.m_currentObject then
                 self.m_currentObject:Show()
             end
-            BUI.Lib.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
         elseif newState == SCENE_HIDDEN then
             self:UnregisterForSceneEvents()
             GAMEPAD_TRADING_HOUSE_FRAGMENT:Hide()
             GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
-            BUI.Lib.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
                ZO_GamepadGenericHeader_Deactivate(self.m_header)
                if self.m_currentObject then
                     self.m_currentObject:Hide()
@@ -475,7 +471,7 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
 
    	--sellerControl:SetText(ZO_FormatUserFacingDisplayName(sellerName))
 
- --    if(BUI.settings.showMMPrice and BUI.MMIntegration) then
+ --    if(BUI.Settings.Modules["GuildStore"].mmIntegration and BUI.MMIntegration) then
 	--     dealValue = tonumber(dealString)
 
 	--     local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, dealValue)
@@ -495,7 +491,7 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
         local itemData = GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex)
 		
 
-	if(ddDataDaedra ~= nil) then
+	if(ddDataDaedra ~= nil and BUI.Settings.Modules["GuildStore"].ddIntegration) then
 		local wAvg = ddDataDaedra:GetKeyedItem(itemData)
 		if(wAvg ~= nil) then
 			if(wAvg.wAvg ~= nil) then
@@ -553,12 +549,14 @@ function BUI.GuildStore.BrowseResults.Setup()
 	    end
 	    self:UnfocusPriceSelector()
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(true) -- here's the change
+		BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
 	end
 
 	GAMEPAD_TRADING_HOUSE_BROWSE.OnShowing = function(self) 
 		self:PerformDeferredInitialization()
     	self:OnTargetChanged(self.itemList, self.itemList:GetTargetData())
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(false) -- here's the change
+		BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
 	end
 
 	-- Replace the fragment with my own TLC to bind everything together...
@@ -571,7 +569,7 @@ function BUI.GuildStore.BrowseResults.Setup()
 	BUI.GuildStore.SetupCallbacks(TRADING_HOUSE_GAMEPAD, TRADING_HOUSE_GAMEPAD_SCENE)
 
 	BUI.GuildStore.HookResultsKeybinds()
-	BUI.GuildStore.DisableAnimations(BUI.settings.scrollingDisable)
+	BUI.GuildStore.DisableAnimations(BUI.Settings.Modules["GuildStore"].scrollingDisable)
 end
 
 function BUI.GuildStore.Listings.Setup()

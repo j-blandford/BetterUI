@@ -1,29 +1,33 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "1.5"
+BUI.version = "1.55"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
 BUI.Lib = {}
-BUI.Lib.CIM = {}
+BUI.CIM = {}
+
 BUI.GenericHeader = {}
 BUI.GenericFooter = {}
 BUI.Interface = {}
 BUI.Interface.Window = {}
+
 BUI.Inventory = {}
 BUI.Writs = {}
+
 BUI.GuildStore = {}
 BUI.GuildStore.BrowseResults = {}
 BUI.GuildStore.Listings = {}
 BUI.GuildStore.Sell = {}
+
 BUI.Tooltips = {}
 BUI.Player = {}
 
 -- Program Global (scope of BUI, though) variable initialization
 BUI.WindowManager = GetWindowManager()
 BUI.EventManager = GetEventManager()
-BUI.settings = {}
+BUI.Settings = {}
 BUI.Writs.List = {}
 BUI.Player.ResearchTraits = {}
 
@@ -44,13 +48,25 @@ BUI.defaults = {
 	attributeLabels=true,
 	showStyleTrait=true,
 	showCharacterColor={1,0.5,0,1},
-	Inventory = { savePosition = true, enableJunk = true, attributeIcons = true, enableWrapping = true, triggerSpeed = 10, condenseLTooltip = true },
+	CIM = { enableJunk = true, attributeIcons = true, triggerSpeed = 10, condenseLTooltip = true },
+	Inventory = { savePosition = true, enableWrapping = true,},
 	GuildStore = { saveFilters = true, },
 	Tooltips = { chatHistory = 200, },
 }
 
+BUI.DefaultSettings = {
+	firstInstall = true,
+	Modules = {
+		["*"] = { -- Module setting template
+			m_enabled = false,
+			m_setup = function() end,
+		}
+	}
+}
+
+
 function ddebug(str)
-	return d("|c0066ff[BUI]|r "..str)
+	--return d("|c0066ff[BUI]|r "..str)
 end
 
 function BUI.Lib.Checkbox(checkName, checkDesc, checkValue)

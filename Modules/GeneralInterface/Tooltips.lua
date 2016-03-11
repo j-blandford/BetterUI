@@ -2,7 +2,7 @@ local _
 
 local function AddInventoryPostInfo(tooltip, itemLink)
 	if itemLink  then
-		if BUI.MMIntegration and BUI.settings.showMMPrice then
+		if MasterMerchant ~= nil and BUI.Settings.Modules["GuildStore"].mmIntegration then
 			local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
 			if(tipLine ~= nil) then
 				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
@@ -11,7 +11,7 @@ local function AddInventoryPostInfo(tooltip, itemLink)
 			end
 		end
 
-        if ddDataDaedra ~= nil then
+        if ddDataDaedra ~= nil and BUI.Settings.Modules["GuildStore"].ddIntegration then
             local ddData = ddDataDaedra:GetKeyedItem(itemLink)
             if(ddData ~= nil) then
                 if(ddData.wAvg ~= nil) then
@@ -28,7 +28,7 @@ local function AddInventoryPreInfo(tooltip, itemLink)
 	local style = GetItemLinkItemStyle(itemLink)
 	local itemStyle = string.upper(GetString("SI_ITEMSTYLE", style))
 
-	if itemLink and BUI.settings.showStyleTrait then
+	if itemLink and BUI.Settings.Modules["Tooltips"].showStyleTrait then
 		local traitType, traitDescription, traitSubtype, traitSubtypeName, traitSubtypeDescription = GetItemLinkTraitInfo(itemLink)
 
 		if(traitType ~= ITEM_TRAIT_TYPE_NONE and (itemStyle) ~= ("NONE")) then 
@@ -79,7 +79,7 @@ local function BUI_UpdateAttributeBar(self, current, max, effectiveMax)
         self.label:SetText(zo_strformat(SI_UNIT_FRAME_BARVALUE, current, max))
     end
 
-    if(BUI.settings.attributeLabels) then
+    if(BUI.Settings.Modules["Tooltips"].attributeLabels) then
     	self.control.BUI_labelRef:SetText(BUI.DisplayNumber(current).." ("..string.format("%.0f",100*current/max).."%)")
     	self.control.BUI_labelRef:SetHidden(false)
     else
@@ -131,8 +131,8 @@ function BUI.Tooltips.RefreshControls(self)
                 local name
 
                 if IsInGamepadPreferredMode()  then
-                	if BUI.settings.showAccountName then
-                    	name = zo_strformat("|c<<1>><<2>>|r<<3>>",BUI.RGBToHex(BUI.settings.showCharacterColor),ZO_FormatUserFacingDisplayName(GetUnitName(self.unitTag)),GetUnitDisplayName(self.unitTag))
+                	if BUI.Settings.Modules["Tooltips"].showAccountName then
+                    	name = zo_strformat("|c<<1>><<2>>|r<<3>>",BUI.RGBToHex(BUI.Settings.Modules["Tooltips"].showCharacterColor),ZO_FormatUserFacingDisplayName(GetUnitName(self.unitTag)),GetUnitDisplayName(self.unitTag))
                     else
                     	name = ZO_FormatUserFacingDisplayName(GetUnitName(self.unitTag))
                     end
@@ -180,7 +180,7 @@ function BUI.Tooltips.UpdateHealthbar(self, barType, cur, max, forceInit)
     end
     self:UpdateText(updateBarType, updateValue)
 
-    if BUI.settings.showHealthText and self.BUI_labelRef ~= nil then
+    if BUI.Settings.Modules["Tooltips"].showHealthText and self.BUI_labelRef ~= nil then
         self.BUI_labelRef:SetText(BUI.DisplayNumber(self.currentValue).." ("..string.format("%.0f",100*self.currentValue/self.maxValue).."%)")
     	self.BUI_labelRef:SetHidden(false)
     else

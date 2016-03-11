@@ -16,7 +16,7 @@
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Type">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="485" />
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="520" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                  <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Est. Value">
@@ -43,7 +43,7 @@
 
                 <Control name="$(parent)Container" override="true" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
                     <Controls>
-                        <Control name="$(grandparent)Footer" inherits="BUI_ListingsFooterBar BUI_GamepadGenericScreenFooter" />
+                        <Control name="$(grandparent)Footer" inherits="BUI_ListingsFooterBar BUI_GamepadGenericScreenFooter"  hidden="true"/>
                         
                         <Control name="$(grandparent)List" override="true">
                             <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="0" offsetY="90"/>

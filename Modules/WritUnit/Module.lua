@@ -8,6 +8,12 @@ local function Init(mId, moduleName)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
 end
 
+function BUI.Writs.InitModule(m_options)
+
+    return m_options
+end
+
+
 local function OnCraftStation(eventCode, craftId, sameStation)
 	if eventCode ~= 0 then -- 0 is an invalid code
 			BUI.Writs.Show(tonumber(craftId))

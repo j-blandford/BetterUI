@@ -38,9 +38,9 @@
         </Control>
 
         <Control name="BUI_SortHeader" inherits="ZO_SortHeaderBehavior" virtual="true">
-            <Dimensions y="0" />
+            <!-- <Dimensions y="0" /> -->
             <Controls>
-                <Label name="$(parent)Name" font="ZoFontGame" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL"  modifyTextType="UPPERCASE" horizontalAlignment="CENTER" verticalAlignment="CENTER" wrapMode="ELLIPSIS">
+                <Label name="$(parent)Name" font="ZoFontGamepad27" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL"  modifyTextType="UPPERCASE" horizontalAlignment="CENTER" verticalAlignment="CENTER" wrapMode="ELLIPSIS">
                     <AnchorFill />
                 </Label>
             </Controls>
@@ -51,9 +51,9 @@
                 ZO_SortableParametricList_InitSortHeader(self, SI_TRADING_HOUSE_SORT_TYPE_TIME, TEXT_ALIGN_CENTER, ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME)
             </OnInitialized>
             <Anchor point="TOPRIGHT" offsetX="-ZO_GAMEPAD_CONTENT_INSET_X"/>
-            <Dimensions x="195" y="30"/>
+            <Dimensions x="195" y="32"/>
             <Controls>
-                <Label name="$(parent)Name" font="ZoFontGamepad27" override="true" hidden="true"/>
+                <Label name="$(parent)Name" font="ZoFontGamepad27" override="true"/>
             </Controls>
         </Control>
 
@@ -92,7 +92,7 @@
                                         <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="535" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
-                                 <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Profit">
+                                 <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Deal">
                                         <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="630" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
@@ -119,6 +119,7 @@
                     <Anchor point="TOPLEFT" relativeTo="GuiRoot" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="26"/>
                     <Controls>
                         <Control name="$(parent)Price" inherits="BUI_TradingHouse_SortPriceHeader" >
+                            <Dimensions x="195" y="30"/>
                             <Anchor point="TOP"/>
                             <OnInitialized>
                                 ZO_SortableParametricList_InitSortHeader(self, SI_TRADING_HOUSE_SORT_TYPE_PRICE, TEXT_ALIGN_CENTER, ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE)

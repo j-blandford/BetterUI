@@ -77,7 +77,7 @@
                             <Anchor point="LEFT" relativeTo="$(parent)"/>
                             <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
                             <OnClicked>
-                                self:GetParent().scrollList:MovePrevious(BUI.settings.CIM.enableWrapping)
+                                self:GetParent().scrollList:MovePrevious(BUI.Settings.Modules["Inventory"].enableWrapping)
                             </OnClicked>
                         </Button>
                         <Button name="$(parent)RightIcon">
@@ -85,7 +85,7 @@
                             <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
                             <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
                             <OnClicked>
-                                self:GetParent().scrollList:MoveNext(BUI.settings.CIM.enableWrapping)
+                                self:GetParent().scrollList:MoveNext(BUI.Settings.Modules["Inventory"].enableWrapping)
                             </OnClicked>
                         </Button>
                         <Button name="$(parent)SelectedBg">
@@ -175,7 +175,7 @@
                             <Anchor point="LEFT" relativeTo="$(parent)"/>
                             <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
                             <OnClicked>
-                                self:GetParent().scrollList:MovePrevious(BUI.settings.CIM.enableWrapping)
+                                TRADING_HOUSE_GAMEPAD.m_header.tabBar:MovePrevious()
                             </OnClicked>
                         </Button>
                         <Button name="$(parent)RightIcon">
@@ -183,15 +183,10 @@
                             <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
                             <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
                             <OnClicked>
-                                self:GetParent().scrollList:MoveNext(BUI.settings.CIM.enableWrapping)
+                                TRADING_HOUSE_GAMEPAD.m_header.tabBar:MoveNext()
                             </OnClicked>
                         </Button>
-                        <Button name="$(parent)SelectedBg">
-                            <Dimensions x="50" y="25"/>
-                            <Anchor point="CENTER" relativeTo="$(parent)" offsetY="32"/>
-                            <Textures normal="BetterUI/Modules/CIM/Images/select_tabbar.dds"/>
-                        </Button>
-                        
+
                         <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
                             <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
                             <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="77" />
@@ -282,7 +277,7 @@
                             <Anchor point="LEFT" relativeTo="$(parent)"/>
                             <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
                             <OnClicked>
-                                self:GetParent().scrollList:MovePrevious(BUI.settings.CIM.enableWrapping)
+                                TRADING_HOUSE_GAMEPAD.m_header.tabBar:MovePrevious()
                             </OnClicked>
                         </Button>
                         <Button name="$(parent)RightIcon">
@@ -290,14 +285,10 @@
                             <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
                             <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
                             <OnClicked>
-                                self:GetParent().scrollList:MoveNext(BUI.settings.CIM.enableWrapping)
+                                TRADING_HOUSE_GAMEPAD.m_header.tabBar:MoveNext()
                             </OnClicked>
                         </Button>
-                        <Button name="$(parent)SelectedBg">
-                            <Dimensions x="50" y="25"/>
-                            <Anchor point="CENTER" relativeTo="$(parent)" offsetY="32"/>
-                            <Textures normal="BetterUI/Modules/CIM/Images/select_tabbar.dds"/>
-                        </Button>
+
                         
                         <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
                             <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />

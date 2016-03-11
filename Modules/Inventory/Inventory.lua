@@ -49,7 +49,7 @@ local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selecte
 
         local labelTxt = data.text
 
-        if(BUI.settings.Inventory.attributeIcons) then
+        if(BUI.Settings.Modules["Inventory"].attributeIcons) then
             local dS = data.dataSource
             local bagId = dS.bagId
             local slotIndex = dS.slotIndex
@@ -294,7 +294,7 @@ end
 
 -- Allows the inventory to return to the last position selected in the interface
 function BUI.Inventory.ToSavedPosition(self)
-    if(BUI.settings.Inventory.savePosition) then
+    if(BUI.Settings.Modules["Inventory"].savePosition) then
         local lastPosition = self.categoryPositions[self.categoryList.selectedIndex]
         if(lastPosition ~= nil) then
             if(#self.itemList.dataList > lastPosition) then
@@ -326,7 +326,7 @@ function BUI.Inventory.RefreshItemActionList(self)
     local targetData = self.actionMode == ITEM_LIST_ACTION_MODE and self.itemList:GetTargetData() or self:GenerateItemSlotData(self.categoryList:GetTargetData())   
     self:SetSelectedInventoryData(targetData)
 
-    if(BUI.settings.Inventory.enableJunk) then
+    if(BUI.Settings.Modules["Inventory"].enableJunk) then
         if(self.categoryList:GetTargetData().showJunk ~= nil) then
             self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Unmark as Junk", UnmarkAsJunk, "secondary"}
         else
@@ -410,7 +410,7 @@ function BUI.Inventory.RefreshItemList(self)
         data.isEquippedInCurrentCategory = itemData.isEquippedInCurrentCategory
         data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
         data.isJunk = itemData.isJunk
-        if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.settings.Inventory.enableJunk then
+        if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["Inventory"].enableJunk then
             self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
         end
     end
@@ -558,7 +558,7 @@ function BUI.Inventory.RefreshCategoryList(self)
         end
     end
     do
-        if(BUI.settings.Inventory.enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
+        if(BUI.Settings.Modules["Inventory"].enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
             local isListEmpty = self:IsItemListEmpty(nil, nil)
             if not isListEmpty then
                 local name = BUI.Lib.GetString("INV_ITEM_JUNK")
@@ -605,6 +605,17 @@ local function CanUseItemQuestItem(inventorySlot)
     return false
 end
 
+local function TryUseQuestItem(inventorySlot)
+    if inventorySlot then
+        if inventorySlot.toolIndex then
+            UseQuestTool(inventorySlot.questIndex, inventorySlot.toolIndex)
+        elseif inventorySlot.conditionIndex then
+            UseQuestItem(inventorySlot.questIndex, inventorySlot.stepIndex, inventorySlot.conditionIndex)
+        end
+    end
+end
+
+
 
 function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
     if SCENE_MANAGER:IsShowing("gamepad_inventory_item_actions") then
@@ -644,18 +655,16 @@ function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
                 local bag, index = ZO_Inventory_GetBagAndIndex(self.itemActions.inventorySlot)
                 local usable, onlyFromActionSlot = IsItemUsable(bag, index)
 
-                if usable and not onlyFromActionSlot then
-                    self:SaveListPosition()
-                   if CanUseItemQuestItem(self.itemActions.inventorySlot.dataSource) then
-                       CallSecureProtected("UseItem",bag, index) -- > this is a key alteration. we've replaced the inventory completely, so even ZOS's own code won't function without CSP(...)
-                    else
-                        if self.itemActions.inventorySlot.dataSource.toolIndex then
-                            CallSecureProtected("UseQuestTool", self.itemActions.inventorySlot.dataSource.questIndex, self.itemActions.inventorySlot.dataSource.toolIndex)
-                        elseif self.itemActions.inventorySlot.conditionIndex then
-                            CallSecureProtected("UseQuestItem", self.itemActions.inventorySlot.dataSource.questIndex, self.itemActions.inventorySlot.dataSource.stepIndex, self.itemActions.inventorySlot.dataSource.conditionIndex)
-                        end
-                        --CallSecureProtected("UseQuestItem", self.itemActions.inventorySlot.questIndex, self.itemActions.inventorySlot.stepIndex, self.itemActions.inventorySlot.conditionIndex)
+                if not CanUseItemQuestItem(self.itemActions.inventorySlot.dataSource) then
+                    if usable and not onlyFromActionSlot then
+                        self:SaveListPosition()
+                        CallSecureProtected("UseItem",bag, index) -- > this is a key alteration. we've replaced the inventory completely, so even ZOS's own code won't function without CSP(...)
+                        self:ToSavedPosition()
+                        return true
                     end
+                 else
+                    self:SaveListPosition()
+                    TryUseQuestItem(self.itemActions.inventorySlot.dataSource)
                     self:ToSavedPosition()
                     return true
                 end
@@ -912,7 +921,7 @@ function BUI.Inventory.CreateListTriggerKeybindDescriptors(list, optionalHeaderC
                 list = list()
             end
             if not list:IsEmpty() then
-                list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.settings.CIM.triggerSpeed))
+                list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
             end
         end
     }
@@ -924,7 +933,7 @@ function BUI.Inventory.CreateListTriggerKeybindDescriptors(list, optionalHeaderC
                 list = list()
             end
             if not list:IsEmpty() then
-                list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.settings.CIM.triggerSpeed))
+                list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
             end
         end,
     }

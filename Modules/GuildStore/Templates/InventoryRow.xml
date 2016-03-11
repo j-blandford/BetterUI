@@ -50,7 +50,7 @@
                 <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true" />
 
                 <!-- Will have to make the below more generic -->
-                <Label name="$(parent)SellerName" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                <Label name="$(parent)SellerName" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true" hidden="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="340"/>
                 </Label>
                 <Label name="$(parent)TimeLeft" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
@@ -84,7 +84,7 @@
                 <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true" />
 
                 <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text=" " font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="450"/>
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="490"/>
                 </Label>
                <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0.00%" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="650"/>

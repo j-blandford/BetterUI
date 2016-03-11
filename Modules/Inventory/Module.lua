@@ -11,54 +11,42 @@ local function Init(mId, moduleName)
 	local panelData = Init_ModulePanel(moduleName, "Inventory Improvement Settings")
 
 	local optionsTable = {
-		-- {
-		-- 	type = "header",
-		-- 	name = "Module Settings",
-		-- 	width = "full",
-		-- },
 		{
 			type = "header",
-			name = "Enhanced Inventory Behaviour",
+			name = "|c0066FF[Enhanced Inventory]|r Behaviour",
 			width = "full",
 		},
 		{
 			type = "checkbox",
 			name = "Save inventory position",
 			tooltip = "Keeps track of the list position on each category for quicker browsing",
-			getFunc = function() return BUI.settings.Inventory.savePosition end,
-			setFunc = function(value) BUI.settings.Inventory.savePosition = value end,
+			getFunc = function() return BUI.Settings.Modules["Inventory"].savePosition end,
+			setFunc = function(value) BUI.Settings.Modules["Inventory"].savePosition = value end,
 			width = "full",
 		},
         {
             type = "checkbox",
             name = "Enable category wrapping",
             tooltip = "Enables quick access to \"Quickslots\" when you press LB when selecting \"All\"",
-            getFunc = function() return BUI.settings.Inventory.enableWrapping end,
-            setFunc = function(value) BUI.settings.Inventory.enableWrapping = value end,
+            getFunc = function() return BUI.Settings.Modules["Inventory"].enableWrapping end,
+            setFunc = function(value) BUI.Settings.Modules["Inventory"].enableWrapping = value end,
             width = "full",
         },      
 		{
 			type = "header",
-			name = "Enhanced Inventory Display",
+			name = "|c0066FF[Enhanced Inventory]|r Display",
 			width = "full",
 		},
-        -- {
-        --     type = "slider",
-        --     name = "Inventory global Scale",
-        --     tooltip = "Alters the inventory's scale. |cFF6600This is *independent* of the global UI scale!!|r",
-        --     min = 0.25,
-        --     max = 2,
-        --     step = 0.25,
-        --     default = 1,
-        --     decimals = 2,
-        --     getFunc = function() return BUI.settings.Inventory.uiScale end,
-        --     setFunc = function(value) BUI.settings.Inventory.uiScale = value end,
-        --     width = "full",
-        -- },
-
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
+end
+
+function BUI.Inventory.InitModule(m_options)
+    m_options["savePosition"] = true
+    m_options["enableWrapping"] = true
+
+    return m_options
 end
 
 
@@ -138,9 +126,6 @@ function BUI.Inventory.Setup()
 
     BUI_GAMEPAD_INVENTORY.categoryPositions = { }
     BUI_GAMEPAD_INVENTORY.populatedCategoryPos = false
-
-    -- Force the main screen for the inventory to be the ITEM page, not the CATEGORY page
-    --ZO_MainMenu_GamepadMaskContainerMainList.scrollList.dataList[3].scene = "gamepad_inventory_item_filter"
 
     -- Just some modification to the Nav_1_Quadrant to be wider and cleaner
     GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("LeftDivider"):SetWidth(4)
@@ -257,7 +242,7 @@ function BUI.Inventory.Setup()
         end
     end)
 
-    if(BUI.settings.Inventory.condenseLTooltip) then
+    if(BUI.Settings.Modules["CIM"].condenseLTooltip) then
         ZO_TOOLTIP_STYLES["topSection"] = {
             layoutPrimaryDirection = "up",
             layoutSecondaryDirection = "right",
