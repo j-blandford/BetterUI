@@ -37,6 +37,14 @@ local function Init(mId, moduleName)
 			name = "|c0066FF[Enhanced Inventory]|r Display",
 			width = "full",
 		},
+        {
+            type = "checkbox",
+            name = "Replace \"Value\" with the market's price",
+            tooltip = "Replaces the item \"Value\" with either MasterMerchant's price or dataDaedra's market price",
+            getFunc = function() return BUI.Settings.Modules["Inventory"].showMarketPrice end,
+            setFunc = function(value) BUI.Settings.Modules["Inventory"].showMarketPrice = value end,
+            width = "full",
+        },  
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
@@ -45,6 +53,7 @@ end
 function BUI.Inventory.InitModule(m_options)
     m_options["savePosition"] = true
     m_options["enableWrapping"] = true
+    m_options["showMarketPrice"] = false
 
     return m_options
 end
@@ -120,8 +129,10 @@ function BUI.Inventory.Setup()
     BUI_GAMEPAD_INVENTORY.InitializeKeybindStrip = BUI.Inventory.InitializeKeybindStrip
     BUI_GAMEPAD_INVENTORY.TryEquipItem = BUI.Inventory.TryEquipItem
     BUI_GAMEPAD_INVENTORY.InitializeEquipSlotDialog = BUI.Inventory.InitializeEquipSlotDialog
+    BUI_GAMEPAD_INVENTORY.InitializeSplitStackDialog = BUI.Inventory.InitializeSplitStackDialog
 
     BUI_GAMEPAD_INVENTORY.InitializeEquipSlotDialog()
+    BUI_GAMEPAD_INVENTORY:InitializeSplitStackDialog()
     BUI_GAMEPAD_INVENTORY:InitializeFooter()
 
     BUI_GAMEPAD_INVENTORY.categoryPositions = { }

@@ -40,7 +40,7 @@ BUI_EQUIP_SLOT_DIALOG = "BUI_EQUIP_SLOT_PROMPT"
 
 local function BUI_GamepadMenuEntryTemplateParametricListFunction(control, distanceFromCenter, continousParametricOffset) end
 
-local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selected)
+local function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
     if label then
         label:SetFont("$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick")
         if data.modifyTextType then
@@ -48,6 +48,10 @@ local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selecte
         end
 
         local labelTxt = data.text
+
+        if(data.stackCount > 1) then
+           labelTxt = labelTxt..zo_strformat(" |cFFFFFF(<<1>>)|r",data.stackCount)
+        end
 
         if(BUI.Settings.Modules["Inventory"].attributeIcons) then
             local dS = data.dataSource
@@ -64,8 +68,6 @@ local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selecte
         end
 
         label:SetText(labelTxt)
-
-        stackLabel:SetText(data.stackCount)
 
         local labelColor = data:GetNameColor(selected)
         if type(labelColor) == "function" then
@@ -178,12 +180,47 @@ local function BUI_EquippedIconSetup(statusIndicator, equippedIcon, data)
     end
 end
 
+
+local function GetMarketPrice(itemLink, stackCount)
+    if(stackCount == nil) then stackCount = 1 end
+
+    if(BUI.Settings.Modules["GuildStore"].ddIntegration and ddDataDaedra ~= nil) then
+        local dData = ddDataDaedra:GetKeyedItem(itemLink)
+        if(dData ~= nil) then
+            if(dData.wAvg ~= nil) then
+                return dData.wAvg*stackCount
+            end
+        end
+    end
+    if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
+        local mmData = MasterMerchant:itemStats(itemLink, false)
+        if(mmData.avgPrice ~= nil) then
+            return mmData.avgPrice*stackCount
+        end
+    end
+    return 0
+end
+
 local function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuringRebuild, enabled, active)
-    BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
+    BUI_SharedGamepadEntryLabelSetup(control.label, data, selected)
 
     control:GetNamedChild("ItemType"):SetText(string.upper(data.bestItemCategoryName))
-    control:GetNamedChild("Value"):SetText(data.stackSellPrice)
     control:GetNamedChild("Stat"):SetText((data.dataSource.statValue == 0) and "-" or data.dataSource.statValue)
+
+    -- Replace the "Value" with the market price of the item (in yellow)
+    if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
+        local marketPrice = GetMarketPrice(GetItemLink(data.bagId,data.slotIndex), data.stackCount)
+        if(marketPrice ~= 0) then
+            control:GetNamedChild("Value"):SetColor(1,0.75,0,1)
+            control:GetNamedChild("Value"):SetText(math.floor(marketPrice))
+        else
+            control:GetNamedChild("Value"):SetColor(1,1,1,1)
+            control:GetNamedChild("Value"):SetText(data.stackSellPrice)
+        end
+    else
+        control:GetNamedChild("Value"):SetColor(1,1,1,1)
+        control:GetNamedChild("Value"):SetText(data.stackSellPrice)
+    end
     
     BUI_SharedGamepadEntryIconSetup(control.icon, control.stackCountLabel, data, selected)
     if control.highlight then
@@ -238,8 +275,9 @@ local function GetBestItemCategoryDescription(itemData)
         return GetString("SI_GAMEPADWEAPONCATEGORY", categoryType)
     end
     local armorType = GetItemArmorType(itemData.bagId, itemData.slotIndex)
+    local itemLink = GetItemLink(itemData.bagId,itemData.slotIndex)
     if armorType ~= ARMORTYPE_NONE then
-        return GetString("SI_ARMORTYPE", armorType)
+        return GetString("SI_ARMORTYPE", armorType).." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
     end
     return GetString("SI_ITEMTYPE", itemData.itemType)
 end
@@ -1079,6 +1117,111 @@ function BUI.Inventory.InitializeEquipSlotDialog(self)
                 text = BUI.Lib.GetString("INV_EQUIP_PROMPT_BACKUP"),
                 callback = function()
                     ReleaseDialog(dialog.data, false)
+                end,
+            },
+        }
+    })
+end
+
+ZO_GAMEPAD_SPLIT_STACK_DIALOG = "GAMEPAD_SPLIT_STACK"
+
+function SecureTryPlaceInventoryItemInEmptySlot(targetBag)
+    local emptySlotIndex = FindFirstEmptySlotInBag(targetBag)
+    if(emptySlotIndex ~= nil) then
+        CallSecureProtected("PlaceInInventory",targetBag, emptySlotIndex)
+    else
+        local errorStringId = (targetBag == BAG_BACKPACK) and SI_INVENTORY_ERROR_INVENTORY_FULL or SI_INVENTORY_ERROR_BANK_FULL
+        ZO_Alert(UI_ALERT_CATEGORY_ERROR, SOUNDS.NEGATIVE_CLICK, errorStringId)
+    end
+end
+
+function BUI.Inventory.InitializeSplitStackDialog(self)
+    local dialog = ZO_GenericGamepadDialog_GetControl(GAMEPAD_DIALOGS.PARAMETRIC)
+
+    local function SetupDialog(stackControl, data)
+        local itemIcon, _, _, _, _, _, _, quality = GetItemInfo(dialog.data.bagId, dialog.data.slotIndex)
+        local stackSize = GetSlotStackSize(dialog.data.bagId, dialog.data.slotIndex)
+        data.itemIcon = itemIcon
+        data.quality = quality
+        data.stackSize = stackSize
+        dialog.setupFunc(dialog)
+    end
+
+    local function UpdateStackSizes(control)
+        local value2 = control.slider:GetValue()
+        local value1 = dialog.data.stackSize - value2
+        control.sliderValue1:SetText(value1)
+        control.sliderValue2:SetText(value2)
+    end
+
+    ZO_Dialogs_RegisterCustomDialog(ZO_GAMEPAD_SPLIT_STACK_DIALOG,
+    {
+        blockDirectionalInput = true,
+
+        gamepadInfo = {
+            dialogType = GAMEPAD_DIALOGS.PARAMETRIC,
+        },
+
+        setup = SetupDialog,
+
+        title =
+        {
+            text = SI_GAMEPAD_INVENTORY_SPLIT_STACK_TITLE,
+        },
+
+        mainText = 
+        {
+            text = SI_GAMEPAD_INVENTORY_SPLIT_STACK_PROMPT,
+        },
+
+        parametricList =
+        {
+            {
+                template = "ZO_GamepadSliderItem",
+
+                templateData = {
+                    setup = function(control, data, selected, reselectingDuringRebuild, enabled, active)
+                        local iconFile = dialog.data.itemIcon
+
+                        if iconFile == nil or iconFile == "" then
+                            control.icon1:SetHidden(true)
+                            control.icon2:SetHidden(true)
+                        else
+                            control.icon1:SetTexture(iconFile)
+                            control.icon2:SetTexture(iconFile)
+                            control.icon1:SetHidden(false)
+                            control.icon2:SetHidden(false)
+                        end
+
+                        control.slider:SetMinMax(1, dialog.data.stackSize - 1)
+                        control.slider:SetValue(zo_floor(dialog.data.stackSize / 2))
+                        control.slider:SetValueStep(1)
+                        control.slider.valueChangedCallback = function() UpdateStackSizes(control) end
+                        if selected then
+                            control.slider:Activate()
+                            self.splitStackSlider = control.slider
+                            UpdateStackSizes(control)
+                        else
+                            control.slider:Deactivate()
+                        end
+                    end,
+                },
+            },
+        },
+       
+        buttons =
+        {
+            {
+                keybind = "DIALOG_NEGATIVE",
+                text = GetString(SI_DIALOG_CANCEL),
+            },
+
+            {
+                keybind = "DIALOG_PRIMARY",
+                text = GetString(SI_GAMEPAD_SELECT_OPTION),
+                callback = function()
+                    CallSecureProtected("PickupInventoryItem",dialog.data.bagId, dialog.data.slotIndex, self.splitStackSlider:GetValue())
+                    SecureTryPlaceInventoryItemInEmptySlot(dialog.data.bagId)
                 end,
             },
         }

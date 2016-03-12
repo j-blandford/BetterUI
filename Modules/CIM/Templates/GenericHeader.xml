@@ -128,11 +128,7 @@
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
                          <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Type">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="445" />
-                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
-                         </Label>
-                         <Label name="$(parent)Column3Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Held">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="645" />
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="515" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
                          <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Stat">

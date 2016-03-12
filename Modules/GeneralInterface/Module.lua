@@ -1,6 +1,10 @@
 local _
 local LAM = LibStub:GetLibrary("LibAddonMenu-2.0")
 
+local ZO_ITEM_TOOLTIP_INVENTORY_TITLE_COUNT = "inventory"
+local ZO_ITEM_TOOLTIP_BANK_TITLE_COUNT = "bank"
+local ZO_ITEM_TOOLTIP_INVENTORY_AND_BANK_TITLE_COUNT = "inventoryAndBank"
+
 local function Init(mId, moduleName)
 	local panelData = Init_ModulePanel(moduleName, "General Interface Improvement Settings")
 
@@ -125,6 +129,60 @@ function BUI.Tooltips.Setup()
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_LEFT_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_RIGHT_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_MOVABLE_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
+
+	-- ZOS have released a buggy tooltip which is blind to the stackCount of the item being displayed, let's fix that
+	local LEFT_TOOLTIP = GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_LEFT_TOOLTIP)
+	LEFT_TOOLTIP.LayoutBagItem = function(self, bagId, slotIndex, enchantMode, showInventoryAndBagCount)
+	    local itemLink = GetItemLink(bagId, slotIndex)
+	    local _,stack,_,_,_,_,_,_ = GetItemInfo(bagId, slotIndex)
+	    local equipped = bagId == BAG_WORN
+	    local showInventoryCount = ZO_ITEM_TOOLTIP_SHOW_INVENTORY_BODY_COUNT
+	    local showBankCount = ZO_ITEM_TOOLTIP_SHOW_BANK_BODY_COUNT
+	    local stackCount = ZO_ITEM_TOOLTIP_INVENTORY_TITLE_COUNT
+	    if showInventoryAndBagCount then
+	        stackCount = ZO_ITEM_TOOLTIP_INVENTORY_AND_BANK_TITLE_COUNT
+	    else
+	        if bagId == BAG_BANK then
+	            showBankCount = ZO_ITEM_TOOLTIP_HIDE_BANK_BODY_COUNT
+	            stackCount = ZO_ITEM_TOOLTIP_BANK_TITLE_COUNT
+	        elseif bagId == BAG_BACKPACK then
+	            showInventoryCount = ZO_ITEM_TOOLTIP_HIDE_INVENTORY_BODY_COUNT
+	            stackCount = ZO_ITEM_TOOLTIP_INVENTORY_TITLE_COUNT
+	        elseif equipped then
+	            showInventoryCount = ZO_ITEM_TOOLTIP_HIDE_INVENTORY_BODY_COUNT
+	            stackCount = 1
+	        end
+	    end
+	    self.currentStack = stack
+	    return self:LayoutItemWithStackCount(itemLink, equipped, GetItemCreatorName(bagId, slotIndex), nil, enchantMode, nil, stackCount, showInventoryCount, showBankCount)
+	end
+	LEFT_TOOLTIP.LayoutItemWithStackCount = function(self, itemLink, equipped, creatorName, forceFullDurability, enchantMode, previewValueToAdd, customOrBagStackCount, showInventoryCount, showBankCount)
+	    local isValidItemLink = itemLink ~= ""
+	    if isValidItemLink then
+	        local stackCount
+	        if customOrBagStackCount == ZO_ITEM_TOOLTIP_INVENTORY_TITLE_COUNT then
+	            local bagCount, bankCount = GetItemLinkStacks(itemLink)
+	            stackCount = bagCount
+	        elseif customOrBagStackCount == ZO_ITEM_TOOLTIP_BANK_TITLE_COUNT then
+	            local bagCount, bankCount = GetItemLinkStacks(itemLink)
+	            stackCount = bankCount
+	        elseif customOrBagStackCount == ZO_ITEM_TOOLTIP_INVENTORY_AND_BANK_TITLE_COUNT then
+	            local bagCount, bankCount = GetItemLinkStacks(itemLink)
+	            stackCount = bagCount + bankCount
+	        else
+	            stackCount = customOrBagStackCount
+	        end
+	        local itemName = GetItemLinkName(itemLink)
+	        if stackCount and stackCount > 1 then
+	        	if(self.currentStack ~= nil) then
+	        		itemName = zo_strformat(SI_TOOLTIP_ITEM_NAME_WITH_QUANTITY, itemName, self.currentStack)
+	        	else
+		            itemName = zo_strformat(SI_TOOLTIP_ITEM_NAME_WITH_QUANTITY, itemName, stackCount)
+		        end
+	        end
+	        return self:LayoutItem(itemLink, equipped, creatorName, forceFullDurability, enchantMode, previewValueToAdd, itemName, showInventoryCount, showBankCount)
+	    end
+	end
 
 	BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.healthBar,UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
 

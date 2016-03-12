@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "1.55"
+BUI.version = "1.57"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -30,29 +30,6 @@ BUI.EventManager = GetEventManager()
 BUI.Settings = {}
 BUI.Writs.List = {}
 BUI.Player.ResearchTraits = {}
-
--- Default settings applied on install
-BUI.defaults = {
-	moduleUnitFrame = false,
-	moduleWrit = false,
-	moduleInterface= false,
-	moduleTooltips=false,
-	moduleGS = false,
-	moduleQuickslot = false,
-	showUnitPrice=true,
-	showMMPrice=true,
-	showAccountName = true,
-	showHealthText=true,
-	flipGSbuttons=true,
-	scrollingDisable = false,
-	attributeLabels=true,
-	showStyleTrait=true,
-	showCharacterColor={1,0.5,0,1},
-	CIM = { enableJunk = true, attributeIcons = true, triggerSpeed = 10, condenseLTooltip = true },
-	Inventory = { savePosition = true, enableWrapping = true,},
-	GuildStore = { saveFilters = true, },
-	Tooltips = { chatHistory = 200, },
-}
 
 BUI.DefaultSettings = {
 	firstInstall = true,

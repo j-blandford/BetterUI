@@ -395,14 +395,16 @@ function BUI.GuildStore.SetupCallbacks(self, scene)
             if self.m_currentObject then
                 self.m_currentObject:Show()
             end
+        elseif newState == SCENE_HIDING then
+            BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
         elseif newState == SCENE_HIDDEN then
             self:UnregisterForSceneEvents()
             GAMEPAD_TRADING_HOUSE_FRAGMENT:Hide()
             GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
-               ZO_GamepadGenericHeader_Deactivate(self.m_header)
-               if self.m_currentObject then
-                    self.m_currentObject:Hide()
-               end
+            ZO_GamepadGenericHeader_Deactivate(self.m_header)
+            if self.m_currentObject then
+                self.m_currentObject:Hide()
+            end
           end
      end)
 end
