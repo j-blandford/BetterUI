@@ -1,7 +1,12 @@
 <Bindings>
 	<Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
-		<Category name="New UI">
-			
+		<Category name="BetterUI">
+<!-- 			<Action name="DISPLAY_TESTWINDOW">
+				<Down>BUI.Banking.Window:ToggleScene() return true</Down>
+		  	</Action>
+		  	<Action name="RELOADUI">
+				<Down>ReloadUI() return true</Down>
+		  	</Action> -->
 		</Category>
 	</Layer>
 </Bindings>

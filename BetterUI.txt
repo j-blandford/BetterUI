@@ -1,8 +1,8 @@
 ## Title: BetterUI
 ## Description: Makes the gamepad interface usable!
 ## APIVersion: 100014
-## Author: prasoc
-## Version: 1.57
+## Author: |c0066FFprasoc|r [EU]
+## Version: 1.65
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
@@ -27,7 +27,6 @@ lib\LibAddonMenu-2.0\controls\iconpicker.lua
 
 Globals.lua
 BetterUI.CONST.lua
-bindings.xml
 BUI_Shared.xml
 
 ; Module: Common Interface Module
@@ -65,10 +64,18 @@ Modules\GuildStore\Templates\CreateListing.xml
 Modules\GuildStore\GuildStore.lua
 Modules\GuildStore\Module.lua
 
+; Module: Banking
+Modules\Banking\Images\nav_vert.dds
+Modules\Banking\Images\centre_selector.dds
+Modules\Banking\Images\selectbg.dds
+Modules\Banking\Banking.lua
+Modules\Banking\Module.lua
+
 ; Module: Writ Unit
 Modules\WritUnit\Templates\WritsPanel.xml
 Modules\WritUnit\Writ.lua
 Modules\WritUnit\Module.lua
 
+bindings.xml
 BetterUI.Player.lua
 BetterUI.lua

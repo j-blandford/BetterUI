@@ -9,7 +9,11 @@
             <Anchor point="TOPLEFT" relativeTo="$(parent)Icon" />
             <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)Icon" />
         </Cooldown>
-        <Texture name="BUI_GamepadMenuEntryStatusIndicationTemplate" inherits="ZO_GamepadMenuEntrySecondIconTemplate ZO_MultiIcon" excludeFromResizeToFitExtents="true" hidden="true" virtual="true"/>
+        <Texture name="BUI_GamepadMenuEntryStatusIndicationTemplate" inherits="ZO_MultiIcon" excludeFromResizeToFitExtents="true" hidden="true" virtual="true">
+            <Dimensions x="24" y="24" />
+           <!--  <Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="LEFT" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_ICON_X_OFFSET" /> -->
+           <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="RIGHT" offsetX="-22" />
+        </Texture>
         
 
         <Texture name="BUI_GamepadMenuEntryIconTemplate" tier="MEDIUM" inherits="ZO_MultiIcon" excludeFromResizeToFitExtents="true" level="1" pixelRoundingEnabled="true" virtual="true">
@@ -46,7 +50,7 @@
          <Control name="BUI_GamepadSubMenuEntryTemplate" inherits="BUI_GamepadMenuEntryDimensionsTemplate BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
             <Controls>
                 <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate"/>
-               
+
                 <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true">
                     <Controls>
                         <!-- To remove! Moved the stack count elsewhere -->
@@ -55,9 +59,11 @@
                 </Texture>
 
                 <Texture name="$(parent)EquippedMain" textureFile="BetterUI/Templates/Images/inv_equip.dds" excludeFromResizeToFitExtents="true" pixelRoundingEnabled="false">
-                    <Dimensions x="32" y="28" />
-                    <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="RIGHT" offsetX="-25" />
+                    <Dimensions x="28" y="24" />
+                    <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="RIGHT" offsetX="-35" />
                 </Texture>
+
+                <Texture name="$(parent)StatusIndicator" inherits="BUI_GamepadMenuEntryStatusIndicationTemplate" />
                 
                 <!-- Will have to make the below more generic -->
                 <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">

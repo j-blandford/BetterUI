@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "1.57"
+BUI.version = "1.65"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -17,9 +17,13 @@ BUI.Inventory = {}
 BUI.Writs = {}
 
 BUI.GuildStore = {}
+BUI.GuildStore.Browse = {}
 BUI.GuildStore.BrowseResults = {}
 BUI.GuildStore.Listings = {}
 BUI.GuildStore.Sell = {}
+
+BUI.Banking = {}
+BUI.Banking.Class = {}
 
 BUI.Tooltips = {}
 BUI.Player = {}
@@ -43,7 +47,7 @@ BUI.DefaultSettings = {
 
 
 function ddebug(str)
-	--return d("|c0066ff[BUI]|r "..str)
+	return d("|c0066ff[BUI]|r "..str)
 end
 
 function BUI.Lib.Checkbox(checkName, checkDesc, checkValue)
@@ -93,6 +97,8 @@ BUI.Lib.stringTable = {
 	SI_INV_EQUIPSLOT = "|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_weapons.dds|t |c0066FF<<1>>|r",
 	SI_INV_EQUIPSLOT_MAIN = "Main",
 	SI_INV_EQUIPSLOT_BACKUP = "Backup",
+	BANKING_WITHDRAW = "Withdraw",
+	BANKING_BUYSPACE = "Buy More Space (<<1>>)",
 }
 
 function BUI.Lib.GetString(stringName)
@@ -114,5 +120,5 @@ end
 
 -- Allows us to override ZO_GamepadInventory:New, but we need to catch it early!
 function BUI_GamepadInventory_OnInitialize(control)
-    BUI_GAMEPAD_INVENTORY = ZO_GamepadInventory:New(control)
+    GAMEPAD_INVENTORY = ZO_GamepadInventory:New(control)
 end

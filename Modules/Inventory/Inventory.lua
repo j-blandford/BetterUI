@@ -18,6 +18,8 @@ local ROW_OFFSET_Y = GENERIC_HEADER_INFO_LABEL_HEIGHT
 local DATA_OFFSET_X = 5
 local HEADER_OFFSET_X = 29
 
+local NEW_ICON_TEXTURE = "EsoUI/Art/Miscellaneous/Gamepad/gp_icon_new.dds"
+
 BUI_GAMEPAD_CONTENT_HEADER_DIVIDER_INFO_BOTTOM_PADDING_Y = ZO_GAMEPAD_CONTENT_DIVIDER_INFO_PADDING_Y + GENERIC_HEADER_INFO_LABEL_HEIGHT
 BUI_VERTICAL_PARAMETRIC_LIST_DEFAULT_FADE_GRADIENT_SIZE = 5
 
@@ -53,7 +55,7 @@ local function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
            labelTxt = labelTxt..zo_strformat(" |cFFFFFF(<<1>>)|r",data.stackCount)
         end
 
-        if(BUI.Settings.Modules["Inventory"].attributeIcons) then
+        if(BUI.Settings.Modules["CIM"].attributeIcons) then
             local dS = data.dataSource
             local bagId = dS.bagId
             local slotIndex = dS.slotIndex
@@ -160,7 +162,23 @@ local function BUI_CooldownSetup(control, data)
 end
 -----------------------------------------------------------------------------------------------------
 
-local function BUI_EquippedIconSetup(statusIndicator, equippedIcon, data)
+local function BUI_IconSetup(statusIndicator, equippedIcon, data)
+
+    statusIndicator:ClearIcons()
+
+    local isItemNew
+    if type(data.brandNew) == "function" then
+        isItemNew = data.brandNew()
+    else 
+        isItemNew = data.brandNew
+    end
+
+    if isItemNew and data.enabled then
+        statusIndicator:AddIcon(NEW_ICON_TEXTURE)
+        statusIndicator:SetHidden(false)
+    end
+
+
     local slotIndex = data.dataSource.slotIndex
 
     if data.isEquippedInCurrentCategory or data.isEquippedInAnotherCategory then
@@ -230,7 +248,7 @@ local function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselecti
         control.highlight:SetHidden(not selected or not data.highlight)
     end
     BUI_CooldownSetup(control, data)
-    BUI_EquippedIconSetup(control.statusIndicator, control:GetNamedChild("EquippedMain"), data)
+    BUI_IconSetup(control:GetNamedChild("StatusIndicator"), control:GetNamedChild("EquippedMain"), data)
 end
 
 
@@ -347,24 +365,40 @@ function BUI.Inventory.ToSavedPosition(self)
         self.itemList.selectedIndex = 1
         self.itemList.targetSelectedIndex = 1        
     end
+
+        -- Toggle "Switch Slot" with "Assign to Quickslot" 
+    if self.categoryList.selectedData ~= nil then
+        KEYBIND_STRIP:RemoveKeybindButton(self.quickslotKeybindDescriptor)
+        KEYBIND_STRIP:RemoveKeybindButton(self.switchEquipKeybindDescriptor)
+
+        if self.categoryList.selectedData.filterType == ITEMFILTERTYPE_QUICKSLOT then
+            KEYBIND_STRIP:AddKeybindButton(self.quickslotKeybindDescriptor)
+        else 
+            KEYBIND_STRIP:AddKeybindButton(self.switchEquipKeybindDescriptor)
+        end
+    end
+   
+
 end
 
 function BUI.Inventory.RefreshItemActionList(self)
     self.itemActionList:Clear()
 
     local function MarkAsJunk()
-        local target = BUI_GAMEPAD_INVENTORY.itemList:GetTargetData()
+        local target = GAMEPAD_INVENTORY.itemList:GetTargetData()
         SetItemIsJunk(target.bagId, target.slotIndex, true)
+        --GAMEPAD_INVENTORY:RefreshItemList()
     end
     local function UnmarkAsJunk()
-        local target = BUI_GAMEPAD_INVENTORY.itemList:GetTargetData()
-        SetItemIsJunk(target.bagId, target.slotIndex, false)    
+        local target = GAMEPAD_INVENTORY.itemList:GetTargetData()
+        SetItemIsJunk(target.bagId, target.slotIndex, false)  
+       -- GAMEPAD_INVENTORY:RefreshItemList()
     end
 
     local targetData = self.actionMode == ITEM_LIST_ACTION_MODE and self.itemList:GetTargetData() or self:GenerateItemSlotData(self.categoryList:GetTargetData())   
     self:SetSelectedInventoryData(targetData)
 
-    if(BUI.Settings.Modules["Inventory"].enableJunk) then
+    if(BUI.Settings.Modules["CIM"].enableJunk) then
         if(self.categoryList:GetTargetData().showJunk ~= nil) then
             self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Unmark as Junk", UnmarkAsJunk, "secondary"}
         else
@@ -448,7 +482,7 @@ function BUI.Inventory.RefreshItemList(self)
         data.isEquippedInCurrentCategory = itemData.isEquippedInCurrentCategory
         data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
         data.isJunk = itemData.isJunk
-        if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["Inventory"].enableJunk then
+        if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["CIM"].enableJunk then
             self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
         end
     end
@@ -465,22 +499,19 @@ end
 function BUI.Inventory.InitializeCategoryList(self)
     self.categoryList = self:AddList("Category", SetupCategoryList, BUI_VerticalParametricScrollList)
     self.categoryList:SetNoItemText(GetString(SI_GAMEPAD_INVENTORY_EMPTY))
-    
 
-    --Match the tooltip to the selected data because it looks nicer
     local function OnSelectedCategoryChanged(list, selectedData)
+         if selectedData then 
+            self:SetSelectedItemUniqueId(self:GenerateItemSlotData(selectedData))
+            self.selectedItemFilterType = selectedData.filterType
+        else
+            self:SetSelectedItemUniqueId(nil)
+        end
         self:UpdateCategoryLeftTooltip(selectedData)
     end
     self.categoryList:SetOnSelectedDataChangedCallback(OnSelectedCategoryChanged)
     --Match the functionality to the target data
     local function OnTargetCategoryChanged(list, targetData)
-        if targetData then 
-            self.selectedEquipSlot = targetData.equipSlot
-            self:SetSelectedItemUniqueId(self:GenerateItemSlotData(targetData))
-            self.selectedItemFilterType = targetData.filterType
-        else
-            self:SetSelectedItemUniqueId(nil)
-        end
         self.currentlySelectedData = targetData
         KEYBIND_STRIP:UpdateKeybindButtonGroup(self.rootKeybindDescriptor)
     end
@@ -596,7 +627,7 @@ function BUI.Inventory.RefreshCategoryList(self)
         end
     end
     do
-        if(BUI.Settings.Modules["Inventory"].enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
+        if(BUI.Settings.Modules["CIM"].enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
             local isListEmpty = self:IsItemListEmpty(nil, nil)
             if not isListEmpty then
                 local name = BUI.Lib.GetString("INV_ITEM_JUNK")
@@ -796,14 +827,8 @@ function BUI.Inventory.InitializeItemList(self)
 
     local function OnInventoryUpdated(bagId)
         self:MarkDirty()
-        if SCENE_MANAGER:IsShowing("gamepad_inventory_item_actions") then
-
-        end
         if SCENE_MANAGER:IsShowing("gamepad_inventory_root") then
             self:RefreshCategoryList()
-        end
-        if SCENE_MANAGER:IsShowing("gamepad_inventory_item_filter") then
-            KEYBIND_STRIP:UpdateKeybindButton(self.toggleCompareModeKeybindStripDescriptor)
         end
     end
     SHARED_INVENTORY:RegisterCallback("FullInventoryUpdate", OnInventoryUpdated)
@@ -839,6 +864,7 @@ function BUI_TabBar_OnTabNext(parent, successful)
 
         parent.categoryList.targetSelectedIndex = WrapValue(parent.categoryList.targetSelectedIndex + 1, #parent.categoryList.dataList)
         parent.categoryList.selectedIndex = parent.categoryList.targetSelectedIndex
+        parent.categoryList.selectedData = parent.categoryList.dataList[parent.categoryList.selectedIndex]
         parent.RefreshItemList(parent)
     end 
 end
@@ -848,6 +874,7 @@ function BUI_TabBar_OnTabPrev(parent, successful)
         
         parent.categoryList.targetSelectedIndex = WrapValue(parent.categoryList.targetSelectedIndex - 1, #parent.categoryList.dataList) 
         parent.categoryList.selectedIndex = parent.categoryList.targetSelectedIndex 
+        parent.categoryList.selectedData = parent.categoryList.dataList[parent.categoryList.selectedIndex]
         parent.RefreshItemList(parent)
     end
 end
@@ -873,7 +900,11 @@ function BUI.Inventory.TryEquipItem(self, inventorySlot)
     -- Check if the current item is an armour (or two handed, where it doesn't need a dialog menu), if so, then just equip into it's slot
     local armorType = GetItemArmorType(inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex)
     if armorType ~= ARMORTYPE_NONE or equipType == EQUIP_TYPE_TWO_HAND or equipType == EQUIP_TYPE_NECK then
-        CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
+        if equipType == EQUIP_TYPE_TWO_HAND then
+            CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
+        else
+            CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
+        end
     else
         -- Else, it's a weapon, so show a dialog so the user can pick either slot!
         ZO_Dialogs_ShowDialog(BUI_EQUIP_SLOT_DIALOG, {inventorySlot, self.equipToMainSlot}, {mainTextParams={BUI.Lib.GetString("SI_INV_EQUIPSLOT_MAIN")}}, true)
@@ -931,6 +962,21 @@ function BUI.Inventory.InitializeHeader(self)
     self.control:RegisterForEvent(EVENT_PLAYER_REINCARNATED, RefreshSelectedData)
 end
 
+function BUI.Inventory.UpdateRightTooltip(self)
+    -- ddebug("UpdateRightTooltip called")
+    -- local selectedData = self.itemList:GetSelectedData()
+
+    -- selectedData.equipSlot = BUI_GetEquipSlotForEquipType(selectedData.equipType)
+
+    -- if selectedData and selectedData.equipSlot and GAMEPAD_TOOLTIPS:LayoutBagItem(GAMEPAD_RIGHT_TOOLTIP, BAG_WORN, selectedData.equipSlot) and selectedData.dataSource.equipType ~= 0 then     
+    --     self:UpdateTooltipEquippedIndicatorText(GAMEPAD_RIGHT_TOOLTIP, selectedData.equipSlot)
+    --     GAMEPAD_TOOLTIPS:SetStatusLabelHidden(GAMEPAD_RIGHT_TOOLTIP, false)
+    -- else
+    --     self:UpdateTooltipEquippedIndicatorText(GAMEPAD_RIGHT_TOOLTIP, 0)
+    --     GAMEPAD_TOOLTIPS:SetStatusLabelHidden(GAMEPAD_RIGHT_TOOLTIP, true)
+    -- end
+end
+
 
 function BUI.Inventory.InitializeFooter(self)
     local function RefreshFooter()
@@ -959,7 +1005,12 @@ function BUI.Inventory.CreateListTriggerKeybindDescriptors(list, optionalHeaderC
                 list = list()
             end
             if not list:IsEmpty() then
-                list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+                list.currentCategoryName = list.dataList[list.selectedIndex].dataSource.bestItemCategoryName
+                if(BUI.Settings.Modules["Inventory"].useTriggersForSkip) then
+                    list:SetPreviousSelectedDataByEval(function(data) if(data.dataSource.bestItemCategoryName ~= list.currentCategoryName) then return true else return false end end )
+                else
+                    list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+                end
             end
         end
     }
@@ -971,7 +1022,12 @@ function BUI.Inventory.CreateListTriggerKeybindDescriptors(list, optionalHeaderC
                 list = list()
             end
             if not list:IsEmpty() then
-                list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+                list.currentCategoryName = list.dataList[list.selectedIndex].dataSource.bestItemCategoryName
+                if(BUI.Settings.Modules["Inventory"].useTriggersForSkip) then
+                    list:SetNextSelectedDataByEval(function(data) if(data.dataSource.bestItemCategoryName ~= list.currentCategoryName) then return true else return false end end )
+                else
+                    list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+                end
             end
         end,
     }
@@ -1030,7 +1086,9 @@ function BUI.Inventory.InitializeKeybindStrip(self)
                 end
             end,
         },
-        {
+    }
+    -- Replace "Toggle Mode" with "Switch Slot", keeping the variable name "toggleCompareModeKeybindStripDescriptor" for compatibility
+    self.switchEquipKeybindDescriptor = {
             alignment = KEYBIND_STRIP_ALIGN_RIGHT,
             name = BUI.Lib.GetString("SI_INV_SWITCH_EQUIPSLOT"),
             keybind = "UI_SHORTCUT_SECONDARY",
@@ -1041,16 +1099,17 @@ function BUI.Inventory.InitializeKeybindStrip(self)
                 self.equipToMainSlot = not self.equipToMainSlot
                 BUI.GenericHeader.SetEquipText(self.header, self.equipToMainSlot)
             end,
-        }
     }
-    self.toggleCompareModeKeybindStripDescriptor = {}
+
 
     self.quickslotKeybindDescriptor =
     {
         alignment = KEYBIND_STRIP_ALIGN_LEFT,
         name = GetString(SI_GAMEPAD_ITEM_ACTION_QUICKSLOT_ASSIGN),
         keybind = "UI_SHORTCUT_SECONDARY",
-        order = -500,
+        visible = function()
+                return true
+            end,
         callback = function() self:ShowQuickslot() end,
     }
     BUI.Inventory.AddListTriggerKeybindDescriptors(self.itemFilterKeybindStripDescriptor, self.itemList)

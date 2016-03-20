@@ -34,14 +34,15 @@
             </Controls>
         </Control>
 
+
         <Control name="BUI_GamepadGenericScreenFooter" inherits="BUI_GamepadFooterAnchors" resizeToFitDescendents="true" virtual="true">
             <Anchor point="BOTTOMLEFT" relativeTo="$(parent)" offsetY="-140" />
             <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)" offsetY="-140" />
 
             <Controls>
-                   <Control name="$(parent)DividerBottom" inherits="BUI_GamepadFooterHorizontalDivider">
+                <Control name="$(parent)DividerBottom" inherits="BUI_GamepadFooterHorizontalDivider">
                     <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
-                    <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="-10" />
+                    <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="-10" />
                 </Control>
                 
                  <Label name="$(parent)GoldLabel" inherits="BUI_GamepadScreenFooterTemplate" text="Gold">

@@ -46,6 +46,16 @@ function BUI.InitModuleOptions()
 		},
 		{
 			type = "checkbox",
+			name = "Enable |c0066FFEnhanced Banking|r",
+			tooltip = "Completely redesigns the gamepad's banking interface (and has \"Mobile Banking\")",
+			getFunc = function() return BUI.Settings.Modules["Banking"].m_enabled end,
+			setFunc = function(value) BUI.Settings.Modules["Banking"].m_enabled = value 
+									dirtyModules = true  end,
+			disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
+			width = "full",
+		},
+		{
+			type = "checkbox",
 			name = "Enable Daily Writ module",
 			tooltip = "Displays the daily writ, and progress, at each crafting station",
 			getFunc = function() return BUI.Settings.Modules["Writs"].m_enabled end,
@@ -144,6 +154,37 @@ function BUI.ModuleOptions(m_namespace, m_options)
 	return m_namespace
 end
 
+function BUI.LoadModules()
+
+	if(not BUI._initialized) then
+		ddebug("Initializing BUI...")
+		BUI.GuildStore.FixMM() -- fix MM is independent of any module, maybe put it into the BUI.Lib namespace?
+		if(BUI.Settings.Modules["CIM"].m_enabled) then
+			BUI.CIM.Setup()
+			if(BUI.Settings.Modules["GuildStore"].m_enabled) then 
+				BUI.GuildStore.Setup()
+			end
+			if(BUI.Settings.Modules["Inventory"].m_enabled) then 
+				BUI.Inventory.Setup() 
+			end
+			if(BUI.Settings.Modules["Banking"].m_enabled) then 
+				BUI.Banking.Setup() 
+			end
+		end
+		if(BUI.Settings.Modules["Writs"].m_enabled) then 
+			BUI.Writs.Setup()
+
+		end
+		if(BUI.Settings.Modules["Tooltips"].m_enabled) then
+			BUI.Tooltips.Setup()
+		end
+		BUI.Player.GetResearch()
+		ddebug("Finished! BUI is loaded")
+		BUI._initialized = true
+	end
+	
+end
+
 function BUI.Initialize(event, addon)
     -- filter for just BUI addon event as EVENT_ADD_ON_LOADED is addon-blind
 	if addon ~= BUI.name then return end
@@ -155,6 +196,7 @@ function BUI.Initialize(event, addon)
 	if(BUI.Settings.firstInstall) then
 		local m_CIM = BUI.ModuleOptions(BUI.CIM, BUI.Settings.Modules["CIM"])
 		local m_Inventory = BUI.ModuleOptions(BUI.Inventory, BUI.Settings.Modules["Inventory"])
+		local m_Banking = BUI.ModuleOptions(BUI.Inventory, BUI.Settings.Modules["Banking"])
 		local m_Writs = BUI.ModuleOptions(BUI.Writs, BUI.Settings.Modules["Writs"])
 		local m_GuildStore = BUI.ModuleOptions(BUI.GuildStore, BUI.Settings.Modules["GuildStore"])
 		local m_Tooltips = BUI.ModuleOptions(BUI.Tooltips, BUI.Settings.Modules["Tooltips"])
@@ -165,26 +207,9 @@ function BUI.Initialize(event, addon)
 	BUI.EventManager:UnregisterForEvent("BetterUIInitialize", EVENT_ADD_ON_LOADED)
 
 	if(IsInGamepadPreferredMode()) then
-		BUI.GuildStore.FixMM() -- fix MM is independent of any module, maybe put it into the BUI.Lib namespace?
-		if(BUI.Settings.Modules["CIM"].m_enabled) then
-			BUI.CIM.Setup()
-			if(BUI.Settings.Modules["GuildStore"].m_enabled) then 
-				BUI.GuildStore.Setup()
-			end
-			if(BUI.Settings.Modules["Inventory"].m_enabled) then 
-				BUI.Inventory.Setup() 
-			end
-		end
-		if(BUI.Settings.Modules["Writs"].m_enabled) then 
-			BUI.Writs.Setup()
-
-		end
-		if(BUI.Settings.Modules["Tooltips"].m_enabled) then
-			BUI.Tooltips.Setup()
-		end
-		BUI.Player.GetResearch()
+		BUI.LoadModules()
 	else
-		d("[BUI] Not Loaded: gamepad mode disabled.")
+		BUI._initialized = false
 	end
 
 	BUI.InitModuleOptions()
@@ -192,3 +217,7 @@ end
 
 -- register our event handler function to be called to do initialization
 BUI.EventManager:RegisterForEvent(BUI.name, EVENT_ADD_ON_LOADED, function(...) BUI.Initialize(...) end)
+BUI.EventManager:RegisterForEvent(BUI.name.."_Gamepad", EVENT_GAMEPAD_PREFERRED_MODE_CHANGED, function(code, inGamepad)  BUI.LoadModules() end)
+
+--ZO_CreateStringId("SI_BINDING_NAME_DISPLAY_TESTWINDOW", "Display Test Window")
+--ZO_CreateStringId("SI_BINDING_NAME_RELOADUI", "ReloadUI")

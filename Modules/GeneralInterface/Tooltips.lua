@@ -144,8 +144,10 @@ function BUI.Tooltips.RefreshControls(self)
             self:UpdateUnitReaction()
             self:UpdateLevel()
             self:UpdateCaption()
+
             local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
             self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
+            self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
 
             for i = 1, NUM_POWER_POOLS do
                 local powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)
@@ -197,6 +199,8 @@ function BUI.Tooltips.UpdateGroupAnchorFrames(self)
 		    unitFrame.healthBar.BUI_labelRef:SetColor(1, 1, 1, 1)
 		    unitFrame.healthBar.BUI_labelRef:SetAnchor(CENTER, unitFrame.frame, TOP, 5,53)
 		    unitFrame.healthBar.BUI_labelRef:SetHidden(true)
+
+            unitFrame.frame:GetNamedChild("Background2"):SetAnchor(6, unitFrame.frame, 6, -6, 42 )
 
 		    unitFrame.frame:SetHeight(30)
 		    unitFrame.frame:GetNamedChild("Background1"):SetHeight(24)

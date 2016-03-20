@@ -1,60 +1,324 @@
 <GuiXml>
 	<Controls>
-        <Label name="BUI_GenericColumn_TextTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
 
-		<Label name="BUI_GenericColumn_Label" inherits="BUI_GenericColumn_TextTemplate BUI_GamepadHeaderTitleAnchors" text="..." virtual="true">
-                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
-<!--                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" /> -->
-         </Label>
+        <Control name="BUI_Generic_ScrollListTemplate" mouseEnabled="true" virtual="true">
+            <OnMouseWheel>
+                if self.scrollList.active then
+                    if delta > 0 then
+                        self.scrollList:MovePrevious()
+                    else
+                        self.scrollList:MoveNext()
+                    end
+                end
+            </OnMouseWheel>
+            
+            <OnMouseUp>
+                -- Allow mouse click to select an item, will probably have an option to disable this behaviour
+                    -- Will implement
+            </OnMouseUp>
 
-        <Control name="BUI_GenericInterface_ListContainer" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors" virtual="true">
             <Controls>
-                <Control name="$(parent)List" inherits="BUI_VerticalParametricScrollListTemplate">
+                <Scroll name="$(parent)Scroll">
+                    <!-- <Anchor point="TOPLEFT" relativePoint="TOPLEFT" />
+                    <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" /> -->
                     <AnchorFill />
-
-                    <OnInitialized>
-                        self:GetParent().list = self
-                    </OnInitialized>
-
-                    <Anchor point="TOPLEFT" relativeTo="$(grandparent)HeaderContainer" relativePoint="BOTTOMLEFT" offsetX="-50" offsetY="-25"/>
-                    <Anchor point="BOTTOMRIGHT" relativeTo="$(grandparent)ContainerFooter" relativePoint="TOPRIGHT" offsetX="0" offsetY="10" />
-                  
+                </Scroll>
+                
+                <!-- This is the select background. Uses 1 DDS file and essentially stretches the image with 'x' between 0.25 and 0.75 to fill the width of the scroll list -->
+                <Control name="$(parent)SelectBg">
                     <Controls>
-                        <Label name="$(parent)NoItemsLabel"  font="ZoFontGamepadCondensed36" horizontalAlignment="CENTER" text="Nothing in list" verticalAlignment="CENTER">
-                            <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
-                            <Anchor point="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
-                        </Label>
+                        <Texture name="$(parent)Left" textureFile="BetterUI/Modules/CIM/Images/inv_select_grad.dds">
+                            <Dimensions x="30" y="36" />
+                            <TextureCoords left="0" right="0.25" top="0" bottom="1" />
+                            <Anchor point="LEFT" relativeTo="GuiRoot" relativePoint="LEFT" offsetX="BUI_GAMEPAD_LIST_SCREEN_X_OFFSET" offsetY="0"/>
+                        </Texture>
+                        <Texture name="$(parent)Middle" textureFile="BetterUI/Modules/CIM/Images/inv_select_grad.dds">
+                            <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH_AFTER_INDENT" y="36" />
+                            <TextureCoords left="0.25" right="0.75" top="0" bottom="1" />
+                            <Anchor point="LEFT" relativeTo="$(parent)Left" offsetX="30" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)Left" relativePoint="LEFT" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH" />
+                        </Texture>
+                        <Texture name="$(parent)Right" textureFile="BetterUI/Modules/CIM/Images/inv_select_grad.dds">
+                            <Dimensions x="30" y="36" />
+                            <TextureCoords left="0.75" right="1" top="0" bottom="1" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)Middle" offsetX="30"/>
+                        </Texture>
+                    </Controls>
+                </Control>
+                
+                <Control name="$(parent)ListScreenCenterIsAlongTop">
+                    <Anchor point="TOPLEFT" relativeTo="GuiRoot" relativePoint="LEFT" />
+                    <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOM" />
+
+                    <Controls>
+                        <Control name="$(parent)ListScreenCenter">
+                            <Anchor point="CENTER" relativePoint="TOPRIGHT" />
+                        </Control>
+                        
                     </Controls>
                 </Control>
             </Controls>
         </Control>
 
-        <Control name="BUI_GenericInterfaceContainer" inherits="BUI_GamepadGrid_NavQuadrant_1_Anchors" override="true" virtual="true">
+        <!-- The below 2 controls are redefinitions of ZOS's original NavQuadrant_1 anchors to facilitate smooth transitions and compatibility -->
+        <Control name="BUI_NavQuadrant_1_Anchors" virtual="true">
+            <Dimensions x="BUI_GAMEPAD_DEFAULT_PANEL_WIDTH" />
+            <Anchor point="TOPLEFT" relativeTo="GuiRoot" offsetX="BUI_GAMEPAD_QUADRANT_1_LEFT" />
+            <Anchor point="BOTTOMLEFT" relativeTo="GuiRoot" offsetX="BUI_GAMEPAD_QUADRANT_1_LEFT" />
+        </Control>
+        <Control name="BUI_NavQuadrant_1_ContainerAnchors" virtual="true">
+            <Dimensions x="BUI_GAMEPAD_DEFAULT_PANEL_CONTAINER_WIDTH" />
+            <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
+            <Anchor point="BOTTOMLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
+        </Control>
+
+        <Control name="BUI_HeaderTitleAnchors" virtual="true">
+            <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
+            <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" offsetX="0" />
+        </Control>
+
+        <Label name="BUI_GenericColumn_TextTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE"/>
+
+        <Label name="BUI_MenuEntryLabelTemplate" font="ZoFontGamepad34" verticalAlignment="CENTER" wrapMode="ELLIPSIS" virtual="true">
+            <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING"/>
+            <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
+        </Label>
+
+        <Label name="BUI_FooterTemplate" font="$(GAMEPAD_MEDIUM_FONT)|44|soft-shadow-thick" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
+
+
+        <Texture name="BUI_MenuEntryIconTemplate" tier="MEDIUM" inherits="ZO_MultiIcon" excludeFromResizeToFitExtents="true" level="1" pixelRoundingEnabled="true" virtual="true">
+            <Dimensions x="24" y="24" />
+            <Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="LEFT" offsetX="-20" />
+        </Texture>
+        
+
+
+        <Control name="BUI_GenericEntry_Template" inherits="BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
+           <!--  <Dimensions y="32" /> -->
+            <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING"/>
+            <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
+  
             <Controls>
-                <Control name="$(parent)Container" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors BUI_GenericInterface_ListContainer">
+                <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick">
+                        <Anchor point="TOPLEFT" offsetX="15"/>
+                </Label>
+                <Texture name="$(parent)Icon" inherits="BUI_MenuEntryIconTemplate" edgeColor="00000000">
+                    <Dimensions x="28" y="28" />
+                </Texture>
+                <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="500"/>
+                </Label>
+                <Label name="$(parent)Stat" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="690"/>
+                </Label>
+                <Label name="$(parent)Value" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="765"/>
+                </Label>
+            </Controls>
+        </Control>
+
+		<Label name="BUI_GenericColumn_Label" inherits="BUI_GenericColumn_TextTemplate BUI_HeaderTitleAnchors" text="..." virtual="true">
+                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+         </Label>
+
+        <Control name="BUI_GenericInterfaceHeader" resizeToFitDescendents="true" virtual="true">
+            <Anchor point="TOPLEFT" />
+            <Anchor point="TOPRIGHT" />
+
+            <Controls>
+                <Control name="$(parent)TabBar" inherits="BUI_GamepadTabBarScrollListTemplate" hidden="false">
+                    <Anchor point="TOPLEFT" offsetY="110" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING"/>
+                    <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" />
                     <Controls>
-                        <Control name="$(grandparent)List" inherits="BUI_VerticalParametricScrollListTemplate">
-                            <Anchor point="TOPLEFT" relativeTo="$(parent)Container" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_INDENT"/>
+                         <Button name="$(parent)LeftIcon">
+                            <Dimensions x="50" y="50"/>
+                            <Anchor point="LEFT" relativeTo="$(parent)"/>
+                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
+                            <OnClicked>
+                                self:GetParent().header:MovePrev()
+                            </OnClicked>
+                        </Button>
+                        <Button name="$(parent)RightIcon">
+                            <Dimensions x="50" y="50"/>
+                            <Anchor point="RIGHT" relativeTo="$(parent)"/>
+                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
+                            <OnClicked>
+                                self:GetParent().header:MoveNext()
+                            </OnClicked>
+                        </Button>
+
+                        
+                        <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
+                            <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="77" />
+                        </Control>
+                        <Control name="$(parent)DividerBottomS" inherits="BUI_GamepadHeaderHorizontalDivider">
+                            <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="81" />
                         </Control>
                     </Controls>
                 </Control>
+
+                <Control name="$(parent)TitleContainer" inherits="BUI_HeaderTitleAnchors">
+                    <Controls>
+                         <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" text="|cFF6600 |r" hidden="false">
+                            <Anchor point="TOPLEFT" /> 
+                        </Label>
+                    </Controls>
+                </Control>
+
+                <Control name="$(parent)DividerBottom" inherits="BUI_GamepadHeaderHorizontalDivider">
+                    <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="0" />
+                    <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="110" />
+                </Control>
             </Controls>
         </Control>
 
-		<TopLevelControl name="BUI_GenericInterface" inherits="BUI_GenericInterfaceContainer" hidden="true" override="true" virtual="true">
-            <Controls>
-                <Control name="$(parent)Loading" hidden="true" inherits="ZO_GamepadCenteredLoadingIconAndLabelTemplate" text="Loading list..." />
 
-                <Control name="$(parent)Container" override="true" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
+
+        <Control name="BUI_VerticalDivider" resizeToFitDescendents="true" virtual="true">
+            <Controls>
+                <Texture name="$(parent)Backdrop" textureFile="BetterUI/Modules/Banking/Images/nav_vert.dds">
+                    <Anchor point="CENTER" offsetX="4"/>
+                    <Dimensions x="9" y="90"/>
+                </Texture>
+            </Controls>
+        </Control>
+
+
+        <Control name="BUI_GenericInterfaceFooter" resizeToFitDescendents="true" virtual="true">
+           <Anchor point="TOPLEFT" />
+            <Anchor point="TOPRIGHT" /> 
+
+            <Controls>
+
+                <Texture name="$(parent)SelectBg" textureFile="BetterUI/Modules/Banking/Images/selectbg.dds">
+                    <Dimensions x="BUI_GAMEPAD_DEFAULT_PANEL_WIDTH" y="90" />
+                    <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="5" offsetY="0" />
+                    <Anchor point="BOTTOMLEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT"/>
+                </Texture>
+
+                <Control name="$(parent)DividerCentre" inherits="BUI_VerticalDivider">
+                    <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0"/>
+                    <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="6" />
+                </Control>
+
+                <Control name="$(parent)DividerBottomT" inherits="BUI_GamepadFooterHorizontalDivider">
+                    <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_HWIDTH" y="5" />
+                    <Anchor point="CENTER" relativeTo="$(parent)SelectBg" relativePoint="CENTER" offsetX="0" />
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)SelectBg" relativePoint="TOPLEFT" offsetX="40" offsetY="0" />
+                </Control>
+
+                <Control name="$(parent)DividerBottomB" inherits="BUI_GamepadFooterHorizontalDivider">
+                    <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_HWIDTH" y="5" />
+                    <Anchor point="CENTER" relativeTo="$(parent)SelectBg" relativePoint="CENTER" offsetX="0" />
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)SelectBg" relativePoint="TOPLEFT" offsetX="40" offsetY="6" />
+                </Control>
+
+                <Texture name="$(parent)Select" textureFile="BetterUI/Modules/Banking/Images/centre_selector.dds" level="2">
+                    <Dimensions x="64" y="64" />
+                    <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0"/>
+                    <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="0" />
+
+                </Texture>
+
+                <Control name="$(parent)Withdraw"> 
+                    <Anchor point="LEFT" relativeTo="$(parent)DividerBottomT" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="45" />
                     <Controls>
-                        <Control name="$(parent)Footer" inherits="BUI_GamepadGenericScreenFooter" />
-                        <Control name="$(parent)Header" inherits="BUI_GenericHeader_Container BUI_GamepadGrid_NavQuadrant_1_Anchors">
-		                    <Controls>
-		                        <Control name="$(parent)HeaderColumnBar" inherits="BUI_GamepadHeaderTitleAnchors" />
-		                   </Controls>
-		                </Control>
+                        <Label name="$(parent)Label" text="WITHDRAW" horizontalAlignment="LEFT" inherits="BUI_FooterTemplate">
+                            <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="100"/>
+                        </Label>
+                        <Texture name="$(parent)Icon" textureFile="/esoui/art/bank/bank_tabicon_withdraw_up.dds" level="2">
+                            <Dimensions x="64" y="64" />
+                            <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT"/>
+                            <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="0"  />
+                        </Texture>
                     </Controls>
                 </Control>
+
+                <Control name="$(parent)Deposit"> 
+                    <Anchor point="RIGHT" relativeTo="$(parent)DividerBottomT" relativePoint="TOPRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="45"/>
+                    <Controls>
+                        <Label name="$(parent)Label" text="DEPOSIT" horizontalAlignment="RIGHT" inherits="BUI_FooterTemplate" color="444444">
+                            <Anchor point="RIGHT" offsetX="-100"/>
+                        </Label>
+                        <Texture name="$(parent)Icon" textureFile="/esoui/art/bank/bank_tabicon_deposit_up.dds" level="2">
+                            
+                            <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT"/>
+
+                            <Dimensions x="64" y="64" />
+                        </Texture>
+                    </Controls>
+                </Control>
+        
+            </Controls>
+        </Control>
+
+		<TopLevelControl name="BUI_GenericInterface" hidden="true" virtual="true">
+            <Controls>
+                <Control name="$(parent)Loading" hidden="true" inherits="ZO_GamepadCenteredLoadingIconAndLabelTemplate" text="Loading list..." />
+               
+                <Control name="$(parent)Container" inherits="BUI_NavQuadrant_1_ContainerAnchors">
+                    <Controls>
+                        <Control name="$(parent)Footer" inherits="BUI_NavQuadrant_1_Anchors">
+                            <Anchor point="TOPLEFT" />
+                            <Anchor point="TOPRIGHT" offsetY="ZO_GAMEPAD_CONTENT_BOTTOM_OFFSET"/>
+                            <Dimensions y="90" />
+                            <Controls>
+                                <Control name="$(parent)Footer" inherits="BUI_GenericInterfaceFooter" override="true">
+                                    <Anchor point="TOPLEFT" offsetY="26"/>
+                                    <Dimensions y="90" x="BUI_GAMEPAD_DEFAULT_PANEL_WIDTH" />
+
+                                    <OnInitialized>
+                                        self:GetParent().footer = self
+                                    </OnInitialized>
+                                </Control>
+                            </Controls>
+                        </Control>
+
+                        <Control name="$(parent)Header" inherits="BUI_NavQuadrant_1_Anchors">
+                            <Anchor point="TOPLEFT"/>
+                            <Dimensions y="115" x="BUI_GAMEPAD_DEFAULT_PANEL_WIDTH" />
+
+		                    <Controls>
+                                <Control name="$(parent)Header" inherits="BUI_GenericInterfaceHeader">
+                                    <Dimensions y="115" x="BUI_GAMEPAD_DEFAULT_PANEL_WIDTH" />
+                                    <OnInitialized>
+                                        self:GetParent().header = self
+                                    </OnInitialized>
+                                </Control>
+		                        <Control name="$(parent)HeaderColumnBar" inherits="BUI_HeaderTitleAnchors" />
+		                   </Controls>
+		                </Control>
+
+
+                        <Control name="$(parent)List" inherits="BUI_NavQuadrant_1_Anchors BUI_Generic_ScrollListTemplate">
+                            <Anchor point="TOPLEFT" relativeTo="$(parent)HeaderHeader" relativePoint="BOTTOMLEFT" />
+                            <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)FooterFooter" relativePoint="TOPRIGHT" />
+
+                            <OnInitialized>
+                                self:GetParent().list = self
+                            </OnInitialized>
+
+                            <Controls>
+                                <Label name="$(parent)NoItemsLabel"  font="ZoFontGamepadCondensed36" horizontalAlignment="CENTER" text="Nothing in list">
+                                    <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
+                                    <Anchor point="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
+                                </Label>
+                                <Control name="$(parent)SpinnerContainer" inherits="ZO_GamepadLabeledQuantitySpinnerContainerTemplate" hidden="true">
+                                    <Anchor point="LEFT" offsetX="40" />
+                                    <Anchor point="RIGHT" offsetX="-40" />
+                                </Control>
+                            </Controls>
+                        </Control>
+
+
+                    </Controls>
+                </Control>
+
+                 
             </Controls>
         </TopLevelControl>
 	</Controls>

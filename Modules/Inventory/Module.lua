@@ -31,7 +31,15 @@ local function Init(mId, moduleName)
             getFunc = function() return BUI.Settings.Modules["Inventory"].enableWrapping end,
             setFunc = function(value) BUI.Settings.Modules["Inventory"].enableWrapping = value end,
             width = "full",
-        },      
+        },   
+        {
+            type = "checkbox",
+            name = "Use triggers to move to next item type",
+            tooltip = "Rather than skip a certain number of items every trigger press (default global behaviour), this will move to the next item type",
+            getFunc = function() return BUI.Settings.Modules["Inventory"].useTriggersForSkip end,
+            setFunc = function(value) BUI.Settings.Modules["Inventory"].useTriggersForSkip = value end,
+            width = "full",
+        },     
 		{
 			type = "header",
 			name = "|c0066FF[Enhanced Inventory]|r Display",
@@ -54,6 +62,7 @@ function BUI.Inventory.InitModule(m_options)
     m_options["savePosition"] = true
     m_options["enableWrapping"] = true
     m_options["showMarketPrice"] = false
+    m_options["useTriggersForSkip"] = false
 
     return m_options
 end
@@ -111,32 +120,47 @@ function BUI.Inventory.Setup()
     end
     
     -- Hook and replace methods used in ZO_GamepadInventory
-    BUI_GAMEPAD_INVENTORY.AddList = BUI.Inventory.AddList
-    BUI_GAMEPAD_INVENTORY.SaveListPosition = BUI.Inventory.SaveListPosition
-    BUI_GAMEPAD_INVENTORY.ToSavedPosition = BUI.Inventory.ToSavedPosition
+    local AddList_Pre = GAMEPAD_INVENTORY.AddList
+    GAMEPAD_INVENTORY.AddList_Pre = AddList_Pre
 
-    BUI_GAMEPAD_INVENTORY.InitializeCategoryList = BUI.Inventory.InitializeCategoryList
-	BUI_GAMEPAD_INVENTORY.InitializeItemList = BUI.Inventory.InitializeItemList
-    BUI_GAMEPAD_INVENTORY.InitializeFooter = BUI.Inventory.InitializeFooter
-    BUI_GAMEPAD_INVENTORY.RefreshFooter = BUI.Inventory.RefreshFooter
-    BUI_GAMEPAD_INVENTORY.InitializeHeader = BUI.Inventory.InitializeHeader
-    BUI_GAMEPAD_INVENTORY.SetSelectedInventoryData = BUI.Inventory.SetSelectedInventoryData
+    GAMEPAD_INVENTORY.AddList = BUI.Inventory.AddList
+    GAMEPAD_INVENTORY.SaveListPosition = BUI.Inventory.SaveListPosition
+    GAMEPAD_INVENTORY.ToSavedPosition = BUI.Inventory.ToSavedPosition
 
-    BUI_GAMEPAD_INVENTORY.RefreshCategoryList = BUI.Inventory.RefreshCategoryList
-	BUI_GAMEPAD_INVENTORY.RefreshItemList = BUI.Inventory.RefreshItemList
-    BUI_GAMEPAD_INVENTORY.RefreshItemActionList = BUI.Inventory.RefreshItemActionList
-	BUI_GAMEPAD_INVENTORY.RefreshHeader = BUI.Inventory.RefreshHeader
-    BUI_GAMEPAD_INVENTORY.InitializeKeybindStrip = BUI.Inventory.InitializeKeybindStrip
-    BUI_GAMEPAD_INVENTORY.TryEquipItem = BUI.Inventory.TryEquipItem
-    BUI_GAMEPAD_INVENTORY.InitializeEquipSlotDialog = BUI.Inventory.InitializeEquipSlotDialog
-    BUI_GAMEPAD_INVENTORY.InitializeSplitStackDialog = BUI.Inventory.InitializeSplitStackDialog
+    GAMEPAD_INVENTORY.InitializeCategoryList = BUI.Inventory.InitializeCategoryList
+	GAMEPAD_INVENTORY.InitializeItemList = BUI.Inventory.InitializeItemList
+    GAMEPAD_INVENTORY.InitializeFooter = BUI.Inventory.InitializeFooter
+    GAMEPAD_INVENTORY.RefreshFooter = BUI.Inventory.RefreshFooter
+    GAMEPAD_INVENTORY.InitializeHeader = BUI.Inventory.InitializeHeader
+    GAMEPAD_INVENTORY.SetSelectedInventoryData = BUI.Inventory.SetSelectedInventoryData
+    GAMEPAD_INVENTORY.UpdateRightTooltip = BUI.Inventory.UpdateRightTooltip
 
-    BUI_GAMEPAD_INVENTORY.InitializeEquipSlotDialog()
-    BUI_GAMEPAD_INVENTORY:InitializeSplitStackDialog()
-    BUI_GAMEPAD_INVENTORY:InitializeFooter()
+    GAMEPAD_INVENTORY.RefreshCategoryList = BUI.Inventory.RefreshCategoryList
+	GAMEPAD_INVENTORY.RefreshItemList = BUI.Inventory.RefreshItemList
+    GAMEPAD_INVENTORY.RefreshItemActionList = BUI.Inventory.RefreshItemActionList
+	GAMEPAD_INVENTORY.RefreshHeader = BUI.Inventory.RefreshHeader
+    GAMEPAD_INVENTORY.InitializeKeybindStrip = BUI.Inventory.InitializeKeybindStrip
+    GAMEPAD_INVENTORY.TryEquipItem = BUI.Inventory.TryEquipItem
+    GAMEPAD_INVENTORY.InitializeEquipSlotDialog = BUI.Inventory.InitializeEquipSlotDialog
+    GAMEPAD_INVENTORY.InitializeSplitStackDialog = BUI.Inventory.InitializeSplitStackDialog
 
-    BUI_GAMEPAD_INVENTORY.categoryPositions = { }
-    BUI_GAMEPAD_INVENTORY.populatedCategoryPos = false
+    GAMEPAD_INVENTORY.PerformDeferredInitialization = function(self)
+        if self.populatedCategoryPos ~= nil then return end
+
+        self:InitializeCategoryList()
+        self:InitializeItemList()
+        self:InitializeItemActionList()
+        self:InitializeHeader()
+        self:InitializeFooter()
+        self:InitializeItemActions()
+        self:InitializeKeybindStrip()
+        self:InitializeConfirmDestroyDialog()
+        self:InitializeSplitStackDialog()
+        self:InitializeEquipSlotDialog()
+
+        self.categoryPositions = { }
+        self.populatedCategoryPos = false
+    end
 
     -- Just some modification to the Nav_1_Quadrant to be wider and cleaner
     GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("LeftDivider"):SetWidth(4)
@@ -146,16 +170,18 @@ function BUI.Inventory.Setup()
     -- --Recreate the root inventory scene's OnShow and OnHide callbacks to silently bypass the scene (but still keep the initialization functions intact)
     GAMEPAD_INVENTORY_ROOT_SCENE:UnregisterAllCallbacks("StateChange")
     GAMEPAD_INVENTORY_ROOT_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-        local self = BUI_GAMEPAD_INVENTORY
+        local self = GAMEPAD_INVENTORY
         if newState == SCENE_SHOWING then
+            self:PerformDeferredInitialization()
             SCENE_MANAGER:Push("gamepad_inventory_item_filter")
 
             -- Setup the larger and offset LEFT_TOOLTIP and background fragment so that the new inventory fits!
-            GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-            GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 936, 54)
+            BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
+
             self:RefreshFooter()
         elseif(newState == SCENE_SHOWN) then
             SCENE_MANAGER:Push("gamepad_inventory_item_filter")
+
         elseif newState == SCENE_HIDING then
             ZO_InventorySlot_SetUpdateCallback(nil)
             self:DisableCurrentList()
@@ -164,18 +190,16 @@ function BUI.Inventory.Setup()
             KEYBIND_STRIP:RemoveKeybindButtonGroup(self.rootKeybindDescriptor)
 
             -- Reset to the old width and offset for any other left_tooltip use, slowly going to replace them all :)
-            GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
-            GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 536, 54)
+            BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
         end
     end)
 
     GAMEPAD_INVENTORY_ITEM_FILTER_SCENE:UnregisterAllCallbacks("StateChange")
     GAMEPAD_INVENTORY_ITEM_FILTER_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-        local self = BUI_GAMEPAD_INVENTORY
+        local self = GAMEPAD_INVENTORY
         if newState == SCENE_SHOWING then
             GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
             GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 936, 54)
-
             self:PerformDeferredInitialization()
             self:RefreshCategoryList()
 
@@ -189,12 +213,7 @@ function BUI.Inventory.Setup()
                 return
             end
             self:SetCurrentList(self.itemList)
-            -- if self.selectedItemFilterType == ITEMFILTERTYPE_QUICKSLOT then
-            --     KEYBIND_STRIP:AddKeybindButton(self.quickslotKeybindDescriptor)
-            --     TriggerTutorial(TUTORIAL_TRIGGER_INVENTORY_OPENED_AND_QUICKSLOTS_AVAILABLE)
-            -- elseif self.selectedItemFilterType == ITEMFILTERTYPE_ARMOR or self.selectedItemFilterType == ITEMFILTERTYPE_WEAPONS then
-            --     KEYBIND_STRIP:AddKeybindButton(self.toggleCompareModeKeybindStripDescriptor)
-            -- end
+
             self:UpdateRightTooltip()
             KEYBIND_STRIP:AddKeybindButtonGroup(self.itemFilterKeybindStripDescriptor)
             ZO_InventorySlot_SetUpdateCallback(function() self:RefreshItemActionList() end)
@@ -207,12 +226,11 @@ function BUI.Inventory.Setup()
             self.listWaitingOnDestroyRequest = nil
         elseif newState == SCENE_HIDDEN then
             self:SetSelectedInventoryData(nil)
-            GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
-            GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 536, 54)
+            BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
 
             KEYBIND_STRIP:RemoveKeybindButtonGroup(self.itemFilterKeybindStripDescriptor)
             KEYBIND_STRIP:RemoveKeybindButton(self.quickslotKeybindDescriptor)
-            KEYBIND_STRIP:RemoveKeybindButton(self.toggleCompareModeKeybindStripDescriptor)
+            KEYBIND_STRIP:RemoveKeybindButton(self.switchEquipKeybindDescriptor)
             if SCENE_MANAGER:IsShowingNext("gamepad_inventory_item_actions") then
                 --if taking action on an item, it is no longer new
                 self.clearNewStatusOnSelectionChanged = true
@@ -225,31 +243,6 @@ function BUI.Inventory.Setup()
             end
             self:TryClearNewStatusOnHidden()
             ZO_SavePlayerConsoleProfile()
-        end
-    end)
-
-    GAMEPAD_INVENTORY_ITEM_ACTIONS_SCENE:UnregisterAllCallbacks("StateChange")
-    GAMEPAD_INVENTORY_ITEM_ACTIONS_SCENE:RegisterCallback("StateChange", function(oldState, newState)
-        local self = GAMEPAD_INVENTORY
-        if newState == SCENE_SHOWING then
-            self:RefreshItemActionList()
-            if self.actionMode == ITEM_LIST_ACTION_MODE then
-                self:UpdateItemLeftTooltip(self.currentlySelectedData)
-            else
-                self:UpdateCategoryLeftTooltip(self.currentlySelectedData)
-            end
-            self:SetCurrentList(self.itemActionList)
-            KEYBIND_STRIP:AddKeybindButtonGroup(self.itemActionsKeybindStripDescriptor)
-            ZO_InventorySlot_SetUpdateCallback(function() self:RefreshItemActionList() end)
-        elseif newState == SCENE_HIDING then
-            ZO_InventorySlot_SetUpdateCallback(nil)
-            self:DisableCurrentList()
-        elseif newState == SCENE_HIDDEN then
-            GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
-            GAMEPAD_TOOLTIPS:Reset(GAMEPAD_RIGHT_TOOLTIP)
-            self:SetSelectedInventoryData(nil)
-            KEYBIND_STRIP:RemoveKeybindButtonGroup(self.itemActionsKeybindStripDescriptor)
-
         end
     end)
 
@@ -285,8 +278,5 @@ function BUI.Inventory.Setup()
             fontSize = 22,
         }
     end
-
-    -- Now to link our changes back to the original GAMEPAD_INVENTORY. Will try to add compatibility patches in future updates, as this alteration changes the *whole interface* (right the way from initialize!)
-   GAMEPAD_INVENTORY = BUI_GAMEPAD_INVENTORY
 
 end

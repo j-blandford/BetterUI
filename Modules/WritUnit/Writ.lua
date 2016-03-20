@@ -46,16 +46,12 @@ function BUI.Writs.Update()
 end
 
 function BUI.Writs.Show(writType)
-	if BUI.settings.showWritHelper == true then 
-		BUI.Writs.Update()
-		if BUI.Writs.List[writType] ~= nil then
-			local qName,_,activeText,_,_,completed = GetJournalQuestInfo(BUI.Writs.List[writType].id)
-			BUI_WritsPanelSlotContainerExtractionSlotWritName:SetText(zo_strformat("|c0066ff[BUI]|r <<1>>",qName))
-			BUI_WritsPanelSlotContainerExtractionSlotWritDesc:SetText(zo_strformat("<<1>>",BUI.Writs.List[writType].writLines))
-			BUI_WritsPanel:SetHidden(false)
-		end
-	else
-		BUI_WritsPanel:SetHidden(true)
+	BUI.Writs.Update()
+	if BUI.Writs.List[writType] ~= nil then
+		local qName,_,activeText,_,_,completed = GetJournalQuestInfo(BUI.Writs.List[writType].id)
+		BUI_WritsPanelSlotContainerExtractionSlotWritName:SetText(zo_strformat("|c0066ff[BUI]|r <<1>>",qName))
+		BUI_WritsPanelSlotContainerExtractionSlotWritDesc:SetText(zo_strformat("<<1>>",BUI.Writs.List[writType].writLines))
+		BUI_WritsPanel:SetHidden(false)
 	end
 end
 

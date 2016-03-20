@@ -1,21 +1,55 @@
-local function BUI_GamepadMenuEntryTemplate_GetAlpha(selected, disabled)
-    if not selected or disabled then
-        return .24
-    else
-        return 1
-    end
-end
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+--
+--    Local variable definitions; de-clutters the global namespace!
+--
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+local CATEGORY_DROP_DOWN_MODE = 1
+local QUALITY_DROP_DOWN_MODE = 2
+local FILTER_DROP_DOWN_MODE = 3
+local LEVEL_DROP_DOWN_MODE = 4
 
-local function BUI_GetListRowName() 
-	return "BUI_BrowseResults_Row"
-end
+local MIN_PRICE_SELECTOR_MODE = 1
+local MAX_PRICE_SELECTOR_MODE = 2
+
+local MIN_LEVEL_SLIDER_MODE = 1
+local MAX_LEVEL_SLIDER_MODE = 2
+
+local MINIMUM_PLAYER_LEVEL = 0
+local MINIMUM_VETERAN_RANK = 1
+local LEVEL_TYPES = 
+{
+    { TRADING_HOUSE_FILTER_TYPE_LEVEL, nil, SI_GAMEPAD_TRADING_HOUSE_BROWSE_PLAYER_LEVEL },
+    { TRADING_HOUSE_FILTER_TYPE_VETERAN_LEVEL, nil, SI_GAMEPAD_TRADING_HOUSE_BROWSE_VETEAN_LEVEL },
+    { TRADING_HOUSE_FILTER_TYPE_ALL_LEVEL, nil, SI_GAMEPAD_TRADING_HOUSE_BROWSE_ALL_LEVEL },
+}
+
+local QUALITY_COLOR_INDEX = 1
+local LIST_ITEM_HEIGHT = 120
+local DONT_SELECT_ITEM = false
+local IGNORE_CALL_BACK = true
+local MIN_POSTING_AMOUNT = 1
+local CLAMP_VALUES = true
+local SEARCH_CRITERIA_CHANGED = true
+
+local SCROLL_LIST_HEADER_OFFSET_VALUE = 0
+local SCROLL_LIST_SELECTED_OFFSET_VALUE = 0
+local HALF_ALPHA = 0.5
+local FULL_ALPHA = 1
+local FIRST_PAGE = 0
+local NO_MORE_PAGES = false
+local NO_ITEMS_ON_PAGE = 0
+local SORT_OPTIONS = {
+    [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME] = TRADING_HOUSE_SORT_EXPIRY_TIME,
+    [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE] = TRADING_HOUSE_SORT_SALE_PRICE,
+}
 
 
+-- We need to take a subclass of ZO_GamepadInventoryList to alter the "Sell" page's gradient fade background
 BUI_GamepadInventoryList = ZO_GamepadInventoryList:Subclass()
 
 function BUI_GamepadInventoryList:RefreshList()
 
-	self.list.scrollControl:SetFadeGradient(1, 0, 1, 5)
+    self.list.scrollControl:SetFadeGradient(1, 0, 1, 5)
     self.list.scrollControl:SetFadeGradient(2, 0, -1, 5)
 
     if self.control:IsHidden() then
@@ -36,24 +70,8 @@ function BUI_GamepadInventoryList:RefreshList()
     self.list:Commit()
 end
 
--------------------------------------------------------------------------------------------------------------------------------------------------------
---
---    Local variable definitions; de-clutters the global namespace!
---
--------------------------------------------------------------------------------------------------------------------------------------------------------
 
-local SCROLL_LIST_HEADER_OFFSET_VALUE = 0
-local SCROLL_LIST_SELECTED_OFFSET_VALUE = 0
-local HALF_ALPHA = 0.5
-local FULL_ALPHA = 1
-local FIRST_PAGE = 0
-local NO_MORE_PAGES = false
-local NO_ITEMS_ON_PAGE = 0
-local SORT_OPTIONS = {
-    [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME] = TRADING_HOUSE_SORT_EXPIRY_TIME,
-    [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE] = TRADING_HOUSE_SORT_SALE_PRICE,
-}
-
+-- Pretty much identical to whats in [Enhanced Inventory], just without the stolen icons
 local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selected)
     if label then
         label:SetFont("$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick")
@@ -71,8 +89,6 @@ local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selecte
         end
 
         label:SetText(labelTxt)
-
-        --stackLabel:SetText(data.stackCount)
 
         local labelColor = data:GetNameColor(selected)
         if type(labelColor) == "function" then
@@ -129,6 +145,7 @@ local function BUI_SharedGamepadEntryIconSetup(icon, stackCountLabel, data, sele
     end
 end
 
+-- Called for each listing row being added. We have to get lots of information here!
 local function SetupListing(control, data, selected, selectedDuringRebuild, enabled, activated)
     BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
     BUI_SharedGamepadEntryIconSetup(control.icon, control.stackCountLabel, data, selected)
@@ -161,6 +178,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
     	sellerName = data.sellerName
    	end
 
+    -- MM integration
     if(BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
 	    dealValue = tonumber(dealString)
 
@@ -176,8 +194,8 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
         end   		
 	end
 
+    -- DD integration
 	if(ddDataDaedra ~= nil and BUI.Settings.Modules["GuildStore"].ddIntegration) then
-
 		local wAvg
 		if(data.dataSource.itemLink ~= nil) then wAvg = ddDataDaedra:GetKeyedItem(data.dataSource.itemLink) else wAvg = ddDataDaedra:GetKeyedItem(GetTradingHouseListingItemLink(data.dataSource.slotIndex)) end
 		local unitPrice = data.purchasePrice/data.stackCount
@@ -206,7 +224,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
 
 	sellerControl:SetText(ZO_FormatUserFacingDisplayName(sellerName))
 
-    if(BUI.Settings.Modules["GuildStore"].showUnitPrice) then
+    if(BUI.Settings.Modules["GuildStore"].unitPrice) then
 	   	if(data.stackCount ~= 1) then 
 	    	unitPriceControl:SetHidden(false)
 	    	unitPriceControl:SetText(zo_strformat("@<<1>>",data.purchasePrice/data.stackCount))
@@ -226,6 +244,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
     end
 end
 
+-- Neuter MasterMerchan't hooks into the interface. This is always called (even without MM integration turned on in the BUI settings) because these functions crash the gamepad
 function BUI.GuildStore.FixMM() 
   	if MasterMerchant == nil then 
   		BUI.MMIntegration = false
@@ -239,6 +258,7 @@ function BUI.GuildStore.FixMM()
   	BUI.MMIntegration = true
 end
 
+-- Flip A (Sort) and X (Select), there's probably a far superior method than this. Things to improve upon!
 function BUI.GuildStore.HookResultsKeybinds()
 	if BUI.Settings.Modules["GuildStore"].flipGSbuttons then
 	    BUI.Hook(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS, "InitializeKeybindStripDescriptors", function(self)
@@ -248,7 +268,6 @@ function BUI.GuildStore.HookResultsKeybinds()
 		    local function HasNoCoolDownAndNotAwaitingResponse() 
 		        return self:HasNoCooldown() and NotAwaitingResponse()
 		    end
-		    d("[BUI] Running new InitializeKeybindStripDescriptors()")
 
 		    self.keybindStripDescriptor = {
 		        alignment = KEYBIND_STRIP_ALIGN_LEFT,
@@ -370,6 +389,14 @@ end
 
 function BUI.GuildStore.BrowseResults.AddEntryToList(self, itemData)
     if(itemData) then
+        -- filter by name logic
+        if(self.textFilter ~= nil) then
+            if(string.find(string.lower(itemData.name), self.textFilter, 1, true) == nil ) then
+                return
+            end
+        end
+        ---------------------------
+
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
         entry:InitializeTradingHouseVisualData(itemData)
         self:GetList():AddEntry("BUI_BrowseResults_Row", 
@@ -379,34 +406,6 @@ function BUI.GuildStore.BrowseResults.AddEntryToList(self, itemData)
                                 SCROLL_LIST_SELECTED_OFFSET_VALUE, 
                                 SCROLL_LIST_SELECTED_OFFSET_VALUE)
     end
-end
-
-function BUI.GuildStore.SetupCallbacks(self, scene)
-	scene:UnregisterAllCallbacks("StateChange")
-
-    scene:RegisterCallback("StateChange", function(oldState, newState)
-        if newState == SCENE_SHOWING then
-               ZO_GamepadGenericHeader_Activate(self.m_header)
-               ZO_GamepadGenericHeader_SetActiveTabIndex(self.m_header, self:GetCurrentMode())
-               --self.m_header:SetHidden(true)
-            self:RefreshHeaderData()
-            self:RegisterForSceneEvents()
-        elseif newState == SCENE_SHOWN then
-            if self.m_currentObject then
-                self.m_currentObject:Show()
-            end
-        elseif newState == SCENE_HIDING then
-            BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
-        elseif newState == SCENE_HIDDEN then
-            self:UnregisterForSceneEvents()
-            GAMEPAD_TRADING_HOUSE_FRAGMENT:Hide()
-            GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
-            ZO_GamepadGenericHeader_Deactivate(self.m_header)
-            if self.m_currentObject then
-                self.m_currentObject:Hide()
-            end
-          end
-     end)
 end
 
 function BUI.GuildStore.Listings.InitializeList(self)
@@ -423,6 +422,7 @@ function BUI.GuildStore.Listings.InitializeList(self)
 end
 
 function BUI.GuildStore.Listings.BuildList(self)
+    ddebug("Building List")
     for i = 1, GetNumTradingHouseListings() do
          local itemData = ZO_TradingHouse_CreateItemData(i, GetTradingHouseListingItemInfo)
         if(itemData) then
@@ -463,35 +463,12 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
     control:GetNamedChild("ItemType"):SetText(string.upper(data.dataSource.bestGamepadItemCategoryName))
 
     local buyingAdviceControl = control:GetNamedChild("BuyingAdvice")
- --    local sellerName, dealString, margin
 
-	-- if(BUI.MMIntegration) then
-	-- 	sellerName, dealString, margin = zo_strsplit(';', data.sellerName)
-	-- else
-	-- 	sellerName = data.sellerName
-	-- end
-
-   	--sellerControl:SetText(ZO_FormatUserFacingDisplayName(sellerName))
-
- --    if(BUI.Settings.Modules["GuildStore"].mmIntegration and BUI.MMIntegration) then
-	--     dealValue = tonumber(dealString)
-
-	--     local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, dealValue)
- --        if dealValue == 0 then r = 0.98; g = 0.01; b = 0.01; end
-
- --        buyingAdviceControl:SetHidden(false)
- --        buyingAdviceControl:SetColor(r, g, b, 1)
- --        if(margin ~= nil) then
- --        	buyingAdviceControl:SetText(margin..'%')
- --        else
- --        	buyingAdviceControl:SetText("0.00%")
- --        end   		
-	-- end
-		local dS = data.dataSource.searchData
-        local bagId = dS.bagId
-        local slotIndex = dS.slotIndex
-        local itemData = GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex)
-		
+	local dS = data.dataSource.searchData
+    local bagId = dS.bagId
+    local slotIndex = dS.slotIndex
+    local itemData = GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex)
+	
 
 	if(ddDataDaedra ~= nil and BUI.Settings.Modules["GuildStore"].ddIntegration) then
 		local wAvg = ddDataDaedra:GetKeyedItem(itemData)
@@ -528,9 +505,78 @@ function BUI.GuildStore.Sell.InitializeList(self)
     self.itemList:GetParametricList().universalPostPadding = 5
 end
 
+function BUI.GuildStore.Browse:UpdateNameFilter(newValue)
+    self.lastNameFilter = self.nameFilter
+    self.nameFilter = newValue
+    ZO_TradingHouse_SearchCriteriaChanged(SEARCH_CRITERIA_CHANGED)
+end
+
+function BUI.GuildStore.Browse:SetupNameFilter(control, data, selected, reselectingDuringRebuild, enabled, active)
+    local editBox = control
+
+    self.nameFilterBox = control
+    self.nameFilterBox.edit:SetHandler("OnTextChanged", function() self:UpdateNameFilter(self.nameFilterBox.edit:GetText()) end)
+
+    self.keybindStripDescriptor[1].callback = function()
+                local selectedData = self.itemList:GetSelectedData()
+                if selectedData.dropDown then
+                    self:FocusDropDown(selectedData.dropDown)
+                elseif selectedData.priceSelector then
+                    self.priceSelectorMode = selectedData.priceSelectorMode
+                    self:FocusPriceSelector(selectedData.priceSelector)
+                else
+                    self.nameFilterBox.edit:TakeFocus()
+                end
+            end
+    self.keybindStripDescriptor[1].visible = function() 
+                local selectedData = self.itemList:GetSelectedData()
+                if selectedData then
+                    return true
+                else
+                    return false
+                end
+            end
+end
+
+function BUI.GuildStore.Browse.PerformDeferredInitialization(self)
+    if(self.deferred_init) then return end
+    self.itemList:AddDataTemplate("BUI_BrowseFilterEditboxTemplate", function(...) self:SetupNameFilter(...) end)
+    self.deferred_init = true
+end
+
+function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
+    self.itemList:Clear()
+
+    -- Category
+    self:AddDropDownEntry("GuildStoreBrowseCategory", CATEGORY_DROP_DOWN_MODE)
+
+    local nameFilter = ZO_GamepadEntryData:New("Name Filter")
+    self.itemList:AddEntry("BUI_BrowseFilterEditboxTemplate", nameFilter)
+
+    self:InitializeFilterData(filters)
+    self:AddPriceSelectorEntry("Min. Price", MIN_PRICE_SELECTOR_MODE)
+    self:AddPriceSelectorEntry("Max. Price", MAX_PRICE_SELECTOR_MODE)
+    self:AddDropDownEntry("GuildStoreBrowseLevelType", LEVEL_DROP_DOWN_MODE)
+    self:AddLevelSelectorEntry("GuildStoreBrowseMinLevel", MIN_LEVEL_SLIDER_MODE)
+    self:AddLevelSelectorEntry("GuildStoreBrowseMaxLevel", MAX_LEVEL_SLIDER_MODE)
+    self:AddDropDownEntry("GuildStoreBrowseQuality", QUALITY_DROP_DOWN_MODE)
+
+    self.itemList:Commit(dontReselect)
+end
+
 function BUI.GuildStore.BrowseResults.Setup()
 	-- Now go and override GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS with our own top level control
 	ZO_TradingHouse_BrowseResults_Gamepad_OnInitialize(BUI_BrowseResults)
+
+    --/zgoo ZO_TradingHouse_Browse_GamepadList.scrollList
+    GAMEPAD_TRADING_HOUSE_BROWSE.SetupNameFilter = BUI.GuildStore.Browse.SetupNameFilter
+    GAMEPAD_TRADING_HOUSE_BROWSE.UpdateNameFilter = BUI.GuildStore.Browse.UpdateNameFilter
+    GAMEPAD_TRADING_HOUSE_BROWSE.ResetList = BUI.GuildStore.Browse.ResetList
+
+    local orig_funct = GAMEPAD_TRADING_HOUSE_BROWSE.PerformDeferredInitialization
+    GAMEPAD_TRADING_HOUSE_BROWSE.PerformDeferredInitialization = function(self) orig_funct(self)
+                                                                BUI.GuildStore.Browse.PerformDeferredInitialization(self)
+                                                                BUI.GuildStore.Browse.ResetList(self) end
 
 	-- Lets overwrite some functions so that they work with our new custom TLC
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.PopulateTabList = BUI.GuildStore.BrowseResults.PopulateTabList
@@ -550,6 +596,8 @@ function BUI.GuildStore.BrowseResults.Setup()
 	        self.dropDown:Deactivate()
 	    end
 	    self:UnfocusPriceSelector()
+
+        GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.textFilter = string.lower(self.nameFilter)
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(true) -- here's the change
 		BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
 	end
@@ -565,10 +613,39 @@ function BUI.GuildStore.BrowseResults.Setup()
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS_FRAGMENT = ZO_FadeSceneFragment:New(BUI_BrowseResults)
     GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:SetFragment(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS_FRAGMENT)
 
+    TRADING_HOUSE_CREATE_LISTING_GAMEPAD.Hiding = function(self)
+        self:UnfocusPriceSelector()
+        KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
 
+        BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
+    end
 
-
-	BUI.GuildStore.SetupCallbacks(TRADING_HOUSE_GAMEPAD, TRADING_HOUSE_GAMEPAD_SCENE)
+    TRADING_HOUSE_GAMEPAD_SCENE:UnregisterAllCallbacks("StateChange")
+    TRADING_HOUSE_GAMEPAD_SCENE:RegisterCallback("StateChange", function(oldState, newState)
+        local self = TRADING_HOUSE_GAMEPAD
+        if newState == SCENE_SHOWING then
+               ZO_GamepadGenericHeader_Activate(self.m_header)
+               ZO_GamepadGenericHeader_SetActiveTabIndex(self.m_header, self:GetCurrentMode())
+               --self.m_header:SetHidden(true)
+            self:RefreshHeaderData()
+            self:RegisterForSceneEvents()
+        elseif newState == SCENE_SHOWN then
+            if self.m_currentObject then
+                self.m_currentObject:Show()
+            end
+        elseif newState == SCENE_HIDING then
+            BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
+        elseif newState == SCENE_HIDDEN then
+            self:UnregisterForSceneEvents()
+            BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
+            GAMEPAD_TRADING_HOUSE_FRAGMENT:Hide()
+            GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+            ZO_GamepadGenericHeader_Deactivate(self.m_header)
+            if self.m_currentObject then
+                self.m_currentObject:Hide()
+            end
+          end
+     end)
 
 	BUI.GuildStore.HookResultsKeybinds()
 	BUI.GuildStore.DisableAnimations(BUI.Settings.Modules["GuildStore"].scrollingDisable)
