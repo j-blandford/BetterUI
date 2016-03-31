@@ -342,12 +342,6 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
--- A function which can rescale the whole inventory interface
-function BUI.Inventory.RescaleControls(self)
-    --self.control:SetWidth
-end
-
-
 -- Allows the inventory to return to the last position selected in the interface
 function BUI.Inventory.ToSavedPosition(self)
     if(BUI.Settings.Modules["Inventory"].savePosition) then
@@ -901,10 +895,12 @@ function BUI.Inventory.TryEquipItem(self, inventorySlot)
     local armorType = GetItemArmorType(inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex)
     if armorType ~= ARMORTYPE_NONE or equipType == EQUIP_TYPE_TWO_HAND or equipType == EQUIP_TYPE_NECK then
         if equipType == EQUIP_TYPE_TWO_HAND then
-            CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
+            CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_MAIN_HAND or EQUIP_SLOT_BACKUP_MAIN, 1)
         else
             CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
         end
+    elseif equipType == EQUIP_TYPE_COSTUME then
+        CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_COSTUME, 1)
     else
         -- Else, it's a weapon, so show a dialog so the user can pick either slot!
         ZO_Dialogs_ShowDialog(BUI_EQUIP_SLOT_DIALOG, {inventorySlot, self.equipToMainSlot}, {mainTextParams={BUI.Lib.GetString("SI_INV_EQUIPSLOT_MAIN")}}, true)

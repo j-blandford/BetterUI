@@ -168,6 +168,9 @@ end
 function BUI.Interface.Window:InitializeFragment()
 	self.fragment = ZO_SimpleSceneFragment:New(self.control)
     self.fragment:SetHideOnSceneHidden(true)
+
+    self.footerFragment = ZO_SimpleSceneFragment:New(BUI_BankingFooterBar)
+    self.footerFragment:SetHideOnSceneHidden(true)
 end
 
 function BUI.Interface.Window:InitializeScene(SCENE_NAME)
@@ -179,6 +182,9 @@ function BUI.Interface.Window:InitializeScene(SCENE_NAME)
     SCENE_NAME:AddFragment(GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT)
     SCENE_NAME:AddFragment(MINIMIZE_CHAT_FRAGMENT)
     SCENE_NAME:AddFragment(GAMEPAD_MENU_SOUND_FRAGMENT)
+    SCENE_NAME:AddFragment(self.footerFragment)
+
+
 
     local function SceneStateChange(oldState, newState)
         if(newState == SCENE_SHOWING) then

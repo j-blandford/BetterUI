@@ -495,7 +495,8 @@ function BUI.GuildStore.Sell.InitializeList(self)
     self.messageControl = self.control:GetNamedChild("StatusMessage")
     self.itemList = BUI_GamepadInventoryList:New(self.listControl, BAG_BACKPACK, SLOT_TYPE_ITEM, OnSelectionChanged, ENTRY_SETUP_CALLBACK, 
                                                     CATEGORIZATION_FUNCTION, SORT_FUNCTION, USE_TRIGGERS, "BUI_Sell_Row", SetupSellListing)
-    self.itemList:SetItemFilterFunction(function(slot) return slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen end)
+    self.itemList:SetItemFilterFunction(function(slot) local isBound = IsItemBound(slot.bagId, slot.slotIndex) 
+                                                    return slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen and not isBound end)
     local LISTINGS_ITEM_HEIGHT = 30
     self.itemList:GetParametricList():SetAlignToScreenCenter(true, LISTINGS_ITEM_HEIGHT)
 
@@ -549,11 +550,11 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
 
     -- Category
     self:AddDropDownEntry("GuildStoreBrowseCategory", CATEGORY_DROP_DOWN_MODE)
+    self:InitializeFilterData(filters)
 
     local nameFilter = ZO_GamepadEntryData:New("Name Filter")
     self.itemList:AddEntry("BUI_BrowseFilterEditboxTemplate", nameFilter)
 
-    self:InitializeFilterData(filters)
     self:AddPriceSelectorEntry("Min. Price", MIN_PRICE_SELECTOR_MODE)
     self:AddPriceSelectorEntry("Max. Price", MAX_PRICE_SELECTOR_MODE)
     self:AddDropDownEntry("GuildStoreBrowseLevelType", LEVEL_DROP_DOWN_MODE)
@@ -576,7 +577,8 @@ function BUI.GuildStore.BrowseResults.Setup()
     local orig_funct = GAMEPAD_TRADING_HOUSE_BROWSE.PerformDeferredInitialization
     GAMEPAD_TRADING_HOUSE_BROWSE.PerformDeferredInitialization = function(self) orig_funct(self)
                                                                 BUI.GuildStore.Browse.PerformDeferredInitialization(self)
-                                                                BUI.GuildStore.Browse.ResetList(self) end
+                                                                -- BUI.GuildStore.Browse.ResetList(self) 
+                                                            end
 
 	-- Lets overwrite some functions so that they work with our new custom TLC
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.PopulateTabList = BUI.GuildStore.BrowseResults.PopulateTabList

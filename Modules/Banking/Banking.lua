@@ -73,6 +73,8 @@ local function SetupListing(control, data)
     control:GetNamedChild("Label"):SetText(fullItemName)
     control:GetNamedChild("Icon"):AddIcon(data.iconFile)
     control:GetNamedChild("Icon"):SetHidden(false)
+    if not data.meetsUsageRequirement then control:GetNamedChild("Icon"):SetColor(1,0,0,1) else control:GetNamedChild("Icon"):SetColor(1,1,1,1) end
+    
     control:GetNamedChild("Value"):SetText(data.stackSellPrice)
 end
 
@@ -96,6 +98,7 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
     self:SetupList(BANKING_ROW_TEMPLATE, SetupListing)
 
     self.currentMode = LIST_WITHDRAW
+    self.lastPositions = { [LIST_WITHDRAW] = 1, [LIST_DEPOSIT] = 1 }
 
     local function OnOpenBank()
         if IsInGamepadPreferredMode() then
@@ -163,19 +166,31 @@ local function FindEmptySlotInBag(bagId)
     return nil
 end
 
-function BUI.Banking.Class:WithdrawItem(list, toBag)
+function BUI.Banking.Class:MoveItem(list, quantity)
 	local bag, index = ZO_Inventory_GetBagAndIndex(list:GetSelectedData())
 	local stackCountBackpack, stackCountBank = GetItemLinkStacks(GetItemLink(bag, index))
 
-    if(stackCountBank > 1) then
-	    self:UpdateSpinnerConfirmation(true, self.list)
-	    self:SetSpinnerValue(list:GetSelectedData().stackCount, list:GetSelectedData().stackCount)
+	local toBag = self.currentMode == LIST_WITHDRAW and BAG_BACKPACK or BAG_BANK
+	local fromBag = self.currentMode == LIST_WITHDRAW and BAG_BANK or BAG_BACKPACK
+
+	-- Check to see if we're calling this function from within the spinner class...
+	if(quantity == nil) then
+		-- We're not, so either (a) move the item, or (b) display the spinner
+	    if(stackCountBank > 1 and self.currentMode == LIST_WITHDRAW or stackCountBackpack > 1 and self.currentMode == LIST_DEPOSIT) then
+		    self:UpdateSpinnerConfirmation(true, self.list)
+		    self:SetSpinnerValue(list:GetSelectedData().stackCount, list:GetSelectedData().stackCount)
+		else
+			local nextSlot = FindEmptySlotInBag(toBag)
+	    	CallSecureProtected("RequestMoveItem", fromBag, index, toBag, nextSlot, 1)
+	    	self:RefreshList()
+		end
 	else
-		local nextSlot = FindEmptySlotInBag(BAG_BACKPACK)
-    	CallSecureProtected("RequestMoveItem", BAG_BANK, index, BAG_BACKPACK, nextSlot, 1)
+		-- We're in the spinner! Confirm the move here :)
+		local nextSlot = FindEmptySlotInBag(toBag)
+		self:UpdateSpinnerConfirmation(false, self.list)
+    	CallSecureProtected("RequestMoveItem", fromBag, index, toBag, nextSlot, quantity)
     	self:RefreshList()
 	end
-
 end
 
 function BUI.Banking.Class:CancelWithdrawDeposit(list)
@@ -191,14 +206,20 @@ function BUI.Banking.Class:CreateListTriggerKeybindDescriptors(list)
         keybind = "UI_SHORTCUT_LEFT_TRIGGER",
         ethereal = true,
         callback = function()
-            ddebug("LEFT TRIGGERED")
+            local list = self.list
+            if not list:IsEmpty() then
+                list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+            end
         end
     }
     local rightTrigger = {
         keybind = "UI_SHORTCUT_RIGHT_TRIGGER",
         ethereal = true,
         callback = function()
-            ddebug("RIGHT TRIGGERED")
+			local list = self.list
+            if not list:IsEmpty() then
+                list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+            end
         end,
     }
     return leftTrigger, rightTrigger
@@ -208,13 +229,34 @@ function BUI.Banking.Class:InitializeKeybind()
 	self.coreKeybinds = {
 		alignment = KEYBIND_STRIP_ALIGN_LEFT,
 		        {
-		            name = BUI.Lib.GetString("BANKING_WITHDRAW"),
+		            name = function() return (self.currentMode == LIST_WITHDRAW) and BUI.Lib.GetString("BANKING_WITHDRAW") or BUI.Lib.GetString("BANKING_DEPOSIT") end,
 		            keybind = "UI_SHORTCUT_PRIMARY",
 		            callback = function()
-		                --local selectedData = self:GetList():GetSelectedData()
-
-		                self:WithdrawItem(self.list, BAG_BACKPACK)
+		            	self:SaveListPosition()
+		                self:MoveItem(self.list)
 		                --self:RefreshList()
+		            end,
+		            visible = function()
+		                return true
+		            end,
+		            enabled = true,
+		        },
+		        {
+		            name = function() return (self.currentMode == LIST_WITHDRAW) and "Withdraw Gold" or "Deposit Gold" end,
+		            keybind = "UI_SHORTCUT_TERTIARY",
+		            callback = function()
+		                self:ShowMoveGoldDialog()
+		            end,
+		            visible = function()
+		                return true
+		            end,
+		            enabled = true,
+		        },
+		        {
+		            name = "Toggle List",
+		            keybind = "UI_SHORTCUT_SECONDARY",
+		            callback = function()
+		                self:ToggleList(self.currentMode == LIST_DEPOSIT)
 		            end,
 		            visible = function()
 		                return true
@@ -226,13 +268,25 @@ function BUI.Banking.Class:InitializeKeybind()
 
 	self.triggerSpinnerBinds = {}
 	local leftTrigger, rightTrigger = self:CreateListTriggerKeybindDescriptors(self.list)
-    table.insert(self.triggerSpinnerBinds, leftTrigger)
-    table.insert(self.triggerSpinnerBinds, rightTrigger)
+    table.insert(self.coreKeybinds, leftTrigger)
+    table.insert(self.coreKeybinds, rightTrigger)
 
 
 	self.spinnerKeybindStripDescriptor = {
         alignment = KEYBIND_STRIP_ALIGN_LEFT,
-        coreKeybinds,
+        {
+            name = "Confirm",
+            keybind = "UI_SHORTCUT_PRIMARY",
+            callback = function()
+            	self:SaveListPosition()
+		        self:MoveItem(self.list, self.spinner:GetValue())
+                --self:RefreshList()
+            end,
+            visible = function()
+                return true
+            end,
+            enabled = true,
+        },
     }
     ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.spinnerKeybindStripDescriptor,
                                                     GAME_NAVIGATION_TYPE_BUTTON,
@@ -242,38 +296,77 @@ function BUI.Banking.Class:InitializeKeybind()
                                                     end)
 end
 
+function BUI.Banking.Class:SaveListPosition()
+	-- Able to return to the current position again!
+	self.lastPositions[self.currentMode] = self.list.selectedIndex
+end
+
+function BUI.Banking.Class:ReturnToSaved()
+	self.list.selectedIndex = self.lastPositions[self.currentMode]
+	self.list.targetSelectedIndex = self.lastPositions[self.currentMode]
+end
+
 function BUI.Banking.Class:RefreshList()
 	self.list:Clear()
+	local current_bag = (self.currentMode == LIST_WITHDRAW) and BAG_BANK or BAG_BACKPACK
+
 	local slots = {}
-    local bagSlots = GetBagSize(BAG_BANK)
+    local bagSlots = GetBagSize(current_bag)
     for slotIndex = 0, bagSlots - 1 do
-        local slotData = SHARED_INVENTORY:GenerateSingleSlotData(BAG_BANK, slotIndex)
+        local slotData = SHARED_INVENTORY:GenerateSingleSlotData(current_bag, slotIndex)
         if slotData then
                 slots[#slots + 1] = slotData
         end
     end
 
     for i, itemData in ipairs(slots) do
-        self:AddEntryToList(itemData)
-        -- testWindow:.dataBySlotIndex[itemData.slotIndex] = entry
+    	if not itemData.stolen then -- can't deposit stolen items
+	        self:AddEntryToList(itemData)
+	    end
     end
+    self:ReturnToSaved()
+    self:RefreshFooter()
 end
 
-function BUI.Banking.Class:ToggleList()
-	self.currentMode = (self.currentMode == LIST_WITHDRAW) and LIST_DEPOSIT or LIST_WITHDRAW
+function BUI.Banking.Class:RefreshFooter()
+	self.footer.footer:GetNamedChild("DepositButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_all.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BACKPACK), GetBagSize(BAG_BACKPACK))))
+	self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/icons/mapkey/mapkey_bank.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BANK), GetBagSize(BAG_BANK))))
+	if(self.currentMode == LIST_WITHDRAW) then
+		--  GetBankedCurrencyAmount
+		self.footerFragment.control:GetNamedChild("Data1Value"):SetText(BUI.DisplayNumber(GetBankedCurrencyAmount(CURT_MONEY)))
+		self.footerFragment.control:GetNamedChild("Data2Value"):SetText(BUI.DisplayNumber(GetBankedCurrencyAmount(CURT_TELVAR_STONES)))
+	else
+		self.footerFragment.control:GetNamedChild("Data1Value"):SetText(BUI.DisplayNumber(GetCarriedCurrencyAmount(CURT_MONEY)))
+		self.footerFragment.control:GetNamedChild("Data2Value"):SetText(BUI.DisplayNumber(GetCarriedCurrencyAmount(CURT_TELVAR_STONES)))
+	end
+end
+
+function BUI.Banking.Class:ToggleList(toWithdraw)
+	self:SaveListPosition()
+
+	self.currentMode = toWithdraw and LIST_WITHDRAW or LIST_DEPOSIT
 	local footer = self.footer:GetNamedChild("Footer")
 	if(self.currentMode == LIST_WITHDRAW) then
 		footer:GetNamedChild("SelectBg"):SetTextureRotation(0)
 		footer:GetNamedChild("Select"):SetTextureRotation(0)
+
+		footer:GetNamedChild("DepositButtonLabel"):SetColor(0.26,0.26,0.26,1)
+		footer:GetNamedChild("WithdrawButtonLabel"):SetColor(1,1,1,1)
 	else
 		footer:GetNamedChild("SelectBg"):SetTextureRotation(3.1415)
 		footer:GetNamedChild("Select"):SetTextureRotation(3.1415)
+
+		footer:GetNamedChild("DepositButtonLabel"):SetColor(1,1,1,1)
+		footer:GetNamedChild("WithdrawButtonLabel"):SetColor(0.26,0.26,0.26,1)
 	end
+	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.coreKeybinds)
+	--KEYBIND_STRIP:UpdateKeybindButtonGroup(self.spinnerKeybindStripDescriptor)
+	self:RefreshList()
 end
 
 function BUI.Banking.Init()
     BUI.Banking.Window = BUI.Banking.Class:New("BUI_TestWindow", BUI_TEST_SCENE)
-    BUI.Banking.Window:SetTitle("Bank")
+    BUI.Banking.Window:SetTitle("|c0066FF[Enhanced Bank]|r All")
 
     -- Set the column headings up, maybe put them into a table?
     BUI.Banking.Window:AddColumn("Name",10)

@@ -51,7 +51,7 @@ function BUI.InitModuleOptions()
 			getFunc = function() return BUI.Settings.Modules["Banking"].m_enabled end,
 			setFunc = function(value) BUI.Settings.Modules["Banking"].m_enabled = value 
 									dirtyModules = true  end,
-			disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
+			--disabled = function() return true end,
 			width = "full",
 		},
 		{
@@ -173,7 +173,6 @@ function BUI.LoadModules()
 		end
 		if(BUI.Settings.Modules["Writs"].m_enabled) then 
 			BUI.Writs.Setup()
-
 		end
 		if(BUI.Settings.Modules["Tooltips"].m_enabled) then
 			BUI.Tooltips.Setup()
@@ -218,6 +217,3 @@ end
 -- register our event handler function to be called to do initialization
 BUI.EventManager:RegisterForEvent(BUI.name, EVENT_ADD_ON_LOADED, function(...) BUI.Initialize(...) end)
 BUI.EventManager:RegisterForEvent(BUI.name.."_Gamepad", EVENT_GAMEPAD_PREFERRED_MODE_CHANGED, function(code, inGamepad)  BUI.LoadModules() end)
-
---ZO_CreateStringId("SI_BINDING_NAME_DISPLAY_TESTWINDOW", "Display Test Window")
---ZO_CreateStringId("SI_BINDING_NAME_RELOADUI", "ReloadUI")

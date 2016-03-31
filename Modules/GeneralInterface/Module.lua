@@ -14,7 +14,6 @@ local function Init(mId, moduleName)
 			name = "Module Settings",
 			width = "full",
 		},
-
 		{
 		type = "checkbox",
 			name = "Display item style and trait knowledge",

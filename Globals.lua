@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "1.65"
+BUI.version = "1.68"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -98,6 +98,7 @@ BUI.Lib.stringTable = {
 	SI_INV_EQUIPSLOT_MAIN = "Main",
 	SI_INV_EQUIPSLOT_BACKUP = "Backup",
 	BANKING_WITHDRAW = "Withdraw",
+	BANKING_DEPOSIT = "Deposit",
 	BANKING_BUYSPACE = "Buy More Space (<<1>>)",
 }
 
