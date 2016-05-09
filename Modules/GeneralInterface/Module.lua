@@ -40,6 +40,13 @@ local function Init(mId, moduleName)
 			width = "full",	--or "half" (optional)
 		},
 		{
+			type = "colorpicker",
+			name = "Account name colour",
+			getFunc = function() return unpack(BUI.Settings.Modules["Tooltips"].showAccountColor) end,
+			setFunc = function(r,g,b,a) BUI.Settings.Modules["Tooltips"].showAccountColor={r,g,b,a} end,
+			width = "full",	--or "half" (optional)
+		},
+		{
 			type = "checkbox",
 			name = "Display the health value (text) on the target?",
 			getFunc = function() return BUI.Settings.Modules["Tooltips"].showHealthText end,
@@ -114,7 +121,8 @@ function BUI.Tooltips.InitModule(m_options)
     m_options["showStyleTrait"] = true
     m_options["showHealthText"] = true
     m_options["showAccountName"] = true
-    m_options["showCharacterColor"] = {1, 0.5, 0, 1}
+    m_options["showCharacterColor"] = {1, 0.95, 0.5, 1}
+	m_options["showAccountColor"] = {1, 1, 1, 1}
     m_options["attributeLabels"] = true
     
     return m_options

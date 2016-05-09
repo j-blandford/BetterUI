@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "1.68"
+BUI.version = "1.81a"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -24,6 +24,7 @@ BUI.GuildStore.Sell = {}
 
 BUI.Banking = {}
 BUI.Banking.Class = {}
+BUI.Banking.WithdrawDepositGold = {}
 
 BUI.Tooltips = {}
 BUI.Player = {}
@@ -122,4 +123,9 @@ end
 -- Allows us to override ZO_GamepadInventory:New, but we need to catch it early!
 function BUI_GamepadInventory_OnInitialize(control)
     GAMEPAD_INVENTORY = ZO_GamepadInventory:New(control)
+end
+
+
+function BUI_BankingWithdrawDepositGold_Initialize(control)
+    --GAMEPAD_BANKING_WITHDRAW_DEPOSIT_GOLD = BUI.Banking.WithdrawDepositGold:New(control)
 end

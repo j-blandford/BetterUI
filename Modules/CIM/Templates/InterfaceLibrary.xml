@@ -158,7 +158,35 @@
                 </Label>
             </Controls>
         </Control>
+
+        <Control name="BUI_GoldSpinnerContainerTemplate" virtual="true">
+            <Controls>
+   
+
+                <Texture name="$(parent)CurrencyTexture" textureFile="EsoUI/Art/currency/gamepad/gp_gold.dds">
+                    <Dimensions x="28" y="28"/>
+                    <Anchor point="RIGHT" offsetX="-35"/>
+                </Texture>
+
+                <Control name="$(parent)Selector" inherits="ZO_GamepadCurrencySelectorTemplate">
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)CurrencyTexture" relativePoint="TOPLEFT" offsetX="-10"/>
+                    <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)CurrencyTexture" relativePoint="BOTTOMLEFT" offsetX="-10"/>
+                </Control>
+            </Controls>
+        </Control>
         
+
+        <Control name="BUI_HeaderRow_Template" inherits="BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
+               <!--  <Dimensions y="32" /> -->
+                <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING"/>
+                <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
+      
+                <Controls>
+                    <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick">
+                            <Anchor point="TOPLEFT" offsetX="15"/>
+                    </Label>
+                </Controls>
+        </Control>
 
 
         <Control name="BUI_GenericEntry_Template" inherits="BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
@@ -284,13 +312,6 @@
                     <Anchor point="TOPLEFT" relativeTo="$(parent)SelectBg" relativePoint="TOPLEFT" offsetX="40" offsetY="6" />
                 </Control>
 
-                <Texture name="$(parent)Select" textureFile="BetterUI/Modules/Banking/Images/centre_selector.dds" level="2">
-                    <Dimensions x="64" y="64" />
-                    <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0"/>
-                    <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="0" />
-
-                </Texture>
-
                 <Control name="$(parent)Withdraw"> 
                     <Anchor point="LEFT" relativeTo="$(parent)DividerBottomT" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="45" />
                     <Controls>
@@ -377,11 +398,11 @@
                         
                         <Control name="$(parent)Footer" inherits="BUI_NavQuadrant_1_Anchors">
                             <Anchor point="TOPLEFT" />
-                            <Anchor point="TOPRIGHT" offsetY="ZO_GAMEPAD_CONTENT_BOTTOM_OFFSET"/>
+                            <Anchor point="BOTTOMRIGHT" offsetY="ZO_GAMEPAD_QUADRANT_BOTTOM_OFFSET" relativeTo="GuiRoot"/>
                             <Dimensions y="90" />
                             <Controls>
                                 <Control name="$(parent)Footer" inherits="BUI_GenericInterfaceFooter" override="true">
-                                    <Anchor point="TOPLEFT" offsetY="26"/>
+                                    <Anchor point="BOTTOMLEFT" offsetY="ZO_GAMEPAD_QUADRANT_BOTTOM_OFFSET "/>
                                     <Dimensions y="90" x="BUI_GAMEPAD_DEFAULT_PANEL_WIDTH" />
 
                                     <OnInitialized>
@@ -421,12 +442,18 @@
                                     <Anchor point="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
                                 </Label>
                                 <Control name="$(parent)SpinnerContainer" inherits="BUI_SpinnerContainerTemplate" hidden="true">
-                                    <Anchor point="LEFT" offsetX="40" />
-                                    <Anchor point="RIGHT" offsetX="-40" />
+                                    <Dimensions y="45" x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
+                                    <Anchor point="CENTER" relativeTo="$(parent)ListScreenCenterIsAlongTopListScreenCenter" offsetX="20" />
+                                   
                                 </Control>
                             </Controls>
                         </Control>
 
+                        <Control name="$(parent)InputContainer" inherits="BUI_GoldSpinnerContainerTemplate" hidden="true">
+                                    <Dimensions y="30"/>
+                                    <Anchor point="LEFT" relativeTo="$(parent)ListListScreenCenterIsAlongTopListScreenCenter" offsetX="200" />
+                                    <Anchor point="RIGHT" relativeTo="$(parent)ListListScreenCenterIsAlongTopListScreenCenter" offsetX="200" />
+                        </Control>
 
                     </Controls>
                 </Control>

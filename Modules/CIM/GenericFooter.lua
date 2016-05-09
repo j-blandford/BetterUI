@@ -1,12 +1,12 @@
 local _
 
-function BUI.GenericFooter.Initialize(self)
+function BUI.GenericFooter:Initialize()
 	if(self.footer == nil) then self.footer = self.control.container:GetNamedChild("FooterContainer").footer end
 
 	if(self.footer.GoldLabel ~= nil) then BUI.GenericFooter.Refresh(self) end
 end
 
-function BUI.GenericFooter.Refresh(self)
+function BUI.GenericFooter:Refresh()
 	-- a hack until I completely generalize these functions... :/
 	if(self.footer.GoldLabel ~= nil) then
 		self.footer.GoldLabel:SetText(zo_strformat("|cFFD700<<1>>|r |t16:16:/esoui/art/currency/currency_gold.dds|t",BUI.DisplayNumber(GetCarriedCurrencyAmount(CURT_MONEY))))

@@ -4,13 +4,17 @@ local ACTIVATE_SPINNER = true
 local DEACTIVATE_SPINNER = false
 local DEFAULT_ROW_TEMPLATE = "BUI_GenericEntry_Template"
 
-BUI_TEST_SCENE_NAME = "BUI_TEST_SCENE"
+BUI_TEST_SCENE_NAME = "BUI_BANKING"
 
 local BANKING_INTERACTION =
 {
     type = "Banking",
     interactTypes = { INTERACTION_BANK },
 }
+
+local function WrapInt(value, min, max)
+    return (zo_floor(value) - min) % (max - min + 1) + min
+end
 
 function BUI.CIM.SetTooltipWidth(width)
     -- Setup the larger and offset LEFT_TOOLTIP and background fragment so that the new inventory fits!
@@ -34,6 +38,13 @@ function BUI.Interface.Window:Initialize(tlw_name, scene_name)
 
     self.spinner = self.control:GetNamedChild("ContainerList"):GetNamedChild("SpinnerContainer")
     self.spinner:InitializeSpinner()
+
+    -- Wrap the spinner's max and min values
+    self.spinner.spinner.constrainRangeFunc = WrapInt
+
+    -- Stop the spinner inheriting the scrollList's alpha, allowing the list to be deactivated correctly
+    self.spinner:SetInheritAlpha(false)
+
     self:DeactivateSpinner()
 
     self.header.MoveNext = function() self:OnTabNext() end
@@ -57,12 +68,14 @@ end
 function BUI.Interface.Window:ActivateSpinner()
     self.spinner:SetHidden(false)
     self.spinner:Activate()
+    if(self:GetList() ~= nil) then self:GetList():Deactivate() end
 end
 
 function BUI.Interface.Window:DeactivateSpinner()
     self.spinner:SetValue(1)
     self.spinner:SetHidden(true)
     self.spinner:Deactivate()
+    if(self:GetList() ~= nil) then self:GetList():Activate() end
 end
 
 function BUI.Interface.Window:UpdateSpinnerConfirmation(activateSpinner, list)
@@ -72,14 +85,10 @@ function BUI.Interface.Window:UpdateSpinnerConfirmation(activateSpinner, list)
         --self.spinner:AnchorToSelectedListEntry(list)
         --ZO_GamepadGenericHeader_Deactivate(self.header)
 
-        KEYBIND_STRIP:RemoveKeybindButtonGroup(self.coreKeybinds)
-        KEYBIND_STRIP:AddKeybindButtonGroup(self.spinnerKeybindStripDescriptor)
     else
         self:DeactivateSpinner()
         --ZO_GamepadGenericHeader_Activate(self.header)
 
-        KEYBIND_STRIP:RemoveKeybindButtonGroup(self.spinnerKeybindStripDescriptor)
-        KEYBIND_STRIP:AddKeybindButtonGroup(self.coreKeybinds)
     end
 
     list:RefreshVisible()
@@ -133,6 +142,10 @@ end
 function BUI.Interface.Window:SetupList(rowTemplate, SetupFunct)
     self.itemListTemplate = rowTemplate
     self:GetList():AddDataTemplate(rowTemplate, SetupFunct, BUI_GamepadMenuEntryTemplateParametricListFunction)
+end
+
+function BUI.Interface.Window:AddTemplate(rowTemplate, SetupFunct)
+    self:GetList():AddDataTemplate(rowTemplate,SetupFunct, BUI_GamepadMenuEntryTemplateParametricListFunction)
 end
 
 function BUI.Interface.Window:AddEntryToList(data)

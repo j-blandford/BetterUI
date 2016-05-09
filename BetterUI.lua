@@ -51,6 +51,7 @@ function BUI.InitModuleOptions()
 			getFunc = function() return BUI.Settings.Modules["Banking"].m_enabled end,
 			setFunc = function(value) BUI.Settings.Modules["Banking"].m_enabled = value 
 									dirtyModules = true  end,
+			disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
 			--disabled = function() return true end,
 			width = "full",
 		},
@@ -189,7 +190,7 @@ function BUI.Initialize(event, addon)
 	if addon ~= BUI.name then return end
 
 	-- load our saved variables
-	BUI.Settings = ZO_SavedVars:New("BetterUISavedVars", 2.2, nil, BUI.DefaultSettings)
+	BUI.Settings = ZO_SavedVars:New("BetterUISavedVars", 2.3, nil, BUI.DefaultSettings)
 
 	-- Has the settings savedvars JUST been applied? then re-init the module settings
 	if(BUI.Settings.firstInstall) then

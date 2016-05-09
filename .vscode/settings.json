@@ -1,0 +1,18 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "color-highlight.languages": [
+		"javascript",
+		"scss",
+		"css",
+		"sass",
+		"less",
+		"php",
+		"xml",
+		"html",
+		"json",
+        "lua",
+        "xml"
+	],
+    "bookmarks.useStickyBookmarks": true,
+    "bookmarks.saveBookmarksBetweenSessions": true
+}

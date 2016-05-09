@@ -2,15 +2,12 @@
 ## Description: Makes the gamepad interface usable!
 ## APIVersion: 100014
 ## Author: |c0066FFprasoc|r [EU]
-## Version: 1.68
+## Version: 1.81a
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
-
 lib\LibStub\LibStub.lua
-
 lib\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
-
 lib\LibAddonMenu-2.0\controls\panel.lua
 lib\LibAddonMenu-2.0\controls\submenu.lua
 lib\LibAddonMenu-2.0\controls\button.lua
@@ -24,7 +21,6 @@ lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 lib\LibAddonMenu-2.0\controls\iconpicker.lua
-
 Globals.lua
 BetterUI.CONST.lua
 BUI_Shared.xml
@@ -68,6 +64,9 @@ Modules\GuildStore\Module.lua
 Modules\Banking\Images\nav_vert.dds
 Modules\Banking\Images\centre_selector.dds
 Modules\Banking\Images\selectbg.dds
+Modules\Banking\Templates\WithdrawDeposit.xml
+Modules\Banking\WithdrawDeposit.lua
+
 Modules\Banking\Banking.lua
 Modules\Banking\Module.lua
 

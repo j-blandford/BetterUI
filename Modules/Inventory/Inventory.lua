@@ -27,7 +27,16 @@ BUI_VERTICAL_PARAMETRIC_LIST_DEFAULT_FADE_GRADIENT_SIZE = 5
 BUI_EQUIP_SLOT_DIALOG = "BUI_EQUIP_SLOT_PROMPT"
 
 
+-- This is the structure of an "slotAction" array
+local INDEX_ACTION_NAME = 1
+local INDEX_ACTION_CALLBACK = 2
+local INDEX_ACTION_TYPE = 3
+local INDEX_ACTION_VISIBILITY = 4
+local INDEX_ACTION_OPTIONS = 5
+local PRIMARY_ACTION_KEY = 1
 
+-- All of the callbacks that are possible on the "A" button press have to have CallSecureProtected()
+local PRIMARY_ACTION = 1
 
 
 
@@ -251,6 +260,25 @@ local function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselecti
     BUI_IconSetup(control:GetNamedChild("StatusIndicator"), control:GetNamedChild("EquippedMain"), data)
 end
 
+local function GetBagItemLink(inventorySlot, linkStyle)
+    local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
+    local slotType = ZO_InventorySlot_GetType(inventorySlot)
+    if(slotType == SLOT_TYPE_EQUIPMENT or slotType == SLOT_TYPE_DYEABLE_EQUIPMENT) then
+        local _, stackCount = GetItemInfo(bag, index)
+        if(stackCount == 0) then
+            return
+        end
+    end
+    return GetItemLink(bag, index, linkStyle)
+end
+
+local function LinkInChat(inventorySlot)
+    local link = ZO_LinkHandler_CreateChatLink(GetBagItemLink, inventorySlot)
+    if inventorySlot then
+        ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, link))
+          --  CallSecureProtected("CHAT_SYSTEM:SubmitTextEntry")
+    end
+end
 
 -- The below functions are included from ZO_GamepadInventory.lua
 local function MenuEntryTemplateEquality(left, right)
@@ -347,20 +375,14 @@ function BUI.Inventory.ToSavedPosition(self)
     if(BUI.Settings.Modules["Inventory"].savePosition) then
         local lastPosition = self.categoryPositions[self.categoryList.selectedIndex]
         if(lastPosition ~= nil) then
-            if(#self.itemList.dataList > lastPosition) then
-                self.itemList.selectedIndex = lastPosition
-                self.itemList.targetSelectedIndex = lastPosition
-            else
-                self.itemList.selectedIndex = #self.itemList.dataList
-                self.itemList.targetSelectedIndex = #self.itemList.dataList
-            end
+            lastPosition = (#self.itemList.dataList > lastPosition) and lastPosition or #self.itemList.dataList
+            self.itemList:SetSelectedIndexWithoutAnimation(lastPosition, true, false)
         end
     else 
-        self.itemList.selectedIndex = 1
-        self.itemList.targetSelectedIndex = 1        
+        self.itemList:SetSelectedIndexWithoutAnimation(1, true, false)      
     end
 
-        -- Toggle "Switch Slot" with "Assign to Quickslot" 
+    -- Toggle "Switch Slot" with "Assign to Quickslot" 
     if self.categoryList.selectedData ~= nil then
         KEYBIND_STRIP:RemoveKeybindButton(self.quickslotKeybindDescriptor)
         KEYBIND_STRIP:RemoveKeybindButton(self.switchEquipKeybindDescriptor)
@@ -404,8 +426,14 @@ function BUI.Inventory.RefreshItemActionList(self)
     local numActions = actions:GetNumSlotActions()
     for i = 1, numActions do
         local action = actions:GetSlotAction(i)
-        local data = ZO_GamepadEntryData:New(actions:GetRawActionName(action))
+        local aName = actions:GetRawActionName(action)
+        local data = ZO_GamepadEntryData:New(aName)
+
         data.action = action
+        
+        if(self.primaryActionCallbacks[aName] ~= nil) then
+            data.action[INDEX_ACTION_CALLBACK] = self.primaryActionCallbacks[aName]
+        end
    
         self.itemActionList:AddEntry("ZO_GamepadItemEntryTemplate", data)
     end
@@ -678,13 +706,12 @@ local function TryUseQuestItem(inventorySlot)
     end
 end
 
-
+local BUI_INV_LINK_CHAT = GetString(SI_ITEM_ACTION_LINK_TO_CHAT)
 
 function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
     if SCENE_MANAGER:IsShowing("gamepad_inventory_item_actions") then
         if inventoryData then
             if self.selectedItemUniqueId and CompareId64s(inventoryData.uniqueId, self.selectedItemUniqueId) ~= 0 then
-
                 SCENE_MANAGER:HideCurrentScene() -- The previously selected item no longer exists, back out of the command list
             end
         elseif inventoryData == nil and (SCENE_MANAGER:GetPreviousSceneName() == "gamepad_inventory_root") then
@@ -708,9 +735,6 @@ function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
             command.activateCallback(inventoryData)
         end
     end
-
-    -- All of the callbacks that are possible on the "A" button press have to have CallSecureProtected()
-    local PRIMARY_ACTION = 1
 
     if(self.primaryCallbacks == nil) then
         self.primaryCallbacks = {
@@ -748,55 +772,55 @@ function BUI.Inventory.SetSelectedInventoryData(self, inventoryData)
                 self:SaveListPosition()
                 UnequipItem(equipSlot) -- > for future reference, maybe need CSP(...) here upon API changes
                 self:ToSavedPosition()   
-            end   
+            end
         }
-    end
-
-    local INDEX_ACTION_NAME = 1
-    local INDEX_ACTION_CALLBACK = 2
-    local INDEX_ACTION_TYPE = 3
-    local INDEX_ACTION_VISIBILITY = 4
-    local INDEX_ACTION_OPTIONS = 5
-    local PRIMARY_ACTION_KEY = 1
-
-    -- We have to overwrite the DoPrimaryAction() function, replacing certain commands with the CallSecureProtected equivalent ("Use" is one that needs to be overriddem)
-    self.itemActions.slotActions.DoPrimaryAction = function(options)
-        local self = self
-        local primaryAction = self.itemActions.slotActions:GetAction(PRIMARY_ACTION_KEY, "primary", options)
-        local success = false
-        if(primaryAction) then
-            success = true
-            if IsUnitDead("player") then    
-                local actionOptions = primaryAction[INDEX_ACTION_OPTIONS]
-                if actionOptions and actionOptions.visibleWhenDead == true then
-                    -- We also have to let other functions through, as many addons add new keybinds
-                    if(self.primaryCallbacks[self.itemActions.actionName] == nil) then
-                        self:SaveListPosition() -- allows other addons' keybinds to return to the current item slot index.
-                        primaryAction[INDEX_ACTION_CALLBACK]()
-                    else
-                        self.primaryCallbacks[self.itemActions.actionName]()
-                    end
-                else
-                    ZO_AlertEvent(EVENT_UI_ERROR, SI_CANNOT_DO_THAT_WHILE_DEAD)
-                end
-            else
-                if self.itemActions.slotActions:CheckPrimaryActionVisibility(options) then
-                    if(self.primaryCallbacks[self.itemActions.actionName] == nil) then
+    else
+	     -- We have to overwrite the DoPrimaryAction() function, replacing certain commands with the CallSecureProtected equivalent ("Use", "Link in Chat" are ones that need to be overridden)
+	    self.itemActions.slotActions.DoPrimaryAction = function(options)
+	        local self = self
+	        local primaryAction = self.itemActions.slotActions:GetAction(PRIMARY_ACTION_KEY, "primary", options)
+	        local success = false
+	        if(primaryAction) then
+	            success = true
+	            if IsUnitDead("player") then    
+	                local actionOptions = primaryAction[INDEX_ACTION_OPTIONS]
+	                if actionOptions and actionOptions.visibleWhenDead == true then
+	                    -- We also have to let other functions through, as many addons add new keybinds
+	                    if(self.primaryCallbacks[self.itemActions.actionName] == nil) then
+	                        self:SaveListPosition() -- allows other addons' keybinds to return to the current item slot index.
+	                        primaryAction[INDEX_ACTION_CALLBACK]()
+	                    else
+	                        self.primaryCallbacks[self.itemActions.actionName]()
+	                    end
+	                else
+	                    ZO_AlertEvent(EVENT_UI_ERROR, SI_CANNOT_DO_THAT_WHILE_DEAD)
+	                end
+	            else
+                	if(self.primaryCallbacks[self.itemActions.actionName] == nil) then
                         self:SaveListPosition()
                         primaryAction[INDEX_ACTION_CALLBACK]()
                     else
                         self.primaryCallbacks[self.itemActions.actionName]()
                     end
-                end
-            end
-        end
-        return success
+	            end
+	        end
+	        return success
+	    end   	
+    end
+
+
+    
+        -- We have to remap the callbacks which are located inside the "actions" scene, too!
+    if(self.primaryActionCallbacks == nil) then
+        self.primaryActionCallbacks = {
+            ["Link in Chat"] = function() -- "Link in Chat"
+                LinkInChat(self.itemActions.inventorySlot)
+            end 
+        }
     end
 
     self.itemActions:RefreshKeybindStrip()
 end
-
-
 
 function BUI.Inventory.InitializeItemList(self)
     self.itemList = self:AddList("Items", SetupItemList, BUI_VerticalParametricScrollList)
