@@ -1,6 +1,6 @@
 ﻿local _
 
--- A modified header class for the inventory system. 
+-- A modified header class for the inventory system.
 -- Has the added functionality of a tabbar (of type BUI_TabBarScrollList)
 
 -----------------------------------------------------------------------------
@@ -12,15 +12,6 @@ local CENTER_BASELINE   = ZO_GAMEPAD_HEADER_CONTROLS.CENTER_BASELINE
 local TITLE_BASELINE    = ZO_GAMEPAD_HEADER_CONTROLS.TITLE_BASELINE
 local DIVIDER_SIMPLE    = ZO_GAMEPAD_HEADER_CONTROLS.DIVIDER_SIMPLE
 local DIVIDER_PIPPED    = ZO_GAMEPAD_HEADER_CONTROLS.DIVIDER_PIPPED
-local DATA1             = ZO_GAMEPAD_HEADER_CONTROLS.DATA1
-local DATA1HEADER       = ZO_GAMEPAD_HEADER_CONTROLS.DATA1HEADER
-local DATA2             = ZO_GAMEPAD_HEADER_CONTROLS.DATA2
-local DATA2HEADER       = ZO_GAMEPAD_HEADER_CONTROLS.DATA2HEADER
-local DATA3             = ZO_GAMEPAD_HEADER_CONTROLS.DATA3
-local DATA3HEADER       = ZO_GAMEPAD_HEADER_CONTROLS.DATA3HEADER
-local DATA4             = ZO_GAMEPAD_HEADER_CONTROLS.DATA4
-local DATA4HEADER       = ZO_GAMEPAD_HEADER_CONTROLS.DATA4HEADER
-local MESSAGE           = ZO_GAMEPAD_HEADER_CONTROLS.MESSAGE
 
 local DEFAULT_LAYOUT        = ZO_GAMEPAD_HEADER_LAYOUTS.DATA_PAIRS_SEPARATE
 local FIRST_DATA_CONTROL    = DATA1HEADER
@@ -56,11 +47,37 @@ local function TabBar_Setup(control, data, selected, selectedDuringRebuild, enab
     local iconPath = data.iconsNormal[1]
     icon:SetTexture(iconPath)
 
+    --local newColor = ZO_ColorDef:New(1, 0.95, 0.5)
+
+    icon:SetColor(1, 0.95, 0.5, icon:GetControlAlpha())
+
     if data.canSelect == nil then
         data.canSelect = true
     end
     ZO_GamepadMenuHeaderTemplate_Setup(control, data, selected, selectedDuringRebuild, enabled, activated)
 
+end
+
+function BUI.GenericHeader.Initialize(control, createTabBar, layout)
+    control.controls =
+        {
+            [TABBAR]            = control:GetNamedChild("TabBar"),
+            [TITLE]             = control:GetNamedChild("TitleContainer"):GetNamedChild("Title"),
+            [TITLE_BASELINE]    = control:GetNamedChild("TitleContainer"),
+            [DIVIDER_SIMPLE]    = control:GetNamedChild("DividerSimple"),
+            [DIVIDER_PIPPED]    = control:GetNamedChild("DividerPipped"),
+        }
+
+        if createTabBar == ZO_GAMEPAD_HEADER_TABBAR_CREATE then
+            local tabBarControl = control.controls[TABBAR]
+
+            tabBarControl:SetHidden(false)
+
+        --    control.tabBar = BUI_TabBarScrollList:New(tabBarControl, tabBarControl:GetNamedChild("LeftIcon"), tabBarControl:GetNamedChild("RightIcon"))
+            --control.tabBar:AddDataTemplate("BUI_GamepadTabBarTemplate", TabBar_Setup, ZO_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
+        end
+
+    --    ZO_GamepadGenericHeader_SetDataLayout(control, layout or DEFAULT_LAYOUT)
 end
 
 local TEXT_ALIGN_RIGHT = 2
@@ -76,8 +93,12 @@ function BUI.GenericHeader.SetEquipText(control, isEquipMain)
     equipControl:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)
 end
 
+function BUI.GenericHeader.RefreshData()
+    -- blank
+end
+
 function BUI.GenericHeader.Refresh(control, data, blockTabBarCallbacks)
-    ZO_GamepadGenericHeader_RefreshData(control, data)
+    --ZO_GamepadGenericHeader_RefreshData(control, data)
 
     local tabBarControl = control.controls[TABBAR]
     tabBarControl:SetHidden(false)

@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "1.81a"
+BUI.version = "1.81"
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -14,6 +14,9 @@ BUI.Interface = {}
 BUI.Interface.Window = {}
 
 BUI.Inventory = {}
+BUI.Inventory.List = {}
+BUI.Inventory.Class = {}
+BUI.Inventory.SlotActions = ZO_ItemSlotActionsController:Subclass()
 BUI.Writs = {}
 
 BUI.GuildStore = {}
@@ -24,7 +27,7 @@ BUI.GuildStore.Sell = {}
 
 BUI.Banking = {}
 BUI.Banking.Class = {}
-BUI.Banking.WithdrawDepositGold = {}
+BUI.Banking.WithdrawDepositGold = {} -- delete this!
 
 BUI.Tooltips = {}
 BUI.Player = {}
@@ -67,18 +70,18 @@ function BUI.DisplayNumber(number)
 	  local i, j, minus, int, fraction = tostring(number):find('([-]?)(%d+)([.]?%d*)')
 	  -- reverse the int-string and append a comma to all blocks of 3 digits
 	  int = int:reverse():gsub("(%d%d%d)", "%1,")
-	  -- reverse the int-string back remove an optional comma and put the 
+	  -- reverse the int-string back remove an optional comma and put the
 	  -- optional minus and fractional part back
 	  return minus .. int:reverse():gsub("^,", "") .. fraction
 end
 
 
--- 
+--
 
-BUI.Lib.stringTable = { 
+BUI.Lib.stringTable = {
 	INV_ITEM_ALL = "|cFF6600All|r",
 	INV_ITEM_MATERIALS = "Materials",
-	INV_ITEM_QUICKSLOT = "|cFF6600Quickslot|r",
+	INV_ITEM_QUICKSLOT = "|cFF6600Consumable|r",
 	INV_ITEM_WEAPONS = "Weapons",
 	INV_ITEM_APPAREL = "Apparel",
 	INV_ITEM_CONSUMABLE = "Consumable",
@@ -115,14 +118,16 @@ function Init_ModulePanel(moduleName, moduleDesc)
 		author = "prasoc",
 		version = BUI.version,
 		slashCommand = "/bui",
-		registerForRefresh = true,	
+		registerForRefresh = true,
 		registerForDefaults = true
 	}
 end
 
+ZO_GamepadInventory_OnInitialize = function(...) end
+
 -- Allows us to override ZO_GamepadInventory:New, but we need to catch it early!
 function BUI_GamepadInventory_OnInitialize(control)
-    GAMEPAD_INVENTORY = ZO_GamepadInventory:New(control)
+    --GAMEPAD_INVENTORY = BUI.Inventory.Class:New(control)
 end
 
 

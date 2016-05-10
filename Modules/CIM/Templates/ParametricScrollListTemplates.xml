@@ -1,6 +1,6 @@
 <GuiXml>
     <Controls>
-    
+
         <!-- The below 2 controls are redefinitions of ZOS's original NavQuadrant_1 anchors to facilitate smooth transitions and compatibility -->
         <Control name="BUI_GamepadGrid_NavQuadrant_1_Anchors" virtual="true">
             <Dimensions x="BUI_GAMEPAD_DEFAULT_PANEL_WIDTH" />
@@ -12,7 +12,7 @@
             <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
             <Anchor point="BOTTOMLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />
         </Control>
-        
+
         <Control name="BUI_VerticalParametricScrollListTemplate" mouseEnabled="true" virtual="true">
             <OnMouseWheel>
                 if self.scrollList.active then
@@ -23,7 +23,7 @@
                     end
                 end
             </OnMouseWheel>
-            
+
             <OnMouseUp>
                 -- Allow mouse click to select an item, will probably have an option to disable this behaviour
                     -- Will implement
@@ -33,7 +33,7 @@
                 <Scroll name="$(parent)Scroll">
                     <AnchorFill />
                 </Scroll>
-                
+
                 <!-- This is the select background. Uses 1 DDS file and essentially stretches the image with 'x' between 0.25 and 0.75 to fill the width of the scroll list -->
                 <Control name="$(parent)SelectBg">
                     <Controls>
@@ -55,7 +55,7 @@
                         </Texture>
                     </Controls>
                 </Control>
-                
+
                 <Control name="$(parent)ListScreenCenterIsAlongTop">
                     <Anchor point="TOPLEFT" relativeTo="GuiRoot" relativePoint="LEFT" />
                     <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOM" />
@@ -64,12 +64,12 @@
                         <Control name="$(parent)ListScreenCenter">
                             <Anchor point="CENTER" relativePoint="TOPRIGHT" />
                         </Control>
-                        
+
                     </Controls>
                 </Control>
             </Controls>
         </Control>
-     
+
         <Control name="BUI_Gamepad_ParametricList_Screen_ListContainer" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors" virtual="true">
             <Controls>
                 <Control name="$(parent)List" inherits="BUI_VerticalParametricScrollListTemplate">
@@ -81,7 +81,7 @@
 
                     <Anchor point="TOPLEFT" relativeTo="$(grandparent)HeaderContainerHeader" relativePoint="BOTTOMLEFT" offsetX="-50" offsetY="-25"/>
                     <Anchor point="BOTTOMRIGHT" relativeTo="$(grandparent)FooterContainerFooter" relativePoint="TOPRIGHT" offsetX="0" offsetY="10" />
-                  
+
                     <Controls>
                         <Label name="$(parent)NoItemsLabel"  font="ZoFontGamepadCondensed36" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                             <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" />

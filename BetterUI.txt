@@ -2,7 +2,7 @@
 ## Description: Makes the gamepad interface usable!
 ## APIVersion: 100014
 ## Author: |c0066FFprasoc|r [EU]
-## Version: 1.81a
+## Version: 1.81
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
@@ -45,6 +45,8 @@ Modules\CIM\Module.lua
 
 ; Module: Inventory Enhanced
 Modules\Inventory\Templates\GamepadInventory.xml
+Modules\Inventory\InventorySlot.lua
+Modules\Inventory\InventoryList.lua
 Modules\Inventory\Inventory.lua
 Modules\Inventory\Module.lua
 

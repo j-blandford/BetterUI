@@ -1,7 +1,7 @@
 -- Templated from "common/gamepad/zo_gamepadparametricscrolllisttemplates.lua" in order to heavily alter the function of the scrollList.
     -- Any better way to do this? please contact me!
 
-ZO_TABBAR_MOVEMENT_TYPES = 
+ZO_TABBAR_MOVEMENT_TYPES =
 {
     PAGE_FORWARD = ZO_PARAMETRIC_MOVEMENT_TYPES.LAST,
     PAGE_BACK = ZO_PARAMETRIC_MOVEMENT_TYPES.LAST + 1,
@@ -278,7 +278,7 @@ end
 
 function BUI_HorizontalListEntrySetup(control, data, selected, reselectingDuringRebuild, enabled, selectedFromParent)
       control:SetText(data.text)
-    
+
     local color = selectedFromParent and ZO_SELECTED_TEXT or ZO_DISABLED_TEXT
     control:SetColor(color:UnpackRGBA())
 end
@@ -303,8 +303,6 @@ end
 
 
 
-ZO_TABBAR_ICON_WIDTH = 75
-ZO_TABBAR_ICON_HEIGHT = 75
 BUI_TabBarScrollList = BUI_HorizontalParametricScrollList:Subclass()
 function BUI_TabBarScrollList:New(control, leftIcon, rightIcon, data, onActivatedChangedFunction, onCommitWithItemsFunction, onClearedFunction)
     local list = BUI_HorizontalParametricScrollList.New(self, control, onActivatedChangedFunction, onCommitWithItemsFunction, onClearedFunction)
@@ -521,4 +519,47 @@ function BUI_VerticalParametricScrollListSubList:Deactivate()
     self.parentList:Activate()
     KEYBIND_STRIP:AddKeybindButtonGroup(self.parentKeybinds)
     self.control:SetHidden(true)
+end
+
+
+
+BUI_Gamepad_ParametricList_Screen = ZO_Gamepad_ParametricList_Screen:Subclass()
+
+function BUI_Gamepad_ParametricList_Screen:New(...)
+    local object = ZO_Gamepad_ParametricList_Screen.New(self)
+    object:Initialize(...)
+    return object
+end
+
+function BUI_Gamepad_ParametricList_Screen:Initialize(control, createTabBar, activateOnShow, scene)
+    control.owner = self
+    self.control = control
+
+    local mask = control:GetNamedChild("Mask")
+
+    local container = mask:GetNamedChild("Container")
+    control.container = container
+
+    self.activateOnShow = (activateOnShow ~= false) -- nil should be true
+    self:SetScene(scene)
+
+    local headerContainer = container:GetNamedChild("HeaderContainer")
+    control.header = headerContainer.header
+    self.headerFragment = ZO_ConveyorSceneFragment:New(headerContainer, ALWAYS_ANIMATE)
+
+    self.header = control.header
+    --ZO_GamepadGenericHeader_Initialize(self.header, createTabBar)
+
+    self.updateCooldownMS = 0
+
+    self.lists = {}
+    self:AddList("Main")
+    self._currentList = nil
+    self.addListTriggerKeybinds = false
+    self.listTriggerKeybinds = nil
+    self.listTriggerHeaderComparator = nil
+
+    self:InitializeKeybindStripDescriptors()
+
+    self.dirty = true
 end

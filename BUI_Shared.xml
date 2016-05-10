@@ -14,7 +14,7 @@
            <!--  <Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="LEFT" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_ICON_X_OFFSET" /> -->
            <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="RIGHT" offsetX="-22" />
         </Texture>
-        
+
 
         <Texture name="BUI_GamepadMenuEntryIconTemplate" tier="MEDIUM" inherits="ZO_MultiIcon" excludeFromResizeToFitExtents="true" level="1" pixelRoundingEnabled="true" virtual="true">
             <Dimensions x="24" y="24" />
@@ -25,12 +25,12 @@
                 </Texture>
             </Controls>
         </Texture>
-        
+
          <Label name="BUI_GamepadMenuEntryLabelTemplate" font="ZoFontGamepad34" verticalAlignment="CENTER" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" virtual="true">
             <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_INDENT"/>
             <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH_AFTER_INDENT"/>
         </Label>
-        
+
         <Control name="BUI_GamepadMenuEntryDimensionsTemplate" resizeToFitDescendents="true" virtual="true">
             <Controls>
                 <Control name="$(parent)RootSpacer">
@@ -39,14 +39,14 @@
                 </Control>
             </Controls>
         </Control>
-        
+
         <Control name="BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
             <OnInitialized>
                 ZO_SharedGamepadEntry_OnInitialized(self)
                 ZO_SharedGamepadEntry_SetHeightFromLabel(self)
             </OnInitialized>
         </Control>
-        
+
          <Control name="BUI_GamepadSubMenuEntryTemplate" inherits="BUI_GamepadMenuEntryDimensionsTemplate BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
             <Controls>
                 <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate"/>
@@ -64,7 +64,9 @@
                 </Texture>
 
                 <Texture name="$(parent)StatusIndicator" inherits="BUI_GamepadMenuEntryStatusIndicationTemplate" />
-                
+
+                <Texture name="$(parent)PlayerLockedIcon" inherits="ZO_GamepadMenuEntryPlayerLockedTemplate" />
+
                 <!-- Will have to make the below more generic -->
                 <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="495"/>
@@ -82,8 +84,8 @@
                 <Cooldown name="$(parent)Cooldown" inherits="BUI_GamepadMenuEntryCooldownTemplate" tier="MEDIUM" excludeFromResizeToFitExtents="true"/>
             </Controls>
         </Control>
-        
-        
+
+
          <Control name="BUI_GamepadMenuEntryTemplate" inherits="BUI_GamepadMenuEntryDimensionsTemplate BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
             <Controls>
                 <Label name="$(parent)Label" inherits="BUI_GamepadMenuEntryLabelTemplate" />
@@ -95,7 +97,7 @@
             </Controls>
         </Control>
 
-        
+
          <!-- Item Slot Related Scroll List Templates -->
         <Control name="BUI_GamepadItemEntryTemplate" inherits="BUI_GamepadMenuEntryTemplate" virtual="true">
             <Controls>
