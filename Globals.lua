@@ -54,17 +54,6 @@ function ddebug(str)
 	return d("|c0066ff[BUI]|r "..str)
 end
 
-function BUI.Lib.Checkbox(checkName, checkDesc, checkValue)
-return 	{
-			type = "checkbox",
-			name = checkName,
-			tooltip = checkDesc,
-			getFunc = function() return checkValue end,
-			setFunc = function(value) checkValue = value end,
-			width = "full",
-		}
-end
-
 -- Thanks to Bart Kiers for this function :)
 function BUI.DisplayNumber(number)
 	  local i, j, minus, int, fraction = tostring(number):find('([-]?)(%d+)([.]?%d*)')
@@ -76,20 +65,8 @@ function BUI.DisplayNumber(number)
 end
 
 
---
 
 BUI.Lib.stringTable = {
-	INV_ITEM_ALL = "|cFF6600All|r",
-	INV_ITEM_MATERIALS = "Materials",
-	INV_ITEM_QUICKSLOT = "|cFF6600Consumable|r",
-	INV_ITEM_WEAPONS = "Weapons",
-	INV_ITEM_APPAREL = "Apparel",
-	INV_ITEM_CONSUMABLE = "Consumable",
-	INV_ITEM_MISC = "Miscellaneous",
-	INV_ITEM_JUNK = "Junk",
-	TEXTURE_EQUIP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip.dds",
-	TEXTURE_EQUIP_BACKUP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_backup.dds",
-	TEXTURE_EQUIP_SLOT_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_quickslot.dds",
 	SI_INV_EQUIPSLOT_TITLE = "Equipping item...",
 	SI_INV_EQUIPSLOT_PROMPT = "Which <<1>> hand slot should the weapon go into?",
 	SI_INV_EQUIPSLOT_MAIN = "Main",
@@ -107,6 +84,7 @@ BUI.Lib.stringTable = {
 }
 
 function BUI.Lib.GetString(stringName)
+	ddebug("Depreciated BUI.Lib.GetString called: "..stringName)
 	return BUI.Lib.stringTable[stringName]
 end
 
@@ -124,13 +102,3 @@ function Init_ModulePanel(moduleName, moduleDesc)
 end
 
 ZO_GamepadInventory_OnInitialize = function(...) end
-
--- Allows us to override ZO_GamepadInventory:New, but we need to catch it early!
-function BUI_GamepadInventory_OnInitialize(control)
-    --GAMEPAD_INVENTORY = BUI.Inventory.Class:New(control)
-end
-
-
-function BUI_BankingWithdrawDepositGold_Initialize(control)
-    --GAMEPAD_BANKING_WITHDRAW_DEPOSIT_GOLD = BUI.Banking.WithdrawDepositGold:New(control)
-end

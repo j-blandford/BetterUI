@@ -48,14 +48,14 @@
         </Control>
 
          <Control name="BUI_GamepadSubMenuEntryTemplate" inherits="BUI_GamepadMenuEntryDimensionsTemplate BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
+           <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING"/>
+           <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
             <Controls>
-                <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate"/>
-
-                <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true">
-                    <Controls>
-                        <!-- To remove! Moved the stack count elsewhere -->
-                        <Label name="$(parent)StackCount" inherits="ZO_GamepadMenuEntryStackCountTemplate" excludeFromResizeToFitExtents="true"/>
-                    </Controls>
+                <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick">
+                        <Anchor point="TOPLEFT" offsetX="15"/>
+                </Label>
+                <Texture name="$(parent)Icon" inherits="BUI_MenuEntryIconTemplate" edgeColor="00000000">
+                    <Dimensions x="28" y="28" />
                 </Texture>
 
                 <Texture name="$(parent)EquippedMain" textureFile="BetterUI/Templates/Images/inv_equip.dds" excludeFromResizeToFitExtents="true" pixelRoundingEnabled="false">
