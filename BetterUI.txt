@@ -51,8 +51,8 @@ Modules\CIM\Module.lua
 Modules\Inventory\Templates\GamepadInventory.xml
 Modules\Inventory\Shrinkwrap\ZO_GamepadList.lua
 Modules\Inventory\Shrinkwrap\ZO_GamepadInventory.lua
-Modules\Inventory\InventorySlot.lua
 Modules\Inventory\InventoryList.lua
+Modules\Inventory\InventorySlot.lua
 Modules\Inventory\Inventory.lua
 Modules\Inventory\Module.lua
 

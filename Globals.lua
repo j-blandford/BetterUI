@@ -1,7 +1,11 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "1.81"
+BUI.version = "2.0"
+
+-- Program Global (scope of BUI, though) variable initialization
+BUI.WindowManager = GetWindowManager()
+BUI.EventManager = GetEventManager()
 
 -- pseudo-Class definitions
 BUI.CONST = {}
@@ -13,31 +17,35 @@ BUI.GenericFooter = {}
 BUI.Interface = {}
 BUI.Interface.Window = {}
 
-BUI.Inventory = {}
-BUI.Inventory.List = {}
-BUI.Inventory.Class = {}
-BUI.Inventory.SlotActions = ZO_ItemSlotActionsController:Subclass()
-BUI.Writs = {}
+BUI.Inventory = {
+	List = {},
+	Class = {}
+}
 
-BUI.GuildStore = {}
-BUI.GuildStore.Browse = {}
-BUI.GuildStore.BrowseResults = {}
-BUI.GuildStore.Listings = {}
-BUI.GuildStore.Sell = {}
+BUI.Writs = {
+	List = {}
+}
 
-BUI.Banking = {}
-BUI.Banking.Class = {}
-BUI.Banking.WithdrawDepositGold = {} -- delete this!
+BUI.GuildStore = {
+	Browse = {},
+	BrowseResults = {},
+	Listings = {},
+	Sell = {}
+}
 
-BUI.Tooltips = {}
-BUI.Player = {}
+BUI.Banking = {
+	Class = {}
+}
 
--- Program Global (scope of BUI, though) variable initialization
-BUI.WindowManager = GetWindowManager()
-BUI.EventManager = GetEventManager()
+BUI.Tooltips = {
+
+}
+
+BUI.Player = {
+	ResearchTraits = {}
+}
+
 BUI.Settings = {}
-BUI.Writs.List = {}
-BUI.Player.ResearchTraits = {}
 
 BUI.DefaultSettings = {
 	firstInstall = true,
@@ -100,5 +108,3 @@ function Init_ModulePanel(moduleName, moduleDesc)
 		registerForDefaults = true
 	}
 end
-
-ZO_GamepadInventory_OnInitialize = function(...) end

@@ -2,6 +2,10 @@ local TEXTURE_EQUIP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip.dds"
 local TEXTURE_EQUIP_BACKUP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_backup.dds"
 local TEXTURE_EQUIP_SLOT_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_quickslot.dds"
 
+function BUI_Inventory_DefaultItemSortComparator(left, right)
+    return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
+end
+
 function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
     if label then
         label:SetFont("$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick")
@@ -9,12 +13,16 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
             label:SetModifyTextType(data.modifyTextType)
         end
 
-        local labelTxt = data.text
-
         local dS = data.dataSource
         local bagId = dS.bagId
         local slotIndex = dS.slotIndex
         local isLocked = dS.isPlayerLocked
+
+        local labelTxt = ""
+
+        if isLocked then labelTxt = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" end
+
+        labelTxt = labelTxt .. data.text
 
         if(data.stackCount > 1) then
            labelTxt = labelTxt..zo_strformat(" |cFFFFFF(<<1>>)|r",data.stackCount)
@@ -26,9 +34,9 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
             local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
             local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
 
-            if(data.stolen) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_stolen.dds|t" end
-            if(hasEnchantment) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
-            if(setItem) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
+            if data.stolen then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_stolen.dds|t" end
+            if hasEnchantment then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
+            if setItem then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
         end
 
         label:SetText(labelTxt)
@@ -38,10 +46,6 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
             labelColor = labelColor(data)
         end
         label:SetColor(labelColor:UnpackRGBA())
-
-        if isLocked then
-            label:SetAlpha(0.5)
-        end
 
         if ZO_ItemSlot_SetupTextUsableAndLockedColor then
             ZO_ItemSlot_SetupTextUsableAndLockedColor(label, data.meetsUsageRequirements)
@@ -64,7 +68,6 @@ function BUI_IconSetup(statusIndicator, equippedIcon, data)
         statusIndicator:AddIcon(NEW_ICON_TEXTURE)
         statusIndicator:SetHidden(false)
     end
-
 
     local slotIndex = data.dataSource.slotIndex
 
@@ -164,7 +167,7 @@ end
 function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuringRebuild, enabled, active)
     BUI_SharedGamepadEntryLabelSetup(control.label, data, selected)
 
-    control:GetNamedChild("ItemType"):SetText(string.upper(data.bestItemCategoryName))
+    control:GetNamedChild("ItemType"):SetText(string.upper(data.bestGamepadItemCategoryName))
     control:GetNamedChild("Stat"):SetText((data.dataSource.statValue == 0) and "-" or data.dataSource.statValue)
 
     -- Replace the "Value" with the market price of the item (in yellow)
@@ -193,6 +196,49 @@ function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuri
     BUI_IconSetup(control:GetNamedChild("StatusIndicator"), control:GetNamedChild("EquippedMain"), data)
 end
 
+local function GetCategoryTypeFromWeaponType(bagId, slotIndex)
+    local weaponType = GetItemWeaponType(bagId, slotIndex)
+    if weaponType == WEAPONTYPE_AXE or weaponType == WEAPONTYPE_HAMMER or weaponType == WEAPONTYPE_SWORD or weaponType == WEAPONTYPE_DAGGER then
+        return GAMEPAD_WEAPON_CATEGORY_ONE_HANDED_MELEE
+    elseif weaponType == WEAPONTYPE_TWO_HANDED_SWORD or weaponType == WEAPONTYPE_TWO_HANDED_AXE or weaponType == WEAPONTYPE_TWO_HANDED_HAMMER then
+        return GAMEPAD_WEAPON_CATEGORY_TWO_HANDED_MELEE
+    elseif weaponType == WEAPONTYPE_FIRE_STAFF or weaponType == WEAPONTYPE_FROST_STAFF or weaponType == WEAPONTYPE_LIGHTNING_STAFF then
+        return GAMEPAD_WEAPON_CATEGORY_DESTRUCTION_STAFF
+    elseif weaponType == WEAPONTYPE_HEALING_STAFF then
+        return GAMEPAD_WEAPON_CATEGORY_RESTORATION_STAFF
+    elseif weaponType == WEAPONTYPE_BOW then
+        return GAMEPAD_WEAPON_CATEGORY_TWO_HANDED_BOW
+    elseif weaponType ~= WEAPONTYPE_NONE then
+        return GAMEPAD_WEAPON_CATEGORY_UNCATEGORIZED
+    end
+end
+
+local function IsTwoHandedWeaponCategory(categoryType)
+    return (categoryType == GAMEPAD_WEAPON_CATEGORY_TWO_HANDED_MELEE or
+            categoryType == GAMEPAD_WEAPON_CATEGORY_DESTRUCTION_STAFF or
+            categoryType == GAMEPAD_WEAPON_CATEGORY_RESTORATION_STAFF or
+            categoryType == GAMEPAD_WEAPON_CATEGORY_TWO_HANDED_BOW)
+end
+
+local function GetBestItemCategoryDescription(itemData)
+    if itemData.equipType == EQUIP_TYPE_INVALID then
+        return GetString("SI_ITEMTYPE", itemData.itemType)
+    end
+    local categoryType = GetCategoryTypeFromWeaponType(itemData.bagId, itemData.slotIndex)
+    if categoryType ==  GAMEPAD_WEAPON_CATEGORY_UNCATEGORIZED then
+        local weaponType = GetItemWeaponType(itemData.bagId, itemData.slotIndex)
+        return GetString("SI_WEAPONTYPE", weaponType)
+    elseif categoryType then
+        return GetString("SI_GAMEPADWEAPONCATEGORY", categoryType)
+    end
+    local armorType = GetItemArmorType(itemData.bagId, itemData.slotIndex)
+    local itemLink = GetItemLink(itemData.bagId,itemData.slotIndex)
+    if armorType ~= ARMORTYPE_NONE then
+        return GetString("SI_ARMORTYPE", armorType).." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
+    end
+    return GetString("SI_ITEMTYPE", itemData.itemType)
+end
+
 -- END LOCAL FUNCTION DEFINITIONS
 
 BUI.Inventory.List = ZOS_GamepadInventoryList:Subclass()
@@ -208,7 +254,7 @@ function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selecte
     self.selectedDataCallback = selectedDataCallback
     self.entrySetupCallback = entrySetupCallback
     self.categorizationFunction = categorizationFunction
-    self.sortFunction = sortFunction
+    self.sortFunction = BUI_Inventory_DefaultItemSortComparator
     self.dataBySlotIndex = {}
     self.isDirty = true
     self.useTriggers = (useTriggers ~= false) -- nil => true
@@ -268,7 +314,7 @@ function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selecte
             if entry then
                 local itemData = SHARED_INVENTORY:GenerateSingleSlotData(self.inventoryType, slotIndex)
                 if itemData then
-                    itemData.bestGamepadItemCategoryName = ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription(itemData)
+                    itemData.bestGamepadItemCategoryName = GetBestItemCategoryDescription(itemData)
                     self:SetupItemEntry(entry, itemData)
                     self.list:RefreshVisible()
                 else -- The item was removed.
@@ -288,6 +334,21 @@ function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selecte
     SHARED_INVENTORY:RegisterCallback("FullInventoryUpdate", OnInventoryUpdated)
     SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", OnSingleSlotInventoryUpdate)
 end
+
+function BUI.Inventory.List:GenerateSlotTable()
+    local slots = {}
+
+    local bagId = self.inventoryType
+    local slotIndex = ZO_GetNextBagSlotIndex(bagId)
+    while slotIndex do
+        self:AddSlotDataToTable(slots, slotIndex)
+        slotIndex = ZO_GetNextBagSlotIndex(bagId, slotIndex)
+    end
+
+    table.sort(slots, self.sortFunction or ItemSortFunc)
+    return slots
+end
+
 
 function BUI.Inventory.List:RefreshList()
     if self.control:IsHidden() then

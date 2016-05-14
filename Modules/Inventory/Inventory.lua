@@ -4,7 +4,7 @@ local BLOCK_TABBAR_CALLBACK = true
 ZO_GAMEPAD_INVENTORY_SCENE_NAME = "gamepad_inventory_root"
 
 -- Note: "ZOS_*" functions correspond to the shrinkwrapped modules
-BUI.Inventory.Class = ZOS_GamepadInventory:Subclass() -- allows us to completely alter the interface, this is a VERY powerful feature - use sparingly!
+BUI.Inventory.Class = ZOS_GamepadInventory:Subclass()
 
 local NEW_ICON_TEXTURE = "EsoUI/Art/Miscellaneous/Gamepad/gp_icon_new.dds"
 
@@ -31,6 +31,22 @@ local PRIMARY_ACTION_KEY = 1
 -- All of the callbacks that are possible on the "A" button press have to have CallSecureProtected()
 local PRIMARY_ACTION = 1
 
+
+local DEFAULT_GAMEPAD_ITEM_SORT =
+{
+    bestGamepadItemCategoryName = { tiebreaker = "name" },
+    name = { tiebreaker = "requiredLevel" },
+    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
+    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
+    iconFile = { tiebreaker = "uniqueId" },
+    uniqueId = { isId64 = true },
+}
+
+function BUI_Inventory_DefaultItemSortComparator(left, right)
+    return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
+end
+
+
 -- local function copied (and slightly edited for unequipped items!) from "inventoryutils_gamepad.lua"
 local function BUI_GetEquipSlotForEquipType(equipType)
     local equipSlot = nil
@@ -45,6 +61,7 @@ local function BUI_GetEquipSlotForEquipType(equipType)
     end
     return equipSlot
 end
+
 
 -- The below functions are included from ZO_GamepadInventory.lua
 local function MenuEntryTemplateEquality(left, right)
@@ -203,7 +220,6 @@ function BUI.Inventory.Class:SaveListPosition()
     self.categoryPositions[self.categoryList.selectedIndex] = self._currentList.selectedIndex
 end
 
-
 function BUI.Inventory.Class:InitializeCategoryList()
 
     self.categoryList = self:AddList("Category", SetupCategoryList)
@@ -281,14 +297,14 @@ function BUI.Inventory.Class:TryEquipItem(inventorySlot)
 end
 
 function BUI.Inventory.Class:NewCategoryItem(categoryName, filterType, iconFile, FilterFunct)
-    if FilterFunct == nil then
+    if not FilterFunct == nil then
         FilterFunct = ZO_InventoryUtils_DoesNewItemMatchFilterType
     end
 
     local isListEmpty = self:IsItemListEmpty(nil, filterType)
     if not isListEmpty then
         local name = GetString(categoryName)
-        local hasAnyNewItems = SHARED_INVENTORY:AreAnyItemsNew(ZO_InventoryUtils_DoesNewItemMatchFilterType, filterType, BAG_BACKPACK)
+        local hasAnyNewItems = SHARED_INVENTORY:AreAnyItemsNew(FilterFunct, filterType, BAG_BACKPACK)
         local data = ZO_GamepadEntryData:New(name, iconFile, nil, nil, hasAnyNewItems)
         data.filterType = filterType
         data:SetIconTintOnSelection(true)
@@ -308,6 +324,23 @@ function BUI.Inventory.Class:RefreshCategoryList()
     --end
 
     self:NewCategoryItem(SI_BUI_INV_ITEM_ALL, nil, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_all.dds", BUI_InventoryUtils_All)
+
+    do
+        local name = "Crafting Bag"
+        local iconFile = "/EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds"
+        local data = ZO_GamepadEntryData:New(name, iconFile)
+        data.onClickDirection = "CRAFTBAG"
+        data:SetIconTintOnSelection(true)
+
+        local newColor = ZO_ColorDef:New(1, 0.95, 0.5)
+
+        data:SetIconTint(newColor,newColor)
+
+        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+        BUI.GenericHeader.AddToList(self.header, data)
+        if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
+    end
+
     self:NewCategoryItem(SI_BUI_INV_ITEM_WEAPONS, ITEMFILTERTYPE_WEAPONS, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_weapons.dds")
     self:NewCategoryItem(SI_BUI_INV_ITEM_APPAREL, ITEMFILTERTYPE_ARMOR, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_apparel.dds")
 
@@ -328,21 +361,7 @@ function BUI.Inventory.Class:RefreshCategoryList()
     --         if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
     --     end
     -- end
-    do
-        local name = "Crafting Bag"
-        local iconFile = "/EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds"
-        local data = ZO_GamepadEntryData:New(name, iconFile)
-        data.onClickDirection = "CRAFTBAG"
-        data:SetIconTintOnSelection(true)
 
-        local newColor = ZO_ColorDef:New(1, 0.95, 0.5)
-
-        data:SetIconTint(newColor,newColor)
-
-        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
-        BUI.GenericHeader.AddToList(self.header, data)
-        if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
-    end
     do
         if(BUI.Settings.Modules["CIM"].enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
             local isListEmpty = self:IsItemListEmpty(nil, nil)
@@ -364,6 +383,8 @@ function BUI.Inventory.Class:RefreshCategoryList()
 
     self.categoryList:Commit()
     self.header.tabBar:Commit()
+
+    --self.header.tabBar:MoveNext()
 end
 
 function BUI.Inventory.Class:InitializeHeader()
@@ -426,20 +447,6 @@ function BUI.Inventory.Class:RefreshCraftBagList()
     self.craftBagList:RefreshList()
 end
 
-local DEFAULT_GAMEPAD_ITEM_SORT =
-{
-    bestItemCategoryName = { tiebreaker = "name" },
-    name = { tiebreaker = "requiredLevel" },
-    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
-    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
-    iconFile = { tiebreaker = "uniqueId" },
-    uniqueId = { isId64 = true },
-}
-
-function ZO_GamepadInventory_DefaultItemSortComparator(left, right)
-    return ZO_TableOrderingFunction(left, right, "itemTypeString", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
-end
-
 function BUI.Inventory.Class:RefreshItemList()
     self.itemList:Clear()
     if self.categoryList:IsEmpty() then return end
@@ -466,7 +473,7 @@ function BUI.Inventory.Class:RefreshItemList()
 
         filteredDataTable = SHARED_INVENTORY:GenerateFullSlotData(comparator, BAG_BACKPACK, BAG_WORN)
         for _, itemData in pairs(filteredDataTable) do
-            itemData.bestItemCategoryName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+            itemData.bestGamepadItemCategoryName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
             if itemData.bagId == BAG_WORN then
                 itemData.isEquippedInCurrentCategory = false
                 itemData.isEquippedInAnotherCategory = false
@@ -480,11 +487,13 @@ function BUI.Inventory.Class:RefreshItemList()
             else
                 local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
                 itemData.isEquippedInCurrentCategory = slotIndex and true or nil
+
+
             end
             ZO_InventorySlot_SetType(itemData, SLOT_TYPE_GAMEPAD_INVENTORY_ITEM)
         end
     end
-    table.sort(filteredDataTable, ZO_GamepadInventory_DefaultItemSortComparator)
+    table.sort(filteredDataTable, BUI_Inventory_DefaultItemSortComparator)
 
     local lastBestItemCategoryName
     for i, itemData in ipairs(filteredDataTable) do
@@ -506,14 +515,23 @@ function BUI.Inventory.Class:RefreshItemList()
         if remaining > 0 and duration > 0 then
             data:SetCooldown(remaining, duration)
         end
-		data.itemTypeString = lastBestItemCategoryName
+		data.bestGamepadItemCategoryName = itemData.bestGamepadItemCategoryName
         data.isEquippedInCurrentCategory = itemData.isEquippedInCurrentCategory
         data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
+
+        if itemData.bestGamepadItemCategoryName ~= lastBestItemCategoryName then
+            data:SetHeader(itemData.bestGamepadItemCategoryName)
+        end
 
 		data.isJunk = itemData.isJunk
         if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["CIM"].enableJunk then
             self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
         end
+
+
+
+        lastBestItemCategoryName = itemData.bestGamepadItemCategoryName
+
     end
 
     self.itemList:Commit()
@@ -542,6 +560,8 @@ end
 
 function BUI.Inventory.Class:InitializeItemList()
     self.itemList = self:AddList("Items", SetupItemList, BUI_VerticalParametricScrollList)
+
+--    self.itemList:SetSortFunction(BUI_Inventory_DefaultItemSortComparator)
 
     self.itemList:SetOnSelectedDataChangedCallback(function(list, selectedData)
         self.currentlySelectedData = selectedData
@@ -709,6 +729,8 @@ function BUI.Inventory.Class:OnDeferredInitialize()
 
     SHARED_INVENTORY:RegisterCallback("FullQuestUpdate", OnInventoryUpdated)
     SHARED_INVENTORY:RegisterCallback("SingleQuestUpdate", OnInventoryUpdated)
+
+    self.categoryList.defaultSelectedIndex = 1
 
 end
 
@@ -940,7 +962,6 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
     local function ListBackFunction()
         self:SwitchActiveList(INVENTORY_CATEGORY_LIST)
     end
-    --ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.itemFilterKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON, ListBackFunction)
 
     self.toggleCompareModeKeybindStripDescriptor =
     {
