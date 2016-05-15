@@ -85,15 +85,6 @@ function BUI.InitModuleOptions()
 			name = "Enhanced Interface Global Behaviour",
 			width = "full",
 		},
-		{
-			type = "checkbox",
-			name = "Enable \"Junk\" feature",
-			tooltip = "Allows items to be marked as \"junk\" as a filter to de-clutter the inventory",
-			getFunc = function() return BUI.Settings.Modules["CIM"].enableJunk end,
-			setFunc = function(value) BUI.Settings.Modules["CIM"].enableJunk = value end,
-			disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
-			width = "full",
-		},
         {
             type = "editbox",
             name = "Number of lines to skip on trigger",

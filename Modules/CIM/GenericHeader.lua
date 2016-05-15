@@ -47,9 +47,11 @@ local function TabBar_Setup(control, data, selected, selectedDuringRebuild, enab
     local iconPath = data.iconsNormal[1]
     icon:SetTexture(iconPath)
 
-    --local newColor = ZO_ColorDef:New(1, 0.95, 0.5)
-
-    icon:SetColor(1, 0.95, 0.5, icon:GetControlAlpha())
+	if not data.filterType then
+		icon:SetColor(1, 0.95, 0.5, icon:GetControlAlpha())
+	else 
+		icon:SetColor(1, 1, 1, icon:GetControlAlpha())
+	end
 
     if data.canSelect == nil then
         data.canSelect = true

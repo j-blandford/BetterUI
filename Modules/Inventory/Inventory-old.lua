@@ -414,7 +414,7 @@ function BUI.Inventory.RefreshItemActionList(self)
     local targetData = self.actionMode == ITEM_LIST_ACTION_MODE and self.itemList:GetTargetData() or self:GenerateItemSlotData(self.categoryList:GetTargetData())
     self:SetSelectedInventoryData(targetData)
 
-    if(BUI.Settings.Modules["CIM"].enableJunk) then
+    if(BUI.Settings.Modules["Inventory"].enableJunk) then
         if(self.categoryList:GetTargetData().showJunk ~= nil) then
             self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Unmark as Junk", UnmarkAsJunk, "secondary"}
         else
@@ -504,7 +504,7 @@ function BUI.Inventory.RefreshItemList(self)
         data.isEquippedInCurrentCategory = itemData.isEquippedInCurrentCategory
         data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
         data.isJunk = itemData.isJunk
-        if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["CIM"].enableJunk then
+        if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["Inventory"].enableJunk then
             self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
         end
     end
@@ -649,7 +649,7 @@ function BUI.Inventory.RefreshCategoryList(self)
         end
     end
     do
-        if(BUI.Settings.Modules["CIM"].enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
+        if(BUI.Settings.Modules["Inventory"].enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
             local isListEmpty = self:IsItemListEmpty(nil, nil)
             if not isListEmpty then
                 local name = BUI.Lib.GetString("INV_ITEM_JUNK")

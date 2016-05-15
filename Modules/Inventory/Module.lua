@@ -18,6 +18,14 @@ local function Init(mId, moduleName)
 		},
 		{
 			type = "checkbox",
+			name = "Enable \"Junk\" feature",
+			tooltip = "Allows items to be marked as \"junk\" as a filter to de-clutter the inventory",
+			getFunc = function() return BUI.Settings.Modules["Inventory"].enableJunk end,
+			setFunc = function(value) BUI.Settings.Modules["Inventory"].enableJunk = value end,
+			width = "full",
+		},
+		{
+			type = "checkbox",
 			name = "Save inventory position",
 			tooltip = "Keeps track of the list position on each category for quicker browsing",
 			getFunc = function() return BUI.Settings.Modules["Inventory"].savePosition end,
@@ -63,7 +71,7 @@ function BUI.Inventory.InitModule(m_options)
     m_options["enableWrapping"] = true
     m_options["showMarketPrice"] = false
     m_options["useTriggersForSkip"] = false
-
+    m_options["enableJunk"] = false
     return m_options
 end
 

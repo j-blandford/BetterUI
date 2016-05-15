@@ -2,6 +2,17 @@ local TEXTURE_EQUIP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip.dds"
 local TEXTURE_EQUIP_BACKUP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_backup.dds"
 local TEXTURE_EQUIP_SLOT_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_quickslot.dds"
 
+local DEFAULT_GAMEPAD_ITEM_SORT =
+{
+    bestGamepadItemCategoryName = { tiebreaker = "name" },
+    name = { tiebreaker = "requiredLevel" },
+    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
+    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
+    iconFile = { tiebreaker = "uniqueId" },
+    uniqueId = { isId64 = true },
+}
+
+
 function BUI_Inventory_DefaultItemSortComparator(left, right)
     return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
@@ -349,7 +360,8 @@ function BUI.Inventory.List:GenerateSlotTable()
     return slots
 end
 
-
+-- this function is a VERY basic generic refresh, with no form of sorting or specific interface information
+-- if you want to use BUI.Inventory.List, it will be very useful if you OVERWRITE THIS METHOD!
 function BUI.Inventory.List:RefreshList()
     if self.control:IsHidden() then
         self.isDirty = true
@@ -364,7 +376,12 @@ function BUI.Inventory.List:RefreshList()
     local currentBestCategoryName = nil
     for i, itemData in ipairs(slots) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
-        self:SetupItemEntry(entry, itemData)
+		self:SetupItemEntry(entry, itemData)
+
+		if itemData.bestGamepadItemCategoryName ~= currentBestCategoryName then
+			currentBestCategoryName = itemData.bestGamepadItemCategoryName
+			entry:SetHeader(currentBestCategoryName)
+		end
 
         self.list:AddEntry(self.template, entry)
 
