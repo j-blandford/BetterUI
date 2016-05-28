@@ -55,6 +55,17 @@ function BUI.InitModuleOptions()
 			--disabled = function() return true end,
 			width = "full",
 		},
+		-- {
+		-- 	type = "checkbox",
+		-- 	name = "Enable |c0066FFEnhanced Store|r",
+		-- 	tooltip = "Completely redesigns the gamepad's store purchase interface",
+		-- 	getFunc = function() return BUI.Settings.Modules["Store"].m_enabled end,
+		-- 	setFunc = function(value) BUI.Settings.Modules["Store"].m_enabled = value
+		-- 							dirtyModules = true  end,
+		-- 	disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
+		-- 	--disabled = function() return true end,
+		-- 	width = "full",
+		-- },
 		{
 			type = "checkbox",
 			name = "Enable Daily Writ module",
@@ -70,6 +81,15 @@ function BUI.InitModuleOptions()
 			tooltip = "Vast improvements to the ingame tooltips and unit frames",
 			getFunc = function() return BUI.Settings.Modules["Tooltips"].m_enabled end,
 			setFunc = function(value) BUI.Settings.Modules["Tooltips"].m_enabled = value
+									dirtyModules = true  end,
+			width = "full",
+		},
+		{
+			type = "checkbox",
+			name = "Enhance Compatibility with other Addons",
+			tooltip = "BUI heavily alters the interface, breaking lots of addons. This will enhance compatibility. Be aware: things MIGHT break!",
+			getFunc = function() return BUI.Settings.Modules["CIM"].enhanceCompat end,
+			setFunc = function(value) BUI.Settings.Modules["CIM"].enhanceCompat = value
 									dirtyModules = true  end,
 			width = "full",
 		},
@@ -150,12 +170,15 @@ function BUI.LoadModules()
 
 	if(not BUI._initialized) then
 		ddebug("Initializing BUI...")
-		BUI.GuildStore.FixMM() -- fix MM is independent of any module, maybe put it into the BUI.Lib namespace?
+		BUI.GuildStore.FixMM() -- fix MM is independent of any module
 		if(BUI.Settings.Modules["CIM"].m_enabled) then
 			BUI.CIM.Setup()
 			if(BUI.Settings.Modules["GuildStore"].m_enabled) then
 				BUI.GuildStore.Setup()
 			end
+			-- if(BUI.Settings.Modules["Store"].m_enabled) then
+			-- 	--BUI.Store.Setup()
+			-- end
 			if(BUI.Settings.Modules["Inventory"].m_enabled) then
 				BUI.Inventory.Setup()
 			end
@@ -187,7 +210,7 @@ function BUI.Initialize(event, addon)
 	if(BUI.Settings.firstInstall) then
 		local m_CIM = BUI.ModuleOptions(BUI.CIM, BUI.Settings.Modules["CIM"])
 		local m_Inventory = BUI.ModuleOptions(BUI.Inventory, BUI.Settings.Modules["Inventory"])
-		local m_Banking = BUI.ModuleOptions(BUI.Inventory, BUI.Settings.Modules["Banking"])
+		local m_Banking = BUI.ModuleOptions(BUI.Banking, BUI.Settings.Modules["Banking"])
 		local m_Writs = BUI.ModuleOptions(BUI.Writs, BUI.Settings.Modules["Writs"])
 		local m_GuildStore = BUI.ModuleOptions(BUI.GuildStore, BUI.Settings.Modules["GuildStore"])
 		local m_Tooltips = BUI.ModuleOptions(BUI.Tooltips, BUI.Settings.Modules["Tooltips"])
@@ -197,13 +220,15 @@ function BUI.Initialize(event, addon)
 
 	BUI.EventManager:UnregisterForEvent("BetterUIInitialize", EVENT_ADD_ON_LOADED)
 
+	BUI.InitModuleOptions()
+
 	if(IsInGamepadPreferredMode()) then
 		BUI.LoadModules()
 	else
 		BUI._initialized = false
 	end
 
-	BUI.InitModuleOptions()
+
 end
 
 -- register our event handler function to be called to do initialization

@@ -9,13 +9,21 @@ BUI.EventManager = GetEventManager()
 
 -- pseudo-Class definitions
 BUI.CONST = {}
-BUI.Lib = {}
+--BUI.Lib = {}
 BUI.CIM = {}
 
 BUI.GenericHeader = {}
 BUI.GenericFooter = {}
 BUI.Interface = {}
 BUI.Interface.Window = {}
+
+-- BUI.Store = {
+-- 	Class = {},
+-- 	Window = {},
+--
+-- 	List = {},
+-- 	Buy = {}
+-- }
 
 BUI.Inventory = {
 	List = {},
@@ -70,30 +78,6 @@ function BUI.DisplayNumber(number)
 	  -- reverse the int-string back remove an optional comma and put the
 	  -- optional minus and fractional part back
 	  return minus .. int:reverse():gsub("^,", "") .. fraction
-end
-
-
-
-BUI.Lib.stringTable = {
-	SI_INV_EQUIPSLOT_TITLE = "Equipping item...",
-	SI_INV_EQUIPSLOT_PROMPT = "Which <<1>> hand slot should the weapon go into?",
-	SI_INV_EQUIPSLOT_MAIN = "Main",
-	SI_INV_EQUIPSLOT_OFFHAND = "Off",
-	INV_EQUIP_PROMPT_MAIN = "Main Hand",
-	INV_EQUIP_PROMPT_BACKUP = "Off Hand",
-	INV_EQUIP_PROMPT_CANCEL = "Cancel",
-	SI_INV_SWITCH_EQUIPSLOT = "Switch Slot",
-	SI_INV_EQUIPSLOT = "|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_weapons.dds|t |c0066FF<<1>>|r",
-	SI_INV_EQUIPSLOT_MAIN = "Main",
-	SI_INV_EQUIPSLOT_BACKUP = "Backup",
-	BANKING_WITHDRAW = "Withdraw",
-	BANKING_DEPOSIT = "Deposit",
-	BANKING_BUYSPACE = "Buy More Space (<<1>>)",
-}
-
-function BUI.Lib.GetString(stringName)
-	ddebug("Depreciated BUI.Lib.GetString called: "..stringName)
-	return BUI.Lib.stringTable[stringName]
 end
 
 function Init_ModulePanel(moduleName, moduleDesc)

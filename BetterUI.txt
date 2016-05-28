@@ -47,6 +47,12 @@ Modules\CIM\Templates\InterfaceLibrary.xml
 Modules\CIM\InterfaceLibrary.lua
 Modules\CIM\Module.lua
 
+; Module: Store Enhanced
+;Modules\Store\Templates\StoreWindow.xml
+;Modules\Store\Shrinkwrap\storewindowcomponent_gamepad.lua
+;Modules\Store\Store.lua
+;Modules\Store\Module.lua
+
 ; Module: Inventory Enhanced
 Modules\Inventory\Templates\GamepadInventory.xml
 Modules\Inventory\Shrinkwrap\ZO_GamepadList.lua

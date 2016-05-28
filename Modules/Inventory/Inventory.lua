@@ -32,21 +32,6 @@ local PRIMARY_ACTION_KEY = 1
 local PRIMARY_ACTION = 1
 
 
-local DEFAULT_GAMEPAD_ITEM_SORT =
-{
-    bestGamepadItemCategoryName = { tiebreaker = "name" },
-    name = { tiebreaker = "requiredLevel" },
-    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
-    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
-    iconFile = { tiebreaker = "uniqueId" },
-    uniqueId = { isId64 = true },
-}
-
-function BUI_Inventory_DefaultItemSortComparator(left, right)
-    return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
-end
-
-
 -- local function copied (and slightly edited for unequipped items!) from "inventoryutils_gamepad.lua"
 local function BUI_GetEquipSlotForEquipType(equipType)
     local equipSlot = nil
@@ -326,19 +311,22 @@ function BUI.Inventory.Class:RefreshCategoryList()
     --    self:NewCategoryItem(categoryItem.name, categoryItem.filterType, categoryItem.iconFile, categoryItem.FilterFunct)
     --end
     do
-		if HasCraftBagAccess() then
+		--if HasCraftBagAccess() then
 	        local name = "Crafting Bag"
 	        local iconFile = "/EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds"
 	        local data = ZO_GamepadEntryData:New(name, iconFile)
 	        data.onClickDirection = "CRAFTBAG"
 	        data:SetIconTintOnSelection(true)
 
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
 
 
 	        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
 	        BUI.GenericHeader.AddToList(self.header, data)
 	        if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
-		end
+		--end
     end
 
 	self:NewCategoryItem(SI_BUI_INV_ITEM_ALL, nil, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_all.dds", BUI_InventoryUtils_All)
@@ -442,11 +430,28 @@ function BUI.Inventory.Class:InitializeHeader()
 
      BUI.GenericHeader.Refresh(self.header, self.categoryHeaderData, ZO_GAMEPAD_HEADER_TABBAR_CREATE)
 
+	 BUI.GenericFooter.Initialize(self)
+	 BUI.GenericFooter.Refresh(self)
+
 	 self.header.tabBar:SetDefaultSelectedIndex(2)
 end
 
 function BUI.Inventory.Class:RefreshCraftBagList()
     self.craftBagList:RefreshList()
+end
+
+function BUI.Inventory.Class:InitializeInventoryVisualData(itemData)
+    self.uniqueId = itemData.uniqueId   --need this on self so that it can be used for a compare by EqualityFunction in ParametricScrollList,
+	self.bestItemCategoryName = itemData.bestItemCategoryName
+    self:SetDataSource(itemData)        --SharedInventory modifies the dataSource's uniqueId before the GamepadEntryData is rebuilt,
+	self.dataSource.requiredChampionPoints = GetItemRequiredChampionPoints(itemData.bagId, itemData.slotIndex)
+    self:AddIcon(itemData.icon)         --so by copying it over, we can still have access to the old one during the Equality check
+    if not itemData.questIndex then
+        self:SetNameColors(self:GetColorsBasedOnQuality(self.quality))  --quest items are only white
+    end
+    self.cooldownIcon = itemData.icon or itemData.iconFile
+
+    self:SetFontScaleOnSelection(false)    --item entries don't grow on selection
 end
 
 function BUI.Inventory.Class:RefreshItemList()
@@ -475,7 +480,7 @@ function BUI.Inventory.Class:RefreshItemList()
 
         filteredDataTable = SHARED_INVENTORY:GenerateFullSlotData(comparator, BAG_BACKPACK, BAG_WORN)
         for _, itemData in pairs(filteredDataTable) do
-            itemData.bestGamepadItemCategoryName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+            itemData.bestItemCategoryName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
             if itemData.bagId == BAG_WORN then
                 itemData.isEquippedInCurrentCategory = false
                 itemData.isEquippedInAnotherCategory = false
@@ -495,13 +500,15 @@ function BUI.Inventory.Class:RefreshItemList()
             ZO_InventorySlot_SetType(itemData, SLOT_TYPE_GAMEPAD_INVENTORY_ITEM)
         end
     end
-    table.sort(filteredDataTable, BUI_Inventory_DefaultItemSortComparator)
+
+	table.sort(filteredDataTable, ZO_GamepadInventory_DefaultItemSortComparator)
 
     local lastBestItemCategoryName
     for i, itemData in ipairs(filteredDataTable) do
         local nextItemData = filteredDataTable[i + 1]
 
         local data = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
+		data.InitializeInventoryVisualData = BUI.Inventory.Class.InitializeInventoryVisualData
         data:InitializeInventoryVisualData(itemData)
 
         local remaining, duration
@@ -517,12 +524,13 @@ function BUI.Inventory.Class:RefreshItemList()
         if remaining > 0 and duration > 0 then
             data:SetCooldown(remaining, duration)
         end
-		data.bestGamepadItemCategoryName = itemData.bestGamepadItemCategoryName
+		data.bestItemCategoryName = itemData.bestItemCategoryName
+		data.bestGamepadItemCategoryName = itemData.bestItemCategoryName
         data.isEquippedInCurrentCategory = itemData.isEquippedInCurrentCategory
         data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
 
-        if itemData.bestGamepadItemCategoryName ~= lastBestItemCategoryName then
-            data:SetHeader(itemData.bestGamepadItemCategoryName)
+        if itemData.bestItemCategoryName ~= lastBestItemCategoryName then
+            data:SetHeader(itemData.bestItemCategoryName)
         end
 
 		data.isJunk = itemData.isJunk
@@ -532,7 +540,7 @@ function BUI.Inventory.Class:RefreshItemList()
 
 
 
-        lastBestItemCategoryName = itemData.bestGamepadItemCategoryName
+        lastBestItemCategoryName = itemData.bestItemCategoryName
 
     end
 
@@ -601,7 +609,7 @@ function BUI.Inventory.Class:UpdateRightTooltip()
     local selectedItemData = self.currentlySelectedData
 	local selectedEquipSlot = BUI_GetEquipSlotForEquipType(selectedItemData.dataSource.equipType)
     local equipSlotHasItem = select(2, GetEquippedItemInfo(selectedEquipSlot))
-    if selectedItemData and (not equipSlotHasItem or BUI.Settings.Modules["Inventory"]) then
+    if selectedItemData and (not equipSlotHasItem or BUI.Settings.Modules["Inventory"].displayCharAttributes) then
         GAMEPAD_TOOLTIPS:LayoutItemStatComparison(GAMEPAD_RIGHT_TOOLTIP, selectedItemData.bagId, selectedItemData.slotIndex, selectedEquipSlot)
         GAMEPAD_TOOLTIPS:SetStatusLabelText(GAMEPAD_RIGHT_TOOLTIP, GetString(SI_GAMEPAD_INVENTORY_ITEM_COMPARE_TOOLTIP_TITLE))
     elseif GAMEPAD_TOOLTIPS:LayoutBagItem(GAMEPAD_RIGHT_TOOLTIP, BAG_WORN, selectedEquipSlot) then
@@ -618,7 +626,7 @@ end
 function BUI.Inventory.Class:InitializeItemList()
     self.itemList = self:AddList("Items", SetupItemList, BUI_VerticalParametricScrollList)
 
---    self.itemList:SetSortFunction(BUI_Inventory_DefaultItemSortComparator)
+    self.itemList:SetSortFunction(ZO_GamepadInventory_DefaultItemSortComparator)
 
     self.itemList:SetOnSelectedDataChangedCallback(function(list, selectedData)
         self.currentlySelectedData = selectedData
@@ -745,13 +753,9 @@ function BUI.Inventory.Class:OnDeferredInitialize()
         end
     end
 
-    --self:SetActiveKeybinds(self.categoryListKeybindStripDescriptor)
-
     self:RefreshCategoryList()
-    --self:SetCurrentList(self.categoryList)
 
     self:SetSelectedItemUniqueId(self:GenerateItemSlotData(self.categoryList:GetTargetData()))
-    --self.actionMode = CATEGORY_ITEM_ACTION_MODE
     self:RefreshHeader()
     self:ActivateHeader()
 
@@ -788,7 +792,6 @@ function BUI.Inventory.Class:Initialize(control)
     GAMEPAD_INVENTORY_ROOT_SCENE = ZO_Scene:New(ZO_GAMEPAD_INVENTORY_SCENE_NAME, SCENE_MANAGER)
     BUI_Gamepad_ParametricList_Screen.Initialize(self, control, ZO_GAMEPAD_HEADER_TABBAR_CREATE, false, GAMEPAD_INVENTORY_ROOT_SCENE)
 
-    -- need this earlier than deferred init so trade can split stacks before inventory is possibly viewed
     self:InitializeSplitStackDialog()
 
     local function OnCancelDestroyItemRequest()
@@ -817,6 +820,8 @@ function BUI.Inventory.Class:Initialize(control)
         end
     end
 
+	--self:SetDefaultSort(BUI_ITEM_SORT_BY.SORT_NAME)
+
     control:RegisterForEvent(EVENT_CANCEL_MOUSE_REQUEST_DESTROY_ITEM, OnCancelDestroyItemRequest)
     control:RegisterForEvent(EVENT_VISUAL_LAYER_CHANGED, RefreshVisualLayer)
     control:SetHandler("OnUpdate", OnUpdate)
@@ -837,6 +842,10 @@ function BUI.Inventory.Class:RefreshHeader(blockCallback)
     BUI.GenericHeader.Refresh(self.header, headerData, blockCallback)
 
     self:RefreshCategoryList()
+end
+
+function BUI.Inventory.RefreshFooter(self)
+    BUI.GenericFooter.Refresh(self.footer)
 end
 
 function BUI.Inventory.Class:Select()
@@ -978,14 +987,22 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
         },
 		{
 			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
-            name = GetString(SI_BUI_INV_SWITCH_EQUIPSLOT),
+            name = function()
+				local selectedData = self.categoryList.selectedData
+				return (selectedData.filterType == ITEMFILTERTYPE_QUICKSLOT) and GetString(SI_BUI_INV_ACTION_QUICKSLOT_ASSIGN) or
+									 GetString(SI_BUI_INV_SWITCH_EQUIPSLOT) end,
             keybind = "UI_SHORTCUT_SECONDARY",
             visible = function()
                 return true
             end,
             callback = function()
-                self.equipToMainSlot = not self.equipToMainSlot
-                BUI.GenericHeader.SetEquipText(self.header, self.equipToMainSlot)
+				local selectedData = self.categoryList.selectedData
+				if selectedData.filterType == ITEMFILTERTYPE_QUICKSLOT then
+					self:ShowQuickslot()
+				else
+	                self.equipToMainSlot = not self.equipToMainSlot
+	                BUI.GenericHeader.SetEquipText(self.header, self.equipToMainSlot)
+				end
             end,
 		},
         {

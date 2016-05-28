@@ -61,6 +61,14 @@ local function Init(mId, moduleName)
             setFunc = function(value) BUI.Settings.Modules["Inventory"].showMarketPrice = value end,
             width = "full",
         },
+		{
+            type = "checkbox",
+            name = "Display character attributes on the right tooltip?",
+            tooltip = "Show the character attributes on the right tooltip rather than seeing the current equipped item",
+            getFunc = function() return BUI.Settings.Modules["Inventory"].displayCharAttributes end,
+            setFunc = function(value) BUI.Settings.Modules["Inventory"].displayCharAttributes = value end,
+            width = "full",
+        },
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
@@ -72,6 +80,7 @@ function BUI.Inventory.InitModule(m_options)
     m_options["showMarketPrice"] = false
     m_options["useTriggersForSkip"] = false
     m_options["enableJunk"] = false
+	m_options["displayCharAttributes"] = true
     return m_options
 end
 
@@ -100,6 +109,7 @@ function BUI.Inventory.Setup()
 
 	--.
 
+
 	GAMEPAD_INVENTORY = BUI.Inventory.Class:New(BUI_GamepadInventoryTopLevel) -- Bam! Initialise the custom inventory class so it's integrated neatly
 
 
@@ -117,10 +127,10 @@ function BUI.Inventory.Setup()
 
 
     -- Just some modification to the Nav_1_Quadrant to be wider and cleaner
-    GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("LeftDivider"):SetWidth(4)
-    GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("RightDivider"):SetWidth(4)
-	GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-    GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, BUI_GAMEPAD_DEFAULT_PANEL_WIDTH+66, 54)
+    -- GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("LeftDivider"):SetWidth(4)
+    -- GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("RightDivider"):SetWidth(4)
+	-- GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
+    -- GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, BUI_GAMEPAD_DEFAULT_PANEL_WIDTH+66, 54)
 
 	inv = GAMEPAD_INVENTORY
 

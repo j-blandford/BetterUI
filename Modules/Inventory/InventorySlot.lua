@@ -10,6 +10,8 @@ local INDEX_ACTION_OPTIONS = 5
 local PRIMARY_ACTION_KEY = 1
 
 -- Main class definition is here
+-- Note: these classes WILL be removed in the near future!
+
 BUI.Inventory.SlotActions = ZO_ItemSlotActionsController:Subclass()
 
 -- This is a way to overwrite the ItemSlotAction's primary command. This is done so that "TryUseItem" and other functions use "CallSecureProtected" when activated

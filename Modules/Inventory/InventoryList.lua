@@ -326,6 +326,7 @@ function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selecte
                 local itemData = SHARED_INVENTORY:GenerateSingleSlotData(self.inventoryType, slotIndex)
                 if itemData then
                     itemData.bestGamepadItemCategoryName = GetBestItemCategoryDescription(itemData)
+					itemData.requiredChampionPoints = GetItemLinkRequiredChampionPoints(itemData)
                     self:SetupItemEntry(entry, itemData)
                     self.list:RefreshVisible()
                 else -- The item was removed.
@@ -345,6 +346,23 @@ function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selecte
     SHARED_INVENTORY:RegisterCallback("FullInventoryUpdate", OnInventoryUpdated)
     SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", OnSingleSlotInventoryUpdate)
 end
+
+function BUI.Inventory.List:AddSlotDataToTable(slotsTable, slotIndex)
+    local itemFilterFunction = self.itemFilterFunction
+    local categorizationFunction = self.categorizationFunction or ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription
+
+    local slotData = SHARED_INVENTORY:GenerateSingleSlotData(self.inventoryType, slotIndex)
+    if slotData then
+        if (not itemFilterFunction) or itemFilterFunction(slotData) then
+            -- itemData is shared in several places and can write their own value of bestItemCategoryName.
+            -- We'll use bestGamepadItemCategoryName instead so there are no conflicts.
+            slotData.bestGamepadItemCategoryName = categorizationFunction(slotData)
+			slotData.requiredChampionPoints = GetItemLinkRequiredChampionPoints(slotData)
+            table.insert(slotsTable, slotData)
+        end
+    end
+end
+
 
 function BUI.Inventory.List:GenerateSlotTable()
     local slots = {}

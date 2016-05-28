@@ -17,9 +17,13 @@ ZO_CreateStringId("SI_BUI_INV_EQUIP_PROMPT_BACKUP","Off Hand")
 ZO_CreateStringId("SI_BUI_INV_EQUIP_PROMPT_CANCEL","Cancel")
 
 ZO_CreateStringId("SI_BUI_INV_SWITCH_EQUIPSLOT","Switch Slot")
+ZO_CreateStringId("SI_BUI_INV_ACTION_QUICKSLOT_ASSIGN","Assign Quickslot")
 
 ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_MAIN","Main")
 ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_BACKUP","Backup")
 ZO_CreateStringId("SI_BUI_BANKING_WITHDRAW","Withdraw")
 ZO_CreateStringId("SI_BUI_BANKING_DEPOSIT","Deposit")
 ZO_CreateStringId("SI_BUI_BANKING_BUYSPACE","Buy More Space (<<1>>)")
+
+-- Imagery, you probably dont need to localise these strings
+ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT","|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_weapons.dds|t |c0066FF<<1>>|r")
