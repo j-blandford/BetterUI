@@ -350,6 +350,8 @@ end
 function BUI.Inventory.List:AddSlotDataToTable(slotsTable, slotIndex)
     local itemFilterFunction = self.itemFilterFunction
     local categorizationFunction = self.categorizationFunction or ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription
+	
+	d(self.inventoryType)
 
     local slotData = SHARED_INVENTORY:GenerateSingleSlotData(self.inventoryType, slotIndex)
     if slotData then
@@ -357,7 +359,11 @@ function BUI.Inventory.List:AddSlotDataToTable(slotsTable, slotIndex)
             -- itemData is shared in several places and can write their own value of bestItemCategoryName.
             -- We'll use bestGamepadItemCategoryName instead so there are no conflicts.
             slotData.bestGamepadItemCategoryName = categorizationFunction(slotData)
-			slotData.requiredChampionPoints = GetItemLinkRequiredChampionPoints(slotData)
+			
+			if self.inventoryType ~= BAG_VIRTUAL then -- virtual items don't have any champion points associated with them
+				slotData.requiredChampionPoints = GetItemLinkRequiredChampionPoints(slotData)
+			end
+			
             table.insert(slotsTable, slotData)
         end
     end

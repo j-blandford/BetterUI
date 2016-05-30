@@ -133,8 +133,8 @@ local function GetBestItemCategoryDescription(itemData)
     return GetString("SI_ITEMTYPE", itemData.itemType)
 end
 
-function BUI_InventoryUtils_MatchMaterials(itemData)
-    return (ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, ITEMFILTERTYPE_CRAFTING)) and not ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, ITEMFILTERTYPE_QUICKSLOT)
+function BUI_InventoryUtils_MatchWeapons(itemData)
+    return ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, ITEMFILTERTYPE_WEAPONS) or ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, ITEMFILTERTYPE_CONSUMABLE)
 end
 
 function BUI_InventoryUtils_All(itemData)
@@ -245,12 +245,12 @@ end
 
 local function GetItemDataFilterComparator(filteredEquipSlot, nonEquipableFilterType)
     return function(itemData)
-        if filteredEquipSlot then
-            return ZO_Character_DoesEquipSlotUseEquipType(filteredEquipSlot, itemData.equipType)
-        end
         if nonEquipableFilterType then
-            return ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, nonEquipableFilterType)
+
+            return ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, nonEquipableFilterType) or 
+				(itemData.equipType == EQUIP_TYPE_POISON and nonEquipableFilterType == ITEMFILTERTYPE_WEAPONS) -- will fix soon, patched to allow Poison in "Weapons"
         else
+			-- for "All"
             return true
         end
 
@@ -278,14 +278,16 @@ function BUI.Inventory.Class:TryEquipItem(inventorySlot)
         end
     elseif equipType == EQUIP_TYPE_COSTUME then
         CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_COSTUME, 1)
-    else
+    elseif equipType == EQUIP_TYPE_POISON then
+		CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_POISON or EQUIP_SLOT_BACKUP_POISON, 1)
+	else
         -- Else, it's a weapon, so show a dialog so the user can pick either slot!
         ZO_Dialogs_ShowDialog(BUI_EQUIP_SLOT_DIALOG, {inventorySlot, self.equipToMainSlot}, {mainTextParams={GetString(SI_BUI_INV_EQUIPSLOT_MAIN)}}, true)
     end
 end
 
 function BUI.Inventory.Class:NewCategoryItem(categoryName, filterType, iconFile, FilterFunct)
-    if not FilterFunct == nil then
+    if FilterFunct == nil then
         FilterFunct = ZO_InventoryUtils_DoesNewItemMatchFilterType
     end
 
@@ -306,27 +308,21 @@ function BUI.Inventory.Class:RefreshCategoryList()
     self.categoryList:Clear()
     self.header.tabBar:Clear()
 
-
-    --for categoryItem in pairs(self.categoryItemCollection) do
-    --    self:NewCategoryItem(categoryItem.name, categoryItem.filterType, categoryItem.iconFile, categoryItem.FilterFunct)
-    --end
     do
-		--if HasCraftBagAccess() then
-	        local name = "Crafting Bag"
-	        local iconFile = "/EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds"
-	        local data = ZO_GamepadEntryData:New(name, iconFile)
-	        data.onClickDirection = "CRAFTBAG"
-	        data:SetIconTintOnSelection(true)
+        local name = "Crafting Bag"
+        local iconFile = "/EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds"
+        local data = ZO_GamepadEntryData:New(name, iconFile)
+        data.onClickDirection = "CRAFTBAG"
+        data:SetIconTintOnSelection(true)
 
-			if not HasCraftBagAccess() then
-				data.enabled = false
-			end
+		if not HasCraftBagAccess() then
+			data.enabled = false
+		end
 
-
-	        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
-	        BUI.GenericHeader.AddToList(self.header, data)
-	        if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
-		--end
+        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+        BUI.GenericHeader.AddToList(self.header, data)
+        if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
+	
     end
 
 	self:NewCategoryItem(SI_BUI_INV_ITEM_ALL, nil, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_all.dds", BUI_InventoryUtils_All)
