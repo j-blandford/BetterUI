@@ -96,11 +96,12 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
 			self.actionName = slotActions:GetPrimaryActionName()
 
 			-- Now check if the slot that has been found for the current item needs to be replaced with the CSP ones
-			if self.actionName == GetString(SI_ITEM_ACTION_USE) then
-				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+			if self.actionName == "Use" then
+				slotActions:AddSlotPrimaryAction("Use", function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
 			end
-			if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
-				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+			--slotActions:AddSlotAction(SI_ITEM_ACTION_EQUIP, function() GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary")
+			if self.actionName == "Equip" then
+				slotActions:AddSlotPrimaryAction("Equip", function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
 			end
         end
     end

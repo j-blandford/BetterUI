@@ -47,14 +47,7 @@ local function GetBestItemCategoryDescription(itemData)
     if armorType ~= ARMORTYPE_NONE then
         return GetString("SI_ARMORTYPE", armorType).." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
     end
-    local fullDesc = GetString("SI_ITEMTYPE", itemData.itemType)
-	
-	-- Stops types like "Poison" displaying "Poison" twice
-	if( fullDesc ~= GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))) then
-		fullDesc = fullDesc.." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
-	end
-	
-	return fullDesc
+    return GetString("SI_ITEMTYPE", itemData.itemType)
 end
 
 
@@ -63,8 +56,8 @@ local DEFAULT_GAMEPAD_ITEM_SORT =
 {
     itemCategoryName = { tiebreaker = "name" },
     name = { tiebreaker = "requiredLevel" },
-    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
-    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
+    requiredLevel = { tiebreaker = "requiredVeterankRank", isNumeric = true },
+    requiredVeterankRank = { tiebreaker = "iconFile", isNumeric = true },
     iconFile = { tiebreaker = "uniqueId" },
     uniqueId = { isId64 = true },
 }

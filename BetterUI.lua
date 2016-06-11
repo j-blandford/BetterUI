@@ -84,15 +84,15 @@ function BUI.InitModuleOptions()
 									dirtyModules = true  end,
 			width = "full",
 		},
-		-- {
-		-- 	type = "checkbox",
-		-- 	name = "Enhance Compatibility with other Addons",
-		-- 	tooltip = "BUI heavily alters the interface, breaking lots of addons. This will enhance compatibility. Be aware: things MIGHT break!",
-		-- 	getFunc = function() return BUI.Settings.Modules["CIM"].enhanceCompat end,
-		-- 	setFunc = function(value) BUI.Settings.Modules["CIM"].enhanceCompat = value
-		-- 							dirtyModules = true  end,
-		-- 	width = "full",
-		-- },
+		{
+			type = "checkbox",
+			name = "Enhance Compatibility with other Addons",
+			tooltip = "BUI heavily alters the interface, breaking lots of addons. This will enhance compatibility. Be aware: things MIGHT break!",
+			getFunc = function() return BUI.Settings.Modules["CIM"].enhanceCompat end,
+			setFunc = function(value) BUI.Settings.Modules["CIM"].enhanceCompat = value
+									dirtyModules = true  end,
+			width = "full",
+		},
 		{
 			type = "button",
 			name = "Apply Changes",
@@ -171,8 +171,6 @@ function BUI.LoadModules()
 	if(not BUI._initialized) then
 		ddebug("Initializing BUI...")
 		BUI.GuildStore.FixMM() -- fix MM is independent of any module
-		BUI.Player.GetResearch()
-		
 		if(BUI.Settings.Modules["CIM"].m_enabled) then
 			BUI.CIM.Setup()
 			if(BUI.Settings.Modules["GuildStore"].m_enabled) then
@@ -194,7 +192,7 @@ function BUI.LoadModules()
 		if(BUI.Settings.Modules["Tooltips"].m_enabled) then
 			BUI.Tooltips.Setup()
 		end
-		
+		BUI.Player.GetResearch()
 		ddebug("Finished! BUI is loaded")
 		BUI._initialized = true
 	end
@@ -206,7 +204,7 @@ function BUI.Initialize(event, addon)
 	if addon ~= BUI.name then return end
 
 	-- load our saved variables
-	BUI.Settings = ZO_SavedVars:New("BetterUISavedVars", 2.6, nil, BUI.DefaultSettings)
+	BUI.Settings = ZO_SavedVars:New("BetterUISavedVars", 2.5, nil, BUI.DefaultSettings)
 
 	-- Has the settings savedvars JUST been applied? then re-init the module settings
 	if(BUI.Settings.firstInstall) then
@@ -229,16 +227,6 @@ function BUI.Initialize(event, addon)
 	else
 		BUI._initialized = false
 	end
-	
-	-- local panelData = {
-	-- 	id = KEYBOARD_OPTIONS.currentPanelId,
-	-- 	name = "|cAFD3FFBetterUI|r|ceeeeee Modules",
-	-- }
-	-- 
-	-- KEYBOARD_OPTIONS.currentPanelId = panelData.id + 1
-	-- KEYBOARD_OPTIONS.panelNames[panelData.id] = panelData.name
-	-- 
-	-- ZO_GameMenu_AddSettingPanel(panelData)
 
 
 end

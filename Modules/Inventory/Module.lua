@@ -95,16 +95,19 @@ end
 function BUI.Inventory.Setup()
 	Init("Inventory", "Inventory")
 
-    -- -- Overwrite the destroy callback because everything called from GAMEPAD_INVENTORY will now be classed as "insecure"
-    ZO_InventorySlot_InitiateDestroyItem = function(inventorySlot)
-        SetCursorItemSoundsEnabled(false)
-        local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
-        CallSecureProtected("PickupInventoryItem",bag, index) -- > Here is the key change!
-        SetCursorItemSoundsEnabled(true)
-	
-        CallSecureProtected("PlaceInWorldLeftClick") -- DESTROY! (also needs to be a secure call)
-        return true
-    end
+    -- -- -- Overwrite the destroy callback because everything called from GAMEPAD_INVENTORY will now be classed as "insecure"
+    -- ZO_InventorySlot_InitiateDestroyItem = function(inventorySlot)
+    --     SetCursorItemSoundsEnabled(false)
+    --     local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
+    --     CallSecureProtected("PickupInventoryItem",bag, index) -- > Here is the key change!
+    --     SetCursorItemSoundsEnabled(true)
+	--
+    --     CallSecureProtected("PlaceInWorldLeftClick") -- DESTROY! (also needs to be a secure call)
+    --     return true
+    -- end
+	-- --
+
+	--.
 
 
 	GAMEPAD_INVENTORY = BUI.Inventory.Class:New(BUI_GamepadInventoryTopLevel) -- Bam! Initialise the custom inventory class so it's integrated neatly
@@ -125,25 +128,23 @@ function BUI.Inventory.Setup()
 
     -- Just some modification to the right tooltip to be cleaner
 	ZO_GamepadTooltipTopLevelLeftTooltipContainer.tip.maxFadeGradientSize=10
-	--ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetMouseEnabled(true)
-	--ZO_GamepadTooltipTopLevelLeftTooltipContainerTipScroll:SetMouseEnabled(true)
-	-- ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetHandler("OnMouseWheel", function(self, delta) 
-	-- 	d("OnMouseWheel")
-	-- 	d(self.scroll)
-	-- 	if true then
-	-- 		d("OnMouseWheel Active")
-	-- 		if delta > 0 then
-	-- 			--d("OnMouseWheel Prev")
-	-- 			self.scrollValue = self.scrollValue - 10
-	-- 		else
-	-- 			d("OnMouseWheel Next")
-	-- 			self.scrollValue = self.scrollValue + 10
-	-- 		end
-	-- 	end
-	-- end)
-	
-
-	GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.fragment.control.container:SetAnchor(3,ZO_GamepadTooltipTopLevelLeftTooltip,3,40,-100,0)		
+	ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetMouseEnabled(true)
+	ZO_GamepadTooltipTopLevelLeftTooltipContainerTipScroll:SetMouseEnabled(true)
+	ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetHandler("OnMouseWheel", function(self, delta) 
+		d("OnMouseWheel")
+		d(self.scroll)
+		if true then
+			d("OnMouseWheel Active")
+			if delta > 0 then
+				d("OnMouseWheel Prev")
+				self.scrollValue = self.scrollValue - 10
+			else
+				d("OnMouseWheel Next")
+				self.scrollValue = self.scrollValue + 10
+			end
+		end
+	end)
+		
 
 
 	inv = GAMEPAD_INVENTORY

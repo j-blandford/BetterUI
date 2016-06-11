@@ -2,7 +2,7 @@
 ## Description: Makes the gamepad interface usable!
 ## APIVersion: 100015
 ## Author: |c0066FFprasoc|r [EU]
-## Version: 2.05
+## Version: 2.01
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
@@ -37,7 +37,6 @@ Modules\CIM\Images\inv_equip_quickslot.dds
 Modules\CIM\Images\inv_stolen.dds
 Modules\CIM\Images\inv_enchanted.dds
 Modules\CIM\Images\inv_setitem.dds
-Modules\CIM\Images\inv_junk.dds
 Modules\CIM\Templates\GenericHeader.xml
 Modules\CIM\GenericHeader.lua
 Modules\CIM\Templates\GenericFooter.xml

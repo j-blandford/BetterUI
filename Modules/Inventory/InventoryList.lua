@@ -1,6 +1,6 @@
-local TEXTURE_EQUIP_ICON = "BetterUI/Modules/CIM/Images/inv_equip.dds"
-local TEXTURE_EQUIP_BACKUP_ICON = "BetterUI/Modules/CIM/Images/inv_equip_backup.dds"
-local TEXTURE_EQUIP_SLOT_ICON = "BetterUI/Modules/CIM/Images/inv_equip_quickslot.dds"
+local TEXTURE_EQUIP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip.dds"
+local TEXTURE_EQUIP_BACKUP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_backup.dds"
+local TEXTURE_EQUIP_SLOT_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_quickslot.dds"
 
 local DEFAULT_GAMEPAD_ITEM_SORT =
 {
@@ -12,135 +12,14 @@ local DEFAULT_GAMEPAD_ITEM_SORT =
     uniqueId = { isId64 = true },
 }
 
-local function GetCategoryFromItemType(itemType)
-    -- Alchemy
-    if      ITEMTYPE_REAGENT == itemType or 
-            ITEMTYPE_POTION_BASE == itemType or
-            ITEMTYPE_POISON_BASE == itemType then
-        return GAMEPAD_ITEM_CATEGORY_ALCHEMY
-
-    -- Bait
-    elseif  ITEMTYPE_LURE == itemType then
-        return GAMEPAD_ITEM_CATEGORY_BAIT
-
-    -- Blacksmith
-    elseif  ITEMTYPE_BLACKSMITHING_RAW_MATERIAL == itemType or 
-            ITEMTYPE_BLACKSMITHING_MATERIAL == itemType or 
-            ITEMTYPE_BLACKSMITHING_BOOSTER == itemType then
-        return GAMEPAD_ITEM_CATEGORY_BLACKSMITH
-
-    -- Clothier
-    elseif  ITEMTYPE_CLOTHIER_RAW_MATERIAL == itemType or 
-            ITEMTYPE_CLOTHIER_MATERIAL == itemType or 
-            ITEMTYPE_CLOTHIER_BOOSTER == itemType then
-        return GAMEPAD_ITEM_CATEGORY_CLOTHIER
-
-    -- Consumable
-    elseif  ITEMTYPE_DRINK == itemType or 
-            ITEMTYPE_FOOD == itemType or 
-            ITEMTYPE_RECIPE == itemType then
-        return GAMEPAD_ITEM_CATEGORY_CONSUMABLE
-
-    -- Constume
-    elseif  ITEMTYPE_COSTUME == itemType then
-        return GAMEPAD_ITEM_CATEGORY_COSTUME
-
-    -- Enchanting
-    elseif  ITEMTYPE_ENCHANTING_RUNE_POTENCY == itemType or 
-            ITEMTYPE_ENCHANTING_RUNE_ASPECT == itemType or 
-            ITEMTYPE_ENCHANTING_RUNE_ESSENCE == itemType then
-        return GAMEPAD_ITEM_CATEGORY_ENCHANTING
-
-    -- Glyphs
-    elseif  ITEMTYPE_GLYPH_WEAPON == itemType or 
-            ITEMTYPE_GLYPH_ARMOR == itemType or 
-            ITEMTYPE_GLYPH_JEWELRY == itemType then
-        return GAMEPAD_ITEM_CATEGORY_GLYPHS
-
-    -- Potion
-    elseif  ITEMTYPE_POTION == itemType then
-        return GAMEPAD_ITEM_CATEGORY_POTION
-
-    -- Provisioning
-    elseif  ITEMTYPE_INGREDIENT == itemType or 
-            ITEMTYPE_ADDITIVE == itemType or 
-            ITEMTYPE_SPICE == itemType or 
-            ITEMTYPE_FLAVORING == itemType then
-        return GAMEPAD_ITEM_CATEGORY_PROVISIONING
-
-    -- Siege
-    elseif  ITEMTYPE_SIEGE == itemType or
-            ITEMTYPE_AVA_REPAIR == itemType then
-        return GAMEPAD_ITEM_CATEGORY_SIEGE
-
-    -- Spellcrafting
-    elseif  ITEMTYPE_SPELLCRAFTING_TABLET == itemType then
-        return GAMEPAD_ITEM_CATEGORY_SPELLCRAFTING
-
-    -- Style Material
-    elseif  ITEMTYPE_RACIAL_STYLE_MOTIF == itemType or
-            ITEMTYPE_STYLE_MATERIAL == itemType then
-        return GAMEPAD_ITEM_CATEGORY_STYLE_MATERIAL
-
-    -- Soul Gem
-    elseif  ITEMTYPE_SOUL_GEM == itemType then
-        return GAMEPAD_ITEM_CATEGORY_SOUL_GEM
-
-    -- Tool
-    elseif  ITEMTYPE_LOCKPICK == itemType or
-            ITEMTYPE_TOOL == itemType then
-        return GAMEPAD_ITEM_CATEGORY_TOOL
-    
-    -- Trait Gem
-    elseif  ITEMTYPE_ARMOR_TRAIT == itemType or 
-            ITEMTYPE_WEAPON_TRAIT == itemType then
-        return GAMEPAD_ITEM_CATEGORY_TRAIT_GEM
-
-    -- Trophy
-    elseif  ITEMTYPE_TROPHY == itemType then
-        return GAMEPAD_ITEM_CATEGORY_TROPHY
-
-    -- Woodworking
-    elseif  ITEMTYPE_WOODWORKING_RAW_MATERIAL == itemType or 
-            ITEMTYPE_WOODWORKING_MATERIAL == itemType or 
-            ITEMTYPE_WOODWORKING_BOOSTER == itemType then
-        return GAMEPAD_ITEM_CATEGORY_WOODWORKING
-    end
-end
-
 
 function BUI_Inventory_DefaultItemSortComparator(left, right)
     return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
 
-local function GetMarketPrice(itemLink, stackCount)
-    if(stackCount == nil) then stackCount = 1 end
-
-    if(BUI.Settings.Modules["GuildStore"].ddIntegration and ddDataDaedra ~= nil) then
-        local dData = ddDataDaedra:GetKeyedItem(itemLink)
-        if(dData ~= nil) then
-            if(dData.wAvg ~= nil) then
-                return dData.wAvg*stackCount
-            end
-        end
-    end
-    if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
-        local mmData = MasterMerchant:itemStats(itemLink, false)
-        if(mmData.avgPrice ~= nil) then
-            return mmData.avgPrice*stackCount
-        end
-    end
-    return 0
-end
-
-
 function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
     if label then
-		if GetCVar("language.2") == "ru" then
-			label:SetFont("RuEso/fonts/ftn57.otf|28|soft-shadow-thick")
-		else
-			label:SetFont("$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick")
-		end
+        label:SetFont("$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick")
         if data.modifyTextType then
             label:SetModifyTextType(data.modifyTextType)
         end
@@ -353,43 +232,23 @@ local function IsTwoHandedWeaponCategory(categoryType)
 end
 
 local function GetBestItemCategoryDescription(itemData)
-    local category = nil 
-
-    if itemData.equipType == EQUIP_TYPE_RING then
-        category = GAMEPAD_ITEM_CATEGORY_RING
-    elseif itemData.itemType == ITEMTYPE_WEAPON then
-        category = GetCategoryFromWeapon(itemData)
-    elseif itemData.itemType == ITEMTYPE_ARMOR then
-        category = GetCategoryFromArmor(itemData)
-    else
-        category = GetCategoryFromItemType(itemData.itemType)
+    if itemData.equipType == EQUIP_TYPE_INVALID then
+        return GetString("SI_ITEMTYPE", itemData.itemType)
     end
-
-    if category then
-        return GetString("SI_GAMEPADITEMCATEGORY", category)
+    local categoryType = GetCategoryTypeFromWeaponType(itemData.bagId, itemData.slotIndex)
+    if categoryType ==  GAMEPAD_WEAPON_CATEGORY_UNCATEGORIZED then
+        local weaponType = GetItemWeaponType(itemData.bagId, itemData.slotIndex)
+        return GetString("SI_WEAPONTYPE", weaponType)
+    elseif categoryType then
+        return GetString("SI_GAMEPADWEAPONCATEGORY", categoryType)
     end
-
-    return zo_strformat(SI_INVENTORY_HEADER, GetString("SI_ITEMTYPE", itemData.itemType))
- end
-
--- local function GetBestItemCategoryDescription(itemData)
---     if itemData.equipType == EQUIP_TYPE_INVALID then
---         return GetString("SI_ITEMTYPE", itemData.itemType)
---     end
---     local categoryType = GetCategoryTypeFromWeaponType(itemData.bagId, itemData.slotIndex)
---     if categoryType ==  GAMEPAD_WEAPON_CATEGORY_UNCATEGORIZED then
---         local weaponType = GetItemWeaponType(itemData.bagId, itemData.slotIndex)
---         return GetString("SI_WEAPONTYPE", weaponType)
---     elseif categoryType then
---         return GetString("SI_GAMEPADWEAPONCATEGORY", categoryType)
---     end
---     local armorType = GetItemArmorType(itemData.bagId, itemData.slotIndex)
---     local itemLink = GetItemLink(itemData.bagId,itemData.slotIndex)
---     if armorType ~= ARMORTYPE_NONE then
---         return GetString("SI_ARMORTYPE", armorType).." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
---     end
---     return GetString("SI_ITEMTYPE", itemData.itemType)
--- end
+    local armorType = GetItemArmorType(itemData.bagId, itemData.slotIndex)
+    local itemLink = GetItemLink(itemData.bagId,itemData.slotIndex)
+    if armorType ~= ARMORTYPE_NONE then
+        return GetString("SI_ARMORTYPE", armorType).." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
+    end
+    return GetString("SI_ITEMTYPE", itemData.itemType)
+end
 
 -- END LOCAL FUNCTION DEFINITIONS
 
