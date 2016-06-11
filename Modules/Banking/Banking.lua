@@ -47,7 +47,14 @@ local function GetBestItemCategoryDescription(itemData)
     if armorType ~= ARMORTYPE_NONE then
         return GetString("SI_ARMORTYPE", armorType).." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
     end
-    return GetString("SI_ITEMTYPE", itemData.itemType)
+    local fullDesc = GetString("SI_ITEMTYPE", itemData.itemType)
+	
+	-- Stops types like "Poison" displaying "Poison" twice
+	if( fullDesc ~= GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))) then
+		fullDesc = fullDesc.." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
+	end
+	
+	return fullDesc
 end
 
 
@@ -56,8 +63,8 @@ local DEFAULT_GAMEPAD_ITEM_SORT =
 {
     itemCategoryName = { tiebreaker = "name" },
     name = { tiebreaker = "requiredLevel" },
-    requiredLevel = { tiebreaker = "requiredVeterankRank", isNumeric = true },
-    requiredVeterankRank = { tiebreaker = "iconFile", isNumeric = true },
+    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
+    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
     iconFile = { tiebreaker = "uniqueId" },
     uniqueId = { isId64 = true },
 }
@@ -407,7 +414,7 @@ function BUI.Banking.Class:InitializeKeybind()
     self.withdrawDepositKeybinds = {
             alignment = KEYBIND_STRIP_ALIGN_LEFT,
                 {
-                    name = function() return (self.currentMode == LIST_WITHDRAW) and BUI.Lib.GetString("BANKING_WITHDRAW") or BUI.Lib.GetString("BANKING_DEPOSIT") end,
+                    name = function() return (self.currentMode == LIST_WITHDRAW) and GetString(SI_BUI_BANKING_WITHDRAW) or GetString(SI_BUI_BANKING_DEPOSIT) end,
                     keybind = "UI_SHORTCUT_PRIMARY",
                     callback = function()
                         self:SaveListPosition()
@@ -604,11 +611,9 @@ function BUI.Banking.Init()
     BUI.Banking.Window:AddColumn("Stat",705)
     BUI.Banking.Window:AddColumn("Value",775)
 
-    --BUI.Banking.Window.selectedDataCallback = function(control, data) GAMEPAD_TOOLTIPS:LayoutBagItem(GAMEPAD_LEFT_TOOLTIP, data.bagId, data.slotIndex) end
-
     BUI.Banking.Window:RefreshVisible()
 
     SCENE_MANAGER.scenes['gamepad_banking'] = SCENE_MANAGER.scenes['BUI_BANKING']
 
-    tw = BUI.Banking.Window
+    --tw = BUI.Banking.Window --dev mode
 end

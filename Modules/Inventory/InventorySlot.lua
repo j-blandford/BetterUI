@@ -10,6 +10,8 @@ local INDEX_ACTION_OPTIONS = 5
 local PRIMARY_ACTION_KEY = 1
 
 -- Main class definition is here
+-- Note: these classes WILL be removed in the near future!
+
 BUI.Inventory.SlotActions = ZO_ItemSlotActionsController:Subclass()
 
 -- This is a way to overwrite the ItemSlotAction's primary command. This is done so that "TryUseItem" and other functions use "CallSecureProtected" when activated
@@ -77,8 +79,6 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
                     end,
     }
 
-
-
     local function PrimaryCommandHasBind()
         return (self.actionName ~= nil) or self:HasSelectedAction()
     end
@@ -96,12 +96,11 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
 			self.actionName = slotActions:GetPrimaryActionName()
 
 			-- Now check if the slot that has been found for the current item needs to be replaced with the CSP ones
-			if self.actionName == "Use" then
-				slotActions:AddSlotPrimaryAction("Use", function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+			if self.actionName == GetString(SI_ITEM_ACTION_USE) then
+				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
 			end
-			--slotActions:AddSlotAction(SI_ITEM_ACTION_EQUIP, function() GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary")
-			if self.actionName == "Equip" then
-				slotActions:AddSlotPrimaryAction("Equip", function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+			if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
+				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
 			end
         end
     end

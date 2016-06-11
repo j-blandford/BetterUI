@@ -65,6 +65,8 @@ function BUI.Interface.Window:SetSpinnerValue(max, value)
     self.spinner:SetValue(value)
 end
 
+
+
 function BUI.Interface.Window:ActivateSpinner()
     self.spinner:SetHidden(false)
     self.spinner:Activate()
@@ -166,10 +168,10 @@ end
 
 function BUI.Interface.Window:RefreshVisible()
     self:RefreshList()
-    -- self.list.selectedDataCallback = function(list, selectedData) 
+    -- self.list.selectedDataCallback = function(list, selectedData)
     --     ddebug("SetOnSelectedDataChangedCallback called")
     --     self.currentSelection = selectedData
-    --     self:OnItemSelectedChange(selectedData) 
+    --     self:OnItemSelectedChange(selectedData)
     -- end
     self:GetList():RefreshVisible()
 end

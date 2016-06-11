@@ -7,7 +7,7 @@ function BUI.GenericFooter:Initialize()
 end
 
 function BUI.GenericFooter:Refresh()
-	-- a hack until I completely generalize these functions... :/
+	-- a hack until I completely generalize these functions... 
 	if(self.footer.GoldLabel ~= nil) then
 		self.footer.GoldLabel:SetText(zo_strformat("|cFFD700<<1>>|r |t16:16:/esoui/art/currency/currency_gold.dds|t",BUI.DisplayNumber(GetCarriedCurrencyAmount(CURT_MONEY))))
 		self.footer.TVLabel:SetText(zo_strformat("|c0077BE<<1>>|r |t16:16:/esoui/art/currency/battletoken.dds|t",BUI.DisplayNumber(GetCarriedCurrencyAmount(CURT_TELVAR_STONES))))

@@ -1,8 +1,8 @@
 ## Title: BetterUI
 ## Description: Makes the gamepad interface usable!
-## APIVersion: 100014
+## APIVersion: 100015
 ## Author: |c0066FFprasoc|r [EU]
-## Version: 1.81
+## Version: 2.05
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
@@ -22,6 +22,10 @@ lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 lib\LibAddonMenu-2.0\controls\iconpicker.lua
 Globals.lua
+
+lang\en.lua
+lang\$(language).lua
+
 BetterUI.CONST.lua
 BUI_Shared.xml
 
@@ -33,6 +37,7 @@ Modules\CIM\Images\inv_equip_quickslot.dds
 Modules\CIM\Images\inv_stolen.dds
 Modules\CIM\Images\inv_enchanted.dds
 Modules\CIM\Images\inv_setitem.dds
+Modules\CIM\Images\inv_junk.dds
 Modules\CIM\Templates\GenericHeader.xml
 Modules\CIM\GenericHeader.lua
 Modules\CIM\Templates\GenericFooter.xml
@@ -43,10 +48,18 @@ Modules\CIM\Templates\InterfaceLibrary.xml
 Modules\CIM\InterfaceLibrary.lua
 Modules\CIM\Module.lua
 
+; Module: Store Enhanced
+;Modules\Store\Templates\StoreWindow.xml
+;Modules\Store\Shrinkwrap\storewindowcomponent_gamepad.lua
+;Modules\Store\Store.lua
+;Modules\Store\Module.lua
+
 ; Module: Inventory Enhanced
 Modules\Inventory\Templates\GamepadInventory.xml
-Modules\Inventory\InventorySlot.lua
+Modules\Inventory\Shrinkwrap\ZO_GamepadList.lua
+Modules\Inventory\Shrinkwrap\ZO_GamepadInventory.lua
 Modules\Inventory\InventoryList.lua
+Modules\Inventory\InventorySlot.lua
 Modules\Inventory\Inventory.lua
 Modules\Inventory\Module.lua
 

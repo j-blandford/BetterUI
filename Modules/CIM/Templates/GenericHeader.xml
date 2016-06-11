@@ -84,7 +84,7 @@
                            <Anchor point="LEFT" relativeTo="$(parent)"/>
                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
                            <OnClicked>
-                               self:GetParent().scrollList:MovePrevious()
+                               self:GetParent().scrollList:MovePrevious(true)
                            </OnClicked>
                        </Button>
                        <Button name="$(parent)RightIcon">
@@ -92,7 +92,7 @@
                            <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
                            <OnClicked>
-                               self:GetParent().scrollList:MoveNext()
+                               self:GetParent().scrollList:MoveNext(true)
                            </OnClicked>
                        </Button>
 

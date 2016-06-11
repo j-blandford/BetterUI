@@ -6,7 +6,7 @@ local function AddInventoryPostInfo(tooltip, itemLink)
 			local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
 			if(tipLine ~= nil) then
 				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
-			else 
+			else
 				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			end
 		end
@@ -28,10 +28,10 @@ end
 local function AddInventoryPreInfo(tooltip, itemLink)
     local style = GetItemLinkItemStyle(itemLink)
     local itemStyle = string.upper(GetString("SI_ITEMSTYLE", style))
- 
+
     if itemLink and BUI.Settings.Modules["Tooltips"].showStyleTrait then
         local traitType, traitDescription, traitSubtype, traitSubtypeName, traitSubtypeDescription = GetItemLinkTraitInfo(itemLink)
- 
+
         if (traitType ~= ITEM_TRAIT_TYPE_NONE and(itemStyle) ~=("NONE")) then
             local traitString
             if BUI.Player.IsResearchable(itemLink) then
@@ -59,7 +59,7 @@ local function BUI_UpdateAttributeBar(self, current, max, effectiveMax)
         return false
     end
     local forceInit = false
-    if(current == nil or max == nil or effectiveMax == nil) then        
+    if(current == nil or max == nil or effectiveMax == nil) then
         current, max, effectiveMax = GetUnitPower(self:GetEffectiveUnitTag(), self.powerType)
         forceInit = true
     end
@@ -109,26 +109,6 @@ function BUI.ReturnItemLink(itemLink)
 	return itemLink
 end
 
-function BUI.Tooltips.CreateBarLabel(name, parent, controller, anchor)
-	local labelTxt = BUI.WindowManager:CreateControl(name, controller, CT_LABEL)
-    labelTxt:SetFont("$(GAMEPAD_MEDIUM_FONT)|20|soft-shadow-thick")
-    labelTxt:SetText(" ")
-    labelTxt:SetColor(1, 1, 1, 1)
-    labelTxt:SetAnchor(CENTER, anchor, TOP, 0,10)
-    parent.BUI_labelRef = labelTxt
-end
-
-function BUI.Tooltips.CreateAttributeLabels()
-	BUI.Tooltips.CreateBarLabel("BUI_playerFrame_healthLabel",PLAYER_ATTRIBUTE_BARS.bars[1].control,ZO_PlayerAttributeHealth)
-	BUI.Tooltips.CreateBarLabel("BUI_playerFrame_magickaLabel",PLAYER_ATTRIBUTE_BARS.bars[3].control,ZO_PlayerAttributeMagicka)
-	BUI.Tooltips.CreateBarLabel("BUI_playerFrame_staminaLabel",PLAYER_ATTRIBUTE_BARS.bars[5].control,ZO_PlayerAttributeStamina)
-
-	PLAYER_ATTRIBUTE_BARS.bars[1].UpdateStatusBar = BUI_UpdateAttributeBar
-	PLAYER_ATTRIBUTE_BARS.bars[3].UpdateStatusBar = BUI_UpdateAttributeBar
-	PLAYER_ATTRIBUTE_BARS.bars[5].UpdateStatusBar = BUI_UpdateAttributeBar
-end
-
-
 function BUI.Tooltips.RefreshControls(self)
  	if(self.hidden) then
         self.dirty = true
@@ -154,7 +134,7 @@ function BUI.Tooltips.RefreshControls(self)
 
             local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
             self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
-            self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
+            --self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
 
             for i = 1, NUM_POWER_POOLS do
                 local powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)
@@ -188,13 +168,6 @@ function BUI.Tooltips.UpdateHealthbar(self, barType, cur, max, forceInit)
         self.barTypeName = GetString("SI_COMBATMECHANICTYPE", self.barType)
     end
     self:UpdateText(updateBarType, updateValue)
-
-    if BUI.Settings.Modules["Tooltips"].showHealthText and self.BUI_labelRef ~= nil then
-        self.BUI_labelRef:SetText(BUI.DisplayNumber(self.currentValue).." ("..string.format("%.0f",100*self.currentValue/self.maxValue).."%)")
-    	self.BUI_labelRef:SetHidden(false)
-    else
-    	self.BUI_labelRef:SetHidden(true)
-    end
 end
 
 function BUI.Tooltips.UpdateGroupAnchorFrames(self)

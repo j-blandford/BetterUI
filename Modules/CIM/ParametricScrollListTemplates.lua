@@ -346,7 +346,7 @@ function BUI_TabBarScrollList:InitializeKeybindStripDescriptors()
             ethereal = true,
             callback = function()
                 if self.active then
-                    self:MovePrevious(BUI.Settings.Modules["CIM"].enableWrapping)
+                    self:MovePrevious(BUI.Settings.Modules["Inventory"].enableWrapping)
                 end
             end,
         },
@@ -355,7 +355,7 @@ function BUI_TabBarScrollList:InitializeKeybindStripDescriptors()
             ethereal = true,
             callback = function()
                 if self.active then
-                    self:MoveNext(BUI.Settings.Modules["CIM"].enableWrapping)
+                    self:MoveNext(BUI.Settings.Modules["Inventory"].enableWrapping)
                 end
             end,
         },
@@ -555,11 +555,20 @@ function BUI_Gamepad_ParametricList_Screen:Initialize(control, createTabBar, act
     self.lists = {}
     self:AddList("Main")
     self._currentList = nil
-    self.addListTriggerKeybinds = false
+    self.addListTriggerKeybinds = true
     self.listTriggerKeybinds = nil
     self.listTriggerHeaderComparator = nil
 
     self:InitializeKeybindStripDescriptors()
 
     self.dirty = true
+end
+
+function BUI_Gamepad_ParametricList_Screen:SetListsUseTriggerKeybinds(addListTriggerKeybinds, optionalHeaderComparator)
+    self.addListTriggerKeybinds = addListTriggerKeybinds
+    self.listTriggerHeaderComparator = optionalHeaderComparator
+
+    if(not addListTriggerKeybinds) then
+        self:TryRemoveListTriggers()
+    end
 end

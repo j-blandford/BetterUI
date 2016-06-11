@@ -18,6 +18,14 @@ local function Init(mId, moduleName)
 		},
 		{
 			type = "checkbox",
+			name = "Enable \"Junk\" feature",
+			tooltip = "Allows items to be marked as \"junk\" as a filter to de-clutter the inventory",
+			getFunc = function() return BUI.Settings.Modules["Inventory"].enableJunk end,
+			setFunc = function(value) BUI.Settings.Modules["Inventory"].enableJunk = value end,
+			width = "full",
+		},
+		{
+			type = "checkbox",
 			name = "Save inventory position",
 			tooltip = "Keeps track of the list position on each category for quicker browsing",
 			getFunc = function() return BUI.Settings.Modules["Inventory"].savePosition end,
@@ -53,6 +61,14 @@ local function Init(mId, moduleName)
             setFunc = function(value) BUI.Settings.Modules["Inventory"].showMarketPrice = value end,
             width = "full",
         },
+		{
+            type = "checkbox",
+            name = "Display character attributes on the right tooltip?",
+            tooltip = "Show the character attributes on the right tooltip rather than seeing the current equipped item",
+            getFunc = function() return BUI.Settings.Modules["Inventory"].displayCharAttributes end,
+            setFunc = function(value) BUI.Settings.Modules["Inventory"].displayCharAttributes = value end,
+            width = "full",
+        },
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
@@ -63,7 +79,8 @@ function BUI.Inventory.InitModule(m_options)
     m_options["enableWrapping"] = true
     m_options["showMarketPrice"] = false
     m_options["useTriggersForSkip"] = false
-
+    m_options["enableJunk"] = false
+	m_options["displayCharAttributes"] = true
     return m_options
 end
 
@@ -84,11 +101,11 @@ function BUI.Inventory.Setup()
         local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
         CallSecureProtected("PickupInventoryItem",bag, index) -- > Here is the key change!
         SetCursorItemSoundsEnabled(true)
-
+	
         CallSecureProtected("PlaceInWorldLeftClick") -- DESTROY! (also needs to be a secure call)
         return true
     end
-	--
+
 
 	GAMEPAD_INVENTORY = BUI.Inventory.Class:New(BUI_GamepadInventoryTopLevel) -- Bam! Initialise the custom inventory class so it's integrated neatly
 
@@ -106,89 +123,28 @@ function BUI.Inventory.Setup()
     GAMEPAD_INVENTORY_ROOT_SCENE:AddFragment(GAMEPAD_MENU_SOUND_FRAGMENT)
 
 
-    -- Just some modification to the Nav_1_Quadrant to be wider and cleaner
+    -- Just some modification to the right tooltip to be cleaner
+	ZO_GamepadTooltipTopLevelLeftTooltipContainer.tip.maxFadeGradientSize=10
+	--ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetMouseEnabled(true)
+	--ZO_GamepadTooltipTopLevelLeftTooltipContainerTipScroll:SetMouseEnabled(true)
+	-- ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetHandler("OnMouseWheel", function(self, delta) 
+	-- 	d("OnMouseWheel")
+	-- 	d(self.scroll)
+	-- 	if true then
+	-- 		d("OnMouseWheel Active")
+	-- 		if delta > 0 then
+	-- 			--d("OnMouseWheel Prev")
+	-- 			self.scrollValue = self.scrollValue - 10
+	-- 		else
+	-- 			d("OnMouseWheel Next")
+	-- 			self.scrollValue = self.scrollValue + 10
+	-- 		end
+	-- 	end
+	-- end)
+	
 
-    GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("LeftDivider"):SetWidth(4)
-    GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:GetNamedChild("NestedBg"):GetNamedChild("RightDivider"):SetWidth(4)
-	GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-    GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, BUI_GAMEPAD_DEFAULT_PANEL_WIDTH+66, 54)
+	GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.fragment.control.container:SetAnchor(3,ZO_GamepadTooltipTopLevelLeftTooltip,3,40,-100,0)		
 
-	--
-
-    --     local self = GAMEPAD_INVENTORY
-    --     if newState == SCENE_SHOWING then
-    --         self:PerformDeferredInitialization()
-    --         --SCENE_MANAGER:Push("gamepad_inventory_item_filter")
-	--
-    --         -- Setup the larger and offset LEFT_TOOLTIP and background fragment so that the new inventory fits!
-    --         BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-	--
-    --         self:RefreshFooter()
-    --     elseif(newState == SCENE_SHOWN) then
-    --         --SCENE_MANAGER:Push("gamepad_inventory_item_filter")
-	--
-    --     elseif newState == SCENE_HIDING then
-    --         ZO_InventorySlot_SetUpdateCallback(nil)
-    --         self:DisableCurrentList()
-    --     elseif newState == SCENE_HIDDEN then
-    --         GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
-    --         KEYBIND_STRIP:RemoveKeybindButtonGroup(self.rootKeybindDescriptor)
-	--
-    --         -- Reset to the old width and offset for any other left_tooltip use, slowly going to replace them all :)
-    --         BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
-    --     end
-    -- end)
-
-    --
-    --     local self = GAMEPAD_INVENTORY
-    --     if newState == SCENE_SHOWING then
-    --         GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-    --         GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 936, 54)
-    --         self:PerformDeferredInitialization()
-    --         self:RefreshCategoryList()
-	--
-    --         self:SetSelectedInventoryData(nil)
-    --         self:SetSelectedItemUniqueId(self:GenerateItemSlotData(self.categoryList:GetTargetData()))
-	--
-    --         self.actionMode = ITEM_LIST_ACTION_MODE
-    --         self:RefreshItemList()
-    --         self:SetSelectedItemUniqueId(self.itemList:GetTargetData())
-    --         if self.itemList:IsEmpty() then
-    --             return
-    --         end
-    --         self:SetCurrentList(self.itemList)
-	--
-    --         self:UpdateRightTooltip()
-    --         KEYBIND_STRIP:AddKeybindButtonGroup(self.itemFilterKeybindStripDescriptor)
-    --         ZO_InventorySlot_SetUpdateCallback(function() self:RefreshItemActionList() end)
-    --         self:RefreshHeader()
-    --         self:RefreshItemActionList()
-	--
-    --     elseif newState == SCENE_HIDING then
-    --         ZO_InventorySlot_SetUpdateCallback(nil)
-    --         self:DisableCurrentList()
-    --         self.listWaitingOnDestroyRequest = nil
-    --     elseif newState == SCENE_HIDDEN then
-    --         self:SetSelectedInventoryData(nil)
-    --         BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
-	--
-    --         KEYBIND_STRIP:RemoveKeybindButtonGroup(self.itemFilterKeybindStripDescriptor)
-    --         KEYBIND_STRIP:RemoveKeybindButton(self.quickslotKeybindDescriptor)
-    --         KEYBIND_STRIP:RemoveKeybindButton(self.switchEquipKeybindDescriptor)
-    --         if SCENE_MANAGER:IsShowingNext("gamepad_inventory_item_actions") then
-    --             --if taking action on an item, it is no longer new
-    --             self.clearNewStatusOnSelectionChanged = true
-    --             -- Setup the larger and offset LEFT_TOOLTIP and background fragment so that the new inventory fits!
-    --             GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT.control:SetWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-    --             GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.control:SetAnchor(3,GuiRoot,3, 936, 54)
-    --         else
-    --             GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
-    --             GAMEPAD_TOOLTIPS:Reset(GAMEPAD_RIGHT_TOOLTIP)
-    --         end
-    --         self:TryClearNewStatusOnHidden()
-    --         ZO_SavePlayerConsoleProfile()
-    --     end
-    -- end)
 
 	inv = GAMEPAD_INVENTORY
 
