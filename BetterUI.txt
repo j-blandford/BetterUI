@@ -1,16 +1,13 @@
 ## Title: BetterUI
 ## Description: Makes the gamepad interface usable!
-## APIVersion: 100014
+## APIVersion: 100015
 ## Author: |c0066FFprasoc|r [EU]
-## Version: 1.68
+## Version: 2.01
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
-
 lib\LibStub\LibStub.lua
-
 lib\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
-
 lib\LibAddonMenu-2.0\controls\panel.lua
 lib\LibAddonMenu-2.0\controls\submenu.lua
 lib\LibAddonMenu-2.0\controls\button.lua
@@ -24,8 +21,11 @@ lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 lib\LibAddonMenu-2.0\controls\iconpicker.lua
-
 Globals.lua
+
+lang\en.lua
+lang\$(language).lua
+
 BetterUI.CONST.lua
 BUI_Shared.xml
 
@@ -47,8 +47,18 @@ Modules\CIM\Templates\InterfaceLibrary.xml
 Modules\CIM\InterfaceLibrary.lua
 Modules\CIM\Module.lua
 
+; Module: Store Enhanced
+;Modules\Store\Templates\StoreWindow.xml
+;Modules\Store\Shrinkwrap\storewindowcomponent_gamepad.lua
+;Modules\Store\Store.lua
+;Modules\Store\Module.lua
+
 ; Module: Inventory Enhanced
 Modules\Inventory\Templates\GamepadInventory.xml
+Modules\Inventory\Shrinkwrap\ZO_GamepadList.lua
+Modules\Inventory\Shrinkwrap\ZO_GamepadInventory.lua
+Modules\Inventory\InventoryList.lua
+Modules\Inventory\InventorySlot.lua
 Modules\Inventory\Inventory.lua
 Modules\Inventory\Module.lua
 
@@ -68,6 +78,9 @@ Modules\GuildStore\Module.lua
 Modules\Banking\Images\nav_vert.dds
 Modules\Banking\Images\centre_selector.dds
 Modules\Banking\Images\selectbg.dds
+Modules\Banking\Templates\WithdrawDeposit.xml
+Modules\Banking\WithdrawDeposit.lua
+
 Modules\Banking\Banking.lua
 Modules\Banking\Module.lua
 

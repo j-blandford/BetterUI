@@ -26,8 +26,8 @@ local function Init(mId, moduleName)
 			type = "checkbox",
 			name = "Display the account name next to the character name?",
 			getFunc = function() return BUI.Settings.Modules["Tooltips"].showAccountName end,
-			setFunc = function(value) 
-						BUI.Settings.Modules["Tooltips"].showAccountName = value 
+			setFunc = function(value)
+						BUI.Settings.Modules["Tooltips"].showAccountName = value
 						UNIT_FRAMES.firstDirtyGroupIndex = 1
 					end,
 			width = "full",
@@ -40,38 +40,35 @@ local function Init(mId, moduleName)
 			width = "full",	--or "half" (optional)
 		},
 		{
+			type = "colorpicker",
+			name = "Account name colour",
+			getFunc = function() return unpack(BUI.Settings.Modules["Tooltips"].showAccountColor) end,
+			setFunc = function(r,g,b,a) BUI.Settings.Modules["Tooltips"].showAccountColor={r,g,b,a} end,
+			width = "full",	--or "half" (optional)
+		},
+		{
 			type = "checkbox",
 			name = "Display the health value (text) on the target?",
 			getFunc = function() return BUI.Settings.Modules["Tooltips"].showHealthText end,
-			setFunc = function(value) 
-						BUI.Settings.Modules["Tooltips"].showHealthText = value 
+			setFunc = function(value)
+						BUI.Settings.Modules["Tooltips"].showHealthText = value
 						UNIT_FRAMES.firstDirtyGroupIndex = 1
 						end,
 			width = "full",
 		},
 		{
-			type = "checkbox",
-			name = "Display value labels on Attribute bars",
-			tooltip = "Displays the Health, Stamina and Magicka values on your attribute bars",
-			getFunc = function() return BUI.Settings.Modules["Tooltips"].attributeLabels end,
-			setFunc = function(value) 
-						BUI.Settings.Modules["Tooltips"].attributeLabels = value 
-						end,
-			width = "full",
-		},
-		        {
             type = "editbox",
             name = "Chat window history size",
             tooltip = "Alters how many lines to store in the chat buffer, default=200",
             getFunc = function() return BUI.Settings.Modules["Tooltips"].chatHistory end,
-            setFunc = function(value) BUI.Settings.Modules["Tooltips"].chatHistory = tonumber(value) 
+            setFunc = function(value) BUI.Settings.Modules["Tooltips"].chatHistory = tonumber(value)
             							if(ZO_ChatWindowTemplate1Buffer ~= nil) then ZO_ChatWindowTemplate1Buffer:SetMaxHistoryLines(BUI.Settings.Modules["Tooltips"].chatHistory) end end,
             default=200,
             width = "full",
-        },  
+        },
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
-	LAM:RegisterOptionControls("BUI_"..mId, optionsTable) 
+	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
 end
 
 function BUI.Tooltips.UpdateText(self, updateBarType, updateValue)
@@ -114,9 +111,9 @@ function BUI.Tooltips.InitModule(m_options)
     m_options["showStyleTrait"] = true
     m_options["showHealthText"] = true
     m_options["showAccountName"] = true
-    m_options["showCharacterColor"] = {1, 0.5, 0, 1}
-    m_options["attributeLabels"] = true
-    
+    m_options["showCharacterColor"] = {1, 0.95, 0.5, 1}
+	m_options["showAccountColor"] = {1, 1, 1, 1}
+
     return m_options
 end
 
@@ -184,8 +181,6 @@ function BUI.Tooltips.Setup()
 	end
 
 	BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.healthBar,UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
-
-	BUI.Tooltips.CreateAttributeLabels()
 
 	ZO_PreHook(UNIT_FRAMES,"UpdateGroupAnchorFrames", BUI.Tooltips.UpdateGroupAnchorFrames)
 

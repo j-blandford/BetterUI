@@ -1,4 +1,4 @@
-<GuiXml> 
+<GuiXml>
     <Controls>
         <Label name="BUI_GamepadScreenHeaderTitleTextTemplate" font="ZoFontGamepad36" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
         <Label name="BUI_GamepadScreenHeaderEquipSlotTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" horizontalAlignment="RIGHT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE"  />
@@ -26,12 +26,12 @@
             </Controls>
         </Control>
 
-        
+
         <Control name="BUI_GamepadHeaderTitleAnchors" virtual="true">
             <Anchor point="TOPLEFT" />
             <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" />
         </Control>
-        
+
         <Control name="BUI_GamepadTabBarTemplate" virtual="true">
             <Dimensions x="50" y="50"/>
             <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetY="50" />
@@ -40,29 +40,29 @@
             </OnInitialized>
             <Controls>
                 <Texture name="$(parent)Icon">
-                     <Dimensions x="ZO_TABBAR_ICON_WIDTH" y="ZO_TABBAR_ICON_WIDTH"/>
-                    <Anchor point="LEFT" relativeTo="$(parent)" offsetX="ZO_TABBAR_ICON_WIDTH" />
-                    <Anchor point="RIGHT" offsetX="-ZO_TABBAR_ICON_WIDTH" />
+                     <Dimensions x="BUI_TABBAR_ICON_WIDTH" y="BUI_TABBAR_ICON_WIDTH"/>
+                    <Anchor point="LEFT" relativeTo="$(parent)" offsetX="BUI_TABBAR_ICON_WIDTH" />
+                    <Anchor point="RIGHT" offsetX="-BUI_TABBAR_ICON_WIDTH" />
                 </Texture>
                 <Label name="$(parent)Label" font="ZoFontGamepad20" horizontalAlignment="CENTER" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
                     <Dimensions x="0" />
                     <Anchor point="CENTER" relativeTo="$(parent)Icon" offsetY="20"/>
-                    <Anchor point="RIGHT" offsetX="-ZO_TABBAR_ICON_WIDTH" />
+                    <Anchor point="RIGHT" offsetX="-BUI_TABBAR_ICON_WIDTH" />
                 </Label>
             </Controls>
         </Control>
-        
+
         <Control name="BUI_GamepadTabBarScrollListTemplate" virtual="true">
-            <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetY="25"/>
+            <Anchor point="TOPLEFT" offsetY="25"/>
             <Dimensions x="BUI_GAMEPAD_DEFAULT_PANEL_CONTAINER_WIDTH" y="100" />
             <Controls>
                 <Scroll name="$(parent)Scroll">
                  <Dimensions x="BUI_GAMEPAD_DEFAULT_PANEL_CONTAINER_WIDTH" y="100" />
                 </Scroll>
-               
+
             </Controls>
         </Control>
-       
+
         <Control name="BUI_GamepadGenericScreenHeader" resizeToFitDescendents="true" virtual="true">
             <Anchor point="TOPLEFT" />
             <Anchor point="TOPRIGHT" offsetY="26" />
@@ -72,28 +72,31 @@
                     <Anchor point="TOPLEFT" offsetY="75"/>
                     <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" />
                     <Controls>
-                        <Button name="$(parent)LeftIcon">
-                            <Dimensions x="50" y="50"/>
-                            <Anchor point="LEFT" relativeTo="$(parent)"/>
-                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
-                            <OnClicked>
-                                self:GetParent().scrollList:MovePrevious(BUI.Settings.Modules["Inventory"].enableWrapping)
-                            </OnClicked>
-                        </Button>
-                        <Button name="$(parent)RightIcon">
-                            <Dimensions x="50" y="50"/>
-                            <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
-                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
-                            <OnClicked>
-                                self:GetParent().scrollList:MoveNext(BUI.Settings.Modules["Inventory"].enableWrapping)
-                            </OnClicked>
-                        </Button>
+
                         <Button name="$(parent)SelectedBg">
                             <Dimensions x="50" y="25"/>
                             <Anchor point="CENTER" relativeTo="$(parent)" offsetY="32"/>
                             <Textures normal="BetterUI/Modules/CIM/Images/select_tabbar.dds"/>
                         </Button>
-                        
+
+                        <Button name="$(parent)LeftIcon">
+                           <Dimensions x="50" y="50"/>
+                           <Anchor point="LEFT" relativeTo="$(parent)"/>
+                           <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
+                           <OnClicked>
+                               self:GetParent().scrollList:MovePrevious(true)
+                           </OnClicked>
+                       </Button>
+                       <Button name="$(parent)RightIcon">
+                           <Dimensions x="50" y="50"/>
+                           <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
+                           <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
+                           <OnClicked>
+                               self:GetParent().scrollList:MoveNext(true)
+                           </OnClicked>
+                       </Button>
+
+
                         <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
                             <Anchor point="LEFT" relativeTo="$(parent)parent" relativePoint="BOTTOMLEFT" offsetX="0" />
                             <Anchor point="RIGHT" relativeTo="$(parent)parent" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="77" />
@@ -108,10 +111,10 @@
                 <Control name="$(parent)TitleContainer" inherits="BUI_GamepadHeaderTitleAnchors">
                     <Controls>
                         <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" text="|cFF6600All|r" hidden="false">
-                            <Anchor point="LEFT" />   
+                            <Anchor point="LEFT" />
                         </Label>
                           <Label name="$(parent)EquipText" inherits="BUI_GamepadScreenHeaderEquipSlotTemplate" text="Equip:" hidden="false">
-                            <Anchor point="RIGHT" offsetX="-50"/>   
+                            <Anchor point="RIGHT" offsetX="-50"/>
                         </Label>
                     </Controls>
                 </Control>
@@ -120,7 +123,7 @@
                     <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="0" />
                     <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="110" />
                 </Control>
-                
+
                 <Control name="$(parent)ColumnBar" inherits="BUI_GamepadHeaderTitleAnchors">
                     <Controls>
                          <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
@@ -141,7 +144,7 @@
                          </Label>
                     </Controls>
                 </Control>
-                
+
             </Controls>
         </Control>
 
@@ -149,7 +152,7 @@
             <Dimensions y="115"/>
             <Controls>
                 <Control name="$(parent)Header" inherits="BUI_GamepadGenericScreenHeader">
-                    
+
                     <OnInitialized>
                         self:GetParent().header = self
                     </OnInitialized>
@@ -166,22 +169,6 @@
                     <Anchor point="TOPLEFT" offsetY="75"/>
                     <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" />
                     <Controls>
-                         <Button name="$(parent)LeftIcon">
-                            <Dimensions x="50" y="50"/>
-                            <Anchor point="LEFT" relativeTo="$(parent)"/>
-                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
-                            <OnClicked>
-                                TRADING_HOUSE_GAMEPAD.m_header.tabBar:MovePrevious()
-                            </OnClicked>
-                        </Button>
-                        <Button name="$(parent)RightIcon">
-                            <Dimensions x="50" y="50"/>
-                            <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
-                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
-                            <OnClicked>
-                                TRADING_HOUSE_GAMEPAD.m_header.tabBar:MoveNext()
-                            </OnClicked>
-                        </Button>
 
                         <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
                             <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
@@ -197,19 +184,20 @@
                 <Control name="$(parent)TitleContainer" inherits="BUI_GamepadHeaderTitleAnchors">
                     <Controls>
                          <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" text="|cFF6600Browse Listings|r" hidden="false">
-                            <Anchor point="LEFT" /> 
-                        </Label> <!-- 
+                            <Anchor point="LEFT" />
+                        </Label> <!--
                           <Label name="$(parent)EquipText" inherits="BUI_GamepadScreenHeaderEquipSlotTemplate" text="Equip:" hidden="false">
-                            <Anchor point="RIGHT" offsetX="-50"/>   
+                            <Anchor point="RIGHT" offsetX="-50"/>
                         </Label> -->
                     </Controls>
                 </Control>
+
 
                 <Control name="$(parent)DividerBottom" inherits="BUI_GamepadHeaderHorizontalDivider">
                     <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="0" />
                     <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="110" />
                 </Control>
-                
+
                 <Control name="$(parent)ColumnBar" inherits="BUI_GamepadHeaderTitleAnchors">
                     <Controls>
                          <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
@@ -234,10 +222,10 @@
                          </Label>
                     </Controls>
                 </Control>
-                
+
             </Controls>
         </Control>
-        
+
         <Control name="BUI_Header_BrowseResults_Container" virtual="true">
             <Dimensions y="115" x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH" />
             <Controls>
@@ -285,7 +273,7 @@
                             </OnClicked>
                         </Button>
 
-                        
+
                         <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
                             <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
                             <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="77" />
@@ -300,7 +288,7 @@
                 <Control name="$(parent)TitleContainer" inherits="BUI_GamepadHeaderTitleAnchors">
                     <Controls>
                          <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" text="|cFF6600 |r" hidden="false">
-                            <Anchor point="LEFT" /> 
+                            <Anchor point="LEFT" />
                         </Label>
                     </Controls>
                 </Control>

@@ -20,7 +20,7 @@ function BUI.InitModuleOptions()
 			name = "Enable Common Interface Module (CIM)",
 			tooltip = "Enables the use of the completely redesigned \"Enhanced\" interfaces!",
 			getFunc = function() return BUI.Settings.Modules["CIM"].m_enabled end,
-			setFunc = function(value) BUI.Settings.Modules["CIM"].m_enabled = value 
+			setFunc = function(value) BUI.Settings.Modules["CIM"].m_enabled = value
 									dirtyModules = true end,
 			width = "full",
 		},
@@ -29,7 +29,7 @@ function BUI.InitModuleOptions()
 			name = "Enable |c0066FFEnhanced Guild Store|r",
 			tooltip = "Complete overhaul of the guild store, and MaterMerchant/dataDaedra integration",
 			getFunc = function() return BUI.Settings.Modules["GuildStore"].m_enabled end,
-			setFunc = function(value) BUI.Settings.Modules["GuildStore"].m_enabled = value 
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].m_enabled = value
 									dirtyModules = true end,
 			disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
 			width = "full",
@@ -39,7 +39,7 @@ function BUI.InitModuleOptions()
 			name = "Enable |c0066FFEnhanced Inventory|r",
 			tooltip = "Completely redesigns the gamepad's inventory interface",
 			getFunc = function() return BUI.Settings.Modules["Inventory"].m_enabled end,
-			setFunc = function(value) BUI.Settings.Modules["Inventory"].m_enabled = value 
+			setFunc = function(value) BUI.Settings.Modules["Inventory"].m_enabled = value
 									dirtyModules = true  end,
 			disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
 			width = "full",
@@ -49,17 +49,29 @@ function BUI.InitModuleOptions()
 			name = "Enable |c0066FFEnhanced Banking|r",
 			tooltip = "Completely redesigns the gamepad's banking interface (and has \"Mobile Banking\")",
 			getFunc = function() return BUI.Settings.Modules["Banking"].m_enabled end,
-			setFunc = function(value) BUI.Settings.Modules["Banking"].m_enabled = value 
+			setFunc = function(value) BUI.Settings.Modules["Banking"].m_enabled = value
 									dirtyModules = true  end,
+			disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
 			--disabled = function() return true end,
 			width = "full",
 		},
+		-- {
+		-- 	type = "checkbox",
+		-- 	name = "Enable |c0066FFEnhanced Store|r",
+		-- 	tooltip = "Completely redesigns the gamepad's store purchase interface",
+		-- 	getFunc = function() return BUI.Settings.Modules["Store"].m_enabled end,
+		-- 	setFunc = function(value) BUI.Settings.Modules["Store"].m_enabled = value
+		-- 							dirtyModules = true  end,
+		-- 	disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
+		-- 	--disabled = function() return true end,
+		-- 	width = "full",
+		-- },
 		{
 			type = "checkbox",
 			name = "Enable Daily Writ module",
 			tooltip = "Displays the daily writ, and progress, at each crafting station",
 			getFunc = function() return BUI.Settings.Modules["Writs"].m_enabled end,
-			setFunc = function(value) BUI.Settings.Modules["Writs"].m_enabled = value 
+			setFunc = function(value) BUI.Settings.Modules["Writs"].m_enabled = value
 									dirtyModules = true  end,
 			width = "full",
 		},
@@ -68,7 +80,16 @@ function BUI.InitModuleOptions()
 			name = "Enable General Interface Improvements",
 			tooltip = "Vast improvements to the ingame tooltips and unit frames",
 			getFunc = function() return BUI.Settings.Modules["Tooltips"].m_enabled end,
-			setFunc = function(value) BUI.Settings.Modules["Tooltips"].m_enabled = value 
+			setFunc = function(value) BUI.Settings.Modules["Tooltips"].m_enabled = value
+									dirtyModules = true  end,
+			width = "full",
+		},
+		{
+			type = "checkbox",
+			name = "Enhance Compatibility with other Addons",
+			tooltip = "BUI heavily alters the interface, breaking lots of addons. This will enhance compatibility. Be aware: things MIGHT break!",
+			getFunc = function() return BUI.Settings.Modules["CIM"].enhanceCompat end,
+			setFunc = function(value) BUI.Settings.Modules["CIM"].enhanceCompat = value
 									dirtyModules = true  end,
 			width = "full",
 		},
@@ -84,15 +105,6 @@ function BUI.InitModuleOptions()
 			name = "Enhanced Interface Global Behaviour",
 			width = "full",
 		},
-		{
-			type = "checkbox",
-			name = "Enable \"Junk\" feature",
-			tooltip = "Allows items to be marked as \"junk\" as a filter to de-clutter the inventory",
-			getFunc = function() return BUI.Settings.Modules["CIM"].enableJunk end,
-			setFunc = function(value) BUI.Settings.Modules["CIM"].enableJunk = value end,
-			disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end, 
-			width = "full",
-		},   
         {
             type = "editbox",
             name = "Number of lines to skip on trigger",
@@ -101,7 +113,7 @@ function BUI.InitModuleOptions()
             setFunc = function(value) BUI.Settings.Modules["CIM"].triggerSpeed = value end,
             disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
             width = "full",
-        },  
+        },
 		{
 			type = "header",
 			name = "Enhanced Interface Global Display",
@@ -158,20 +170,23 @@ function BUI.LoadModules()
 
 	if(not BUI._initialized) then
 		ddebug("Initializing BUI...")
-		BUI.GuildStore.FixMM() -- fix MM is independent of any module, maybe put it into the BUI.Lib namespace?
+		BUI.GuildStore.FixMM() -- fix MM is independent of any module
 		if(BUI.Settings.Modules["CIM"].m_enabled) then
 			BUI.CIM.Setup()
-			if(BUI.Settings.Modules["GuildStore"].m_enabled) then 
+			if(BUI.Settings.Modules["GuildStore"].m_enabled) then
 				BUI.GuildStore.Setup()
 			end
-			if(BUI.Settings.Modules["Inventory"].m_enabled) then 
-				BUI.Inventory.Setup() 
+			-- if(BUI.Settings.Modules["Store"].m_enabled) then
+			-- 	--BUI.Store.Setup()
+			-- end
+			if(BUI.Settings.Modules["Inventory"].m_enabled) then
+				BUI.Inventory.Setup()
 			end
-			if(BUI.Settings.Modules["Banking"].m_enabled) then 
-				BUI.Banking.Setup() 
+			if(BUI.Settings.Modules["Banking"].m_enabled) then
+				BUI.Banking.Setup()
 			end
 		end
-		if(BUI.Settings.Modules["Writs"].m_enabled) then 
+		if(BUI.Settings.Modules["Writs"].m_enabled) then
 			BUI.Writs.Setup()
 		end
 		if(BUI.Settings.Modules["Tooltips"].m_enabled) then
@@ -181,7 +196,7 @@ function BUI.LoadModules()
 		ddebug("Finished! BUI is loaded")
 		BUI._initialized = true
 	end
-	
+
 end
 
 function BUI.Initialize(event, addon)
@@ -189,13 +204,13 @@ function BUI.Initialize(event, addon)
 	if addon ~= BUI.name then return end
 
 	-- load our saved variables
-	BUI.Settings = ZO_SavedVars:New("BetterUISavedVars", 2.2, nil, BUI.DefaultSettings)
+	BUI.Settings = ZO_SavedVars:New("BetterUISavedVars", 2.5, nil, BUI.DefaultSettings)
 
 	-- Has the settings savedvars JUST been applied? then re-init the module settings
 	if(BUI.Settings.firstInstall) then
 		local m_CIM = BUI.ModuleOptions(BUI.CIM, BUI.Settings.Modules["CIM"])
 		local m_Inventory = BUI.ModuleOptions(BUI.Inventory, BUI.Settings.Modules["Inventory"])
-		local m_Banking = BUI.ModuleOptions(BUI.Inventory, BUI.Settings.Modules["Banking"])
+		local m_Banking = BUI.ModuleOptions(BUI.Banking, BUI.Settings.Modules["Banking"])
 		local m_Writs = BUI.ModuleOptions(BUI.Writs, BUI.Settings.Modules["Writs"])
 		local m_GuildStore = BUI.ModuleOptions(BUI.GuildStore, BUI.Settings.Modules["GuildStore"])
 		local m_Tooltips = BUI.ModuleOptions(BUI.Tooltips, BUI.Settings.Modules["Tooltips"])
@@ -205,13 +220,15 @@ function BUI.Initialize(event, addon)
 
 	BUI.EventManager:UnregisterForEvent("BetterUIInitialize", EVENT_ADD_ON_LOADED)
 
+	BUI.InitModuleOptions()
+
 	if(IsInGamepadPreferredMode()) then
 		BUI.LoadModules()
 	else
 		BUI._initialized = false
 	end
 
-	BUI.InitModuleOptions()
+
 end
 
 -- register our event handler function to be called to do initialization

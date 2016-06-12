@@ -1,0 +1,17 @@
+<GuiXml>
+    <Controls>
+        <TopLevelControl name="BUI_StoreWindow" inherits="BUI_Gamepad_ParametricList_Screen">
+            <OnInitialized>
+                --ZO_Store_OnInitialize_Gamepad(self)
+            </OnInitialized>
+
+            <Controls>
+				<Control name="$(parent)SpinnerContainer" inherits="BUI_SpinnerContainerTemplate" hidden="true">
+					<Dimensions y="45" x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
+					<Anchor point="CENTER" relativeTo="$(parent)ListScreenCenterIsAlongTopListScreenCenter" offsetX="20" />
+
+				</Control>
+            </Controls>
+        </TopLevelControl>
+    </Controls>
+</GuiXml>
