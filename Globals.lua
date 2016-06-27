@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "2.01"
+BUI.version = "2.20"
 
 -- Program Global (scope of BUI, though) variable initialization
 BUI.WindowManager = GetWindowManager()
@@ -92,3 +92,6 @@ function Init_ModulePanel(moduleName, moduleDesc)
 		registerForDefaults = true
 	}
 end
+
+-- Imagery, you dont need to localise these strings
+ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT","|cFF6600<<1>>|r")

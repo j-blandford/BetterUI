@@ -441,25 +441,6 @@ function BUI.GuildStore.Listings.BuildList(self)
     end
 end
 
-local function GetMarketPrice(itemLink, stackCount)
-    if(stackCount == nil) then stackCount = 1 end
-
-    if(BUI.Settings.Modules["GuildStore"].ddIntegration and ddDataDaedra ~= nil) then
-        local dData = ddDataDaedra:GetKeyedItem(itemLink)
-        if(dData ~= nil) then
-            if(dData.wAvg ~= nil) then
-                return dData.wAvg*stackCount
-            end
-        end
-    end
-    if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
-        local mmData = MasterMerchant:itemStats(itemLink, false)
-        if(mmData.avgPrice ~= nil) then
-            return mmData.avgPrice*stackCount
-        end
-    end
-    return 0
-end
 
 local function SetupSellListing(control, data, selected, selectedDuringRebuild, enabled, activated)
     BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
@@ -477,21 +458,7 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
 	end
    
 
-    -- control:GetNamedChild("Price"):SetText(data.stackSellPrice)
-	-- Replace the "Value" with the market price of the item (in yellow)
-    if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
-        local marketPrice = GetMarketPrice(GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex), data.stackCount)
-        if(marketPrice ~= 0) then
-            control:GetNamedChild("Price"):SetColor(1,0.75,0,1)
-            control:GetNamedChild("Price"):SetText(math.floor(marketPrice))
-        else
-            control:GetNamedChild("Price"):SetColor(1,1,1,1)
-            control:GetNamedChild("Price"):SetText(data.stackSellPrice)
-        end
-    else
-        control:GetNamedChild("Price"):SetColor(1,1,1,1)
-        control:GetNamedChild("Price"):SetText(data.stackSellPrice)
-    end
+    control:GetNamedChild("Price"):SetText(data.stackSellPrice)
 
     control:GetNamedChild("ItemType"):SetText(string.upper(data.dataSource.bestGamepadItemCategoryName))
 
@@ -701,20 +668,4 @@ function BUI.GuildStore.Listings.Setup()
 	GAMEPAD_TRADING_HOUSE_SELL.InitializeList = BUI.GuildStore.Sell.InitializeList
 
 	GAMEPAD_TRADING_HOUSE_SELL:InitializeList()
-	
-	-- Create Listing (Sell Item)
-	-- Automatically fill in the market price if the "replace inventory values with market price" setting is enabled
-	local orig_funct = ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing
-    	ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing = function(selectedData, bag, index, listingPrice)
-									if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
-										local marketPrice = GetMarketPrice(GetItemLink(bag, index), selectedData.stackCount)
-										if(marketPrice ~= 0) then
-											orig_funct(selectedData, bag, index, math.floor(marketPrice))
-										else
-											orig_funct(selectedData, bag, index, listingPrice)
-										end
-									else
-										orig_funct(selectedData, bag, index, listingPrice)
-									end
-                                                        	end
 end

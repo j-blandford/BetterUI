@@ -92,11 +92,33 @@ function BUI.GenericHeader.SetEquipText(control, isEquipMain)
     equipControl:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)
 end
 
+function BUI.GenericHeader.SetTitleText(control, titleText)
+    local titleTextControl = control:GetNamedChild("TitleContainer"):GetNamedChild("Title")
+    titleTextControl:SetText(titleText)
+end
+
+
+function BUI.GenericHeader.SetEquippedIcons(control, equipMain, equipOff, equipPoison)
+	local equipMainControl = control:GetNamedChild("TitleContainer"):GetNamedChild("MainHandIcon")
+	local equipOffControl = control:GetNamedChild("TitleContainer"):GetNamedChild("OffHandIcon")
+	local equipPoisonControl = control:GetNamedChild("TitleContainer"):GetNamedChild("PoisonIcon")
+	
+	local DEFAULT_INVSLOT_ICON = "/esoui/art/inventory/inventory_slot.dds"
+
+	if(equipMain ~= "") then equipMainControl:SetTexture(equipMain) else equipMainControl:SetTexture(DEFAULT_INVSLOT_ICON) end
+	if(equipOff ~= "") then equipOffControl:SetTexture(equipOff) else equipOffControl:SetTexture(DEFAULT_INVSLOT_ICON)  end
+	if(equipPoison ~= "") then equipPoisonControl:SetTexture(equipPoison) else equipPoisonControl:SetTexture(DEFAULT_INVSLOT_ICON)  end
+end
+
 function BUI.GenericHeader.RefreshData()
     -- blank, ready for overriding
 end
 
 function BUI.GenericHeader.Refresh(control, data, blockTabBarCallbacks)
+	--ddebug("LOL")
+	--d(data)
+	
+	control:GetNamedChild("TitleContainer"):GetNamedChild("Title"):SetText(data.titleText(data.name))
 
     local tabBarControl = control.controls[TABBAR]
     tabBarControl:SetHidden(false)

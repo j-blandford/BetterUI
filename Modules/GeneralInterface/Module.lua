@@ -180,13 +180,13 @@ function BUI.Tooltips.Setup()
 	    end
 	end
 
-	BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.healthBar,UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
+	--BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.healthBar,UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
 
 	ZO_PreHook(UNIT_FRAMES,"UpdateGroupAnchorFrames", BUI.Tooltips.UpdateGroupAnchorFrames)
 
 	if(ZO_ChatWindowTemplate1Buffer ~= nil) then ZO_ChatWindowTemplate1Buffer:SetMaxHistoryLines(BUI.Settings.Modules["Tooltips"].chatHistory) end
 
 	--UNIT_FRAMES.CreateFrame = BUI.Tooltips.CreateFrame
-	UNIT_FRAMES.staticFrames.reticleover.healthBar.UpdateText = BUI.Tooltips.UpdateText
+	--UNIT_FRAMES.staticFrames.reticleover.healthBar.UpdateText = BUI.Tooltips.UpdateText
 	UNIT_FRAMES.staticFrames.reticleover.RefreshControls = BUI.Tooltips.RefreshControls
 end

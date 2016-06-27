@@ -24,6 +24,3 @@ ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_BACKUP","Äoïoìîèòeìöîÿé")
 ZO_CreateStringId("SI_BUI_BANKING_WITHDRAW","Cîüòö")
 ZO_CreateStringId("SI_BUI_BANKING_DEPOSIT","Ïoìoæèòö")
 ZO_CreateStringId("SI_BUI_BANKING_BUYSPACE","Êóïèòö äoï. üùeéêè (<<1>>)")
-
--- Imagery, you probably dont need to localise these strings
-ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT","|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_weapons.dds|t |c0066FF<<1>>|r")
