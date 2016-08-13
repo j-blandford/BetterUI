@@ -134,7 +134,9 @@ function BUI.Tooltips.RefreshControls(self)
 
             local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
             self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
-            self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
+			if (self.healthBar and self.healthBar.BUI_labelRef) then
+				self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
+			end
 
             for i = 1, NUM_POWER_POOLS do
                 local powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)
@@ -168,13 +170,6 @@ function BUI.Tooltips.UpdateHealthbar(self, barType, cur, max, forceInit)
         self.barTypeName = GetString("SI_COMBATMECHANICTYPE", self.barType)
     end
     self:UpdateText(updateBarType, updateValue)
-
-    if BUI.Settings.Modules["Tooltips"].showHealthText and self.BUI_labelRef ~= nil then
-        self.BUI_labelRef:SetText(BUI.DisplayNumber(self.currentValue).." ("..string.format("%.0f",100*self.currentValue/self.maxValue).."%)")
-    	self.BUI_labelRef:SetHidden(false)
-    else
-    	self.BUI_labelRef:SetHidden(true)
-    end
 end
 
 function BUI.Tooltips.UpdateGroupAnchorFrames(self)

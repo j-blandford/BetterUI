@@ -101,7 +101,9 @@ function BUI.Tooltips.UpdateText(self, updateBarType, updateValue)
         self.BUI_labelRef:SetText(BUI.DisplayNumber(self.currentValue).." ("..string.format("%.0f",100*self.currentValue/self.maxValue).."%)")
     	self.BUI_labelRef:SetHidden(false)
     else
-    	self.BUI_labelRef:SetHidden(true)
+		if self.BUI_labelRef then
+    		self.BUI_labelRef:SetHidden(true)
+		end
     end
 
 end
@@ -180,7 +182,9 @@ function BUI.Tooltips.Setup()
 	    end
 	end
 
-	BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.healthBar,UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
+	if(BUI.Tooltips.CreateBarLabel and type(BUI.Tooltips.CreateBarLabel) == "function") then
+		BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.healthBar,UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
+	end
 
 	ZO_PreHook(UNIT_FRAMES,"UpdateGroupAnchorFrames", BUI.Tooltips.UpdateGroupAnchorFrames)
 

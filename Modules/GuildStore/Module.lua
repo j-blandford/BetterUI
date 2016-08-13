@@ -105,7 +105,10 @@ function BUI.GuildStore.Setup()
             callback = function()
             	GAMEPAD_TRADING_HOUSE_BROWSE:ResetFilterValuesToDefaults()
                 GAMEPAD_TRADING_HOUSE_BROWSE:ResetList(nil, true)
-                GAMEPAD_TRADING_HOUSE_BROWSE:SetLevelSlidersDisabled(false)
+
+				if (GAMEPAD_TRADING_HOUSE_BROWSE.SetLevelSlidersDisabled) then
+                	GAMEPAD_TRADING_HOUSE_BROWSE:SetLevelSlidersDisabled(false)
+				end
             end,
         }
 

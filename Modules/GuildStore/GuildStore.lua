@@ -83,9 +83,16 @@ local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selecte
 
             local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
             local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
+
+            local currentItemType = GetItemLinkItemType(itemData)
+            local isRecipeAndUnknown = false
+            if (currentItemType == ITEMTYPE_RECIPE) then
+                isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
+            end
             
             if(hasEnchantment) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
             if(setItem) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
+            if isRecipeAndUnknown then labelTxt = labelTxt.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
         end
 
         label:SetText(labelTxt)
@@ -422,7 +429,7 @@ function BUI.GuildStore.Listings.InitializeList(self)
 end
 
 function BUI.GuildStore.Listings.BuildList(self)
-    ddebug("Building List")
+    --ddebug("Building List")
     for i = 1, GetNumTradingHouseListings() do
          local itemData = ZO_TradingHouse_CreateItemData(i, GetTradingHouseListingItemInfo)
         if(itemData) then
@@ -635,6 +642,10 @@ function BUI.GuildStore.BrowseResults.Setup()
         GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.textFilter = string.lower(self.nameFilter)
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(true) -- here's the change
 		BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
+
+        if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(false)
+        end
 	end
 
 	GAMEPAD_TRADING_HOUSE_BROWSE.OnShowing = function(self) 
@@ -642,12 +653,30 @@ function BUI.GuildStore.BrowseResults.Setup()
     	self:OnTargetChanged(self.itemList, self.itemList:GetTargetData())
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(false) -- here's the change
 		BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
+        GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+
+        if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(true)
+        end
 	end
 
 	-- Replace the fragment with my own TLC to bind everything together...
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS_FRAGMENT = ZO_FadeSceneFragment:New(BUI_BrowseResults)
     GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:SetFragment(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS_FRAGMENT)
 
+    GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.OnShowing = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(true)
+        end
+    end
+
+    GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.OnHiding = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(false)
+        end
+    end
+
+    --TRADING_HOUSE_CREATE_LISTING_GAMEPAD.OnHiding = 
     TRADING_HOUSE_CREATE_LISTING_GAMEPAD.Hiding = function(self)
         self:UnfocusPriceSelector()
         KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
@@ -664,12 +693,24 @@ function BUI.GuildStore.BrowseResults.Setup()
                --self.m_header:SetHidden(true)
             self:RefreshHeaderData()
             self:RegisterForSceneEvents()
+
+            if wykkydsToolbar then
+                wykkydsToolbar:SetHidden(true)
+            end
         elseif newState == SCENE_SHOWN then
             if self.m_currentObject then
                 self.m_currentObject:Show()
             end
+
+            --if wykkydsToolbar then
+            --    wykkydsToolbar:SetHidden(true)
+            --end
         elseif newState == SCENE_HIDING then
             BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
+
+            if wykkydsToolbar then
+                wykkydsToolbar:SetHidden(false)
+            end
         elseif newState == SCENE_HIDDEN then
             self:UnregisterForSceneEvents()
             BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
@@ -679,6 +720,10 @@ function BUI.GuildStore.BrowseResults.Setup()
             if self.m_currentObject then
                 self.m_currentObject:Hide()
             end
+
+            --if wykkydsToolbar then
+            --    wykkydsToolbar:SetHidden(false)
+            --end
           end
      end)
 
@@ -696,12 +741,36 @@ function BUI.GuildStore.Listings.Setup()
 
 	GAMEPAD_TRADING_HOUSE_LISTINGS:InitializeList()
 
+    GAMEPAD_TRADING_HOUSE_LISTINGS.OnShowing = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(true)
+        end
+    end
+
+    GAMEPAD_TRADING_HOUSE_LISTINGS.OnHiding = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(false)
+        end
+    end
+
 	-- Now go and override GAMEPAD_TRADING_HOUSE_SELL with our own top level control
 	ZO_TradingHouse_Sell_Gamepad_OnInitialize(BUI_Sell)
 	GAMEPAD_TRADING_HOUSE_SELL.InitializeList = BUI.GuildStore.Sell.InitializeList
 
 	GAMEPAD_TRADING_HOUSE_SELL:InitializeList()
-	
+
+    GAMEPAD_TRADING_HOUSE_SELL.OnShowing = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(true)
+        end
+    end
+
+    GAMEPAD_TRADING_HOUSE_SELL.OnHiding = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(false)
+        end
+    end
+
 	-- Create Listing (Sell Item)
 	-- Automatically fill in the market price if the "replace inventory values with market price" setting is enabled
 	local orig_funct = ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing

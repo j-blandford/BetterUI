@@ -114,8 +114,24 @@
                             <Anchor point="LEFT" />
                         </Label>
                           <Label name="$(parent)EquipText" inherits="BUI_GamepadScreenHeaderEquipSlotTemplate" text="Equip:" hidden="false">
-                            <Anchor point="RIGHT" offsetX="-50"/>
+                            <Anchor point="RIGHT" offsetX="-200" offsetY="-5"/>
                         </Label>
+						
+						<Texture name="$(parent)MainHandIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+							<Dimensions x="32" y="32" />
+		                    <Anchor point="RIGHT" offsetX="-150" offsetY="-5"/>
+		                </Texture>
+						
+						<Texture name="$(parent)OffHandIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+							<Dimensions x="32" y="32" />
+		                    <Anchor point="RIGHT" offsetX="-110" offsetY="-5"/>
+		                </Texture>
+						
+						<Texture name="$(parent)PoisonIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+							<Dimensions x="32" y="32" />
+		                    <Anchor point="RIGHT" offsetX="-70" offsetY="-5"/>
+		                </Texture>
+						
                     </Controls>
                 </Control>
 
