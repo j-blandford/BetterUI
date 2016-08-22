@@ -15,7 +15,7 @@ local DEFAULT_GAMEPAD_ITEM_SORT =
 
 local function GetCategoryFromItemType(itemType)
     -- Alchemy
-    if      ITEMTYPE_REAGENT == itemType or 
+    if      ITEMTYPE_REAGENT == itemType or
             ITEMTYPE_POTION_BASE == itemType or
             ITEMTYPE_POISON_BASE == itemType then
         return GAMEPAD_ITEM_CATEGORY_ALCHEMY
@@ -25,20 +25,20 @@ local function GetCategoryFromItemType(itemType)
         return GAMEPAD_ITEM_CATEGORY_BAIT
 
     -- Blacksmith
-    elseif  ITEMTYPE_BLACKSMITHING_RAW_MATERIAL == itemType or 
-            ITEMTYPE_BLACKSMITHING_MATERIAL == itemType or 
+    elseif  ITEMTYPE_BLACKSMITHING_RAW_MATERIAL == itemType or
+            ITEMTYPE_BLACKSMITHING_MATERIAL == itemType or
             ITEMTYPE_BLACKSMITHING_BOOSTER == itemType then
         return GAMEPAD_ITEM_CATEGORY_BLACKSMITH
 
     -- Clothier
-    elseif  ITEMTYPE_CLOTHIER_RAW_MATERIAL == itemType or 
-            ITEMTYPE_CLOTHIER_MATERIAL == itemType or 
+    elseif  ITEMTYPE_CLOTHIER_RAW_MATERIAL == itemType or
+            ITEMTYPE_CLOTHIER_MATERIAL == itemType or
             ITEMTYPE_CLOTHIER_BOOSTER == itemType then
         return GAMEPAD_ITEM_CATEGORY_CLOTHIER
 
     -- Consumable
-    elseif  ITEMTYPE_DRINK == itemType or 
-            ITEMTYPE_FOOD == itemType or 
+    elseif  ITEMTYPE_DRINK == itemType or
+            ITEMTYPE_FOOD == itemType or
             ITEMTYPE_RECIPE == itemType then
         return GAMEPAD_ITEM_CATEGORY_CONSUMABLE
 
@@ -47,14 +47,14 @@ local function GetCategoryFromItemType(itemType)
         return GAMEPAD_ITEM_CATEGORY_COSTUME
 
     -- Enchanting
-    elseif  ITEMTYPE_ENCHANTING_RUNE_POTENCY == itemType or 
-            ITEMTYPE_ENCHANTING_RUNE_ASPECT == itemType or 
+    elseif  ITEMTYPE_ENCHANTING_RUNE_POTENCY == itemType or
+            ITEMTYPE_ENCHANTING_RUNE_ASPECT == itemType or
             ITEMTYPE_ENCHANTING_RUNE_ESSENCE == itemType then
         return GAMEPAD_ITEM_CATEGORY_ENCHANTING
 
     -- Glyphs
-    elseif  ITEMTYPE_GLYPH_WEAPON == itemType or 
-            ITEMTYPE_GLYPH_ARMOR == itemType or 
+    elseif  ITEMTYPE_GLYPH_WEAPON == itemType or
+            ITEMTYPE_GLYPH_ARMOR == itemType or
             ITEMTYPE_GLYPH_JEWELRY == itemType then
         return GAMEPAD_ITEM_CATEGORY_GLYPHS
 
@@ -63,9 +63,9 @@ local function GetCategoryFromItemType(itemType)
         return GAMEPAD_ITEM_CATEGORY_POTION
 
     -- Provisioning
-    elseif  ITEMTYPE_INGREDIENT == itemType or 
-            ITEMTYPE_ADDITIVE == itemType or 
-            ITEMTYPE_SPICE == itemType or 
+    elseif  ITEMTYPE_INGREDIENT == itemType or
+            ITEMTYPE_ADDITIVE == itemType or
+            ITEMTYPE_SPICE == itemType or
             ITEMTYPE_FLAVORING == itemType then
         return GAMEPAD_ITEM_CATEGORY_PROVISIONING
 
@@ -91,9 +91,9 @@ local function GetCategoryFromItemType(itemType)
     elseif  ITEMTYPE_LOCKPICK == itemType or
             ITEMTYPE_TOOL == itemType then
         return GAMEPAD_ITEM_CATEGORY_TOOL
-    
+
     -- Trait Gem
-    elseif  ITEMTYPE_ARMOR_TRAIT == itemType or 
+    elseif  ITEMTYPE_ARMOR_TRAIT == itemType or
             ITEMTYPE_WEAPON_TRAIT == itemType then
         return GAMEPAD_ITEM_CATEGORY_TRAIT_GEM
 
@@ -102,8 +102,8 @@ local function GetCategoryFromItemType(itemType)
         return GAMEPAD_ITEM_CATEGORY_TROPHY
 
     -- Woodworking
-    elseif  ITEMTYPE_WOODWORKING_RAW_MATERIAL == itemType or 
-            ITEMTYPE_WOODWORKING_MATERIAL == itemType or 
+    elseif  ITEMTYPE_WOODWORKING_RAW_MATERIAL == itemType or
+            ITEMTYPE_WOODWORKING_MATERIAL == itemType or
             ITEMTYPE_WOODWORKING_BOOSTER == itemType then
         return GAMEPAD_ITEM_CATEGORY_WOODWORKING
     end
@@ -136,6 +136,7 @@ end
 
 
 function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
+
     if label then
 		if GetCVar("language.2") == "ru" then
 			label:SetFont("RuEso/fonts/ftn57.otf|28|soft-shadow-thick")
@@ -167,9 +168,9 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
             local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
             local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
 
-            if data.stolen then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_stolen.dds|t" end
-            if hasEnchantment then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
-            if setItem then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
+            if data.stolen then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/CIM/Images/inv_stolen.dds|t" end
+            if hasEnchantment then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/CIM/Images/inv_enchanted.dds|t" end
+            if setItem then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/CIM/Images/inv_setitem.dds|t" end
         end
 
         label:SetText(labelTxt)
@@ -370,12 +371,12 @@ function GetBestItemCategoryDescription(itemData)
         return GetString("SI_ARMORTYPE", armorType).." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
     end
     local fullDesc = GetString("SI_ITEMTYPE", itemData.itemType)
-	
+
 	-- Stops types like "Poison" displaying "Poison" twice
 	if( fullDesc ~= GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))) then
 		fullDesc = fullDesc.." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
 	end
-	
+
 	return fullDesc
 end
 
@@ -486,11 +487,11 @@ function BUI.Inventory.List:AddSlotDataToTable(slotsTable, slotIndex)
             -- itemData is shared in several places and can write their own value of bestItemCategoryName.
             -- We'll use bestGamepadItemCategoryName instead so there are no conflicts.
             slotData.bestGamepadItemCategoryName = categorizationFunction(slotData)
-			
+
 			if self.inventoryType ~= BAG_VIRTUAL then -- virtual items don't have any champion points associated with them
 				slotData.requiredChampionPoints = GetItemLinkRequiredChampionPoints(slotData)
 			end
-			
+
             table.insert(slotsTable, slotData)
         end
     end
