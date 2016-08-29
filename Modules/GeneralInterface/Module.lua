@@ -66,6 +66,15 @@ local function Init(mId, moduleName)
             default=200,
             width = "full",
         },
+		{
+			type = "checkbox",
+			name = "Remove the 'delete' dialog in the Mail inbox?",
+			getFunc = function() return BUI.Settings.Modules["Tooltips"].removeDeleteDialog end,
+			setFunc = function(value)
+						BUI.Settings.Modules["Tooltips"].removeDeleteDialog = value
+					end,
+			width = "full",
+		},
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
@@ -113,6 +122,7 @@ function BUI.Tooltips.InitModule(m_options)
     m_options["showAccountName"] = true
     m_options["showCharacterColor"] = {1, 0.95, 0.5, 1}
 	m_options["showAccountColor"] = {1, 1, 1, 1}
+	m_options["removeDeleteDialog"] = false
 
     return m_options
 end
@@ -121,6 +131,12 @@ end
 function BUI.Tooltips.Setup()
 
 	Init("General", "General Interface")
+
+	if BUI.Settings.Modules["Tooltips"].removeDeleteDialog then
+		BUI.PostHook(ZO_MailInbox_Gamepad, 'InitializeKeybindDescriptors', function(self)
+			self.mainKeybindDescriptor[3]["callback"] = function() self:Delete() end
+		end)
+	end
 
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_LEFT_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_RIGHT_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
@@ -180,13 +196,8 @@ function BUI.Tooltips.Setup()
 	    end
 	end
 
-	--BUI.Tooltips.CreateBarLabel("BUI_targetFrame_healthLabel",UNIT_FRAMES.staticFrames.reticleover.healthBar,UNIT_FRAMES.staticFrames.reticleover.frame,ZO_TargetUnitFramereticleover)
-
 	ZO_PreHook(UNIT_FRAMES,"UpdateGroupAnchorFrames", BUI.Tooltips.UpdateGroupAnchorFrames)
+	UNIT_FRAMES.staticFrames.reticleover.RefreshControls = BUI.Tooltips.RefreshControls
 
 	if(ZO_ChatWindowTemplate1Buffer ~= nil) then ZO_ChatWindowTemplate1Buffer:SetMaxHistoryLines(BUI.Settings.Modules["Tooltips"].chatHistory) end
-
-	--UNIT_FRAMES.CreateFrame = BUI.Tooltips.CreateFrame
-	--UNIT_FRAMES.staticFrames.reticleover.healthBar.UpdateText = BUI.Tooltips.UpdateText
-	UNIT_FRAMES.staticFrames.reticleover.RefreshControls = BUI.Tooltips.RefreshControls
 end

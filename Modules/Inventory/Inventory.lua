@@ -81,7 +81,7 @@ local function TryUseQuestItem(inventorySlot)
     if inventorySlot then
         if inventorySlot.toolIndex then
             UseQuestTool(inventorySlot.questIndex, inventorySlot.toolIndex)
-        elseif inventorySlot.conditionIndex then
+        else
             UseQuestItem(inventorySlot.questIndex, inventorySlot.stepIndex, inventorySlot.conditionIndex)
         end
     end
@@ -487,27 +487,25 @@ function BUI.Inventory.Class:InitializeHeader()
 		return GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_CB or SI_BUI_INV_ACTION_INV)
     end
 
-    local tabBarEntries =
+    local tabBarEntries = {
         {
-            {
-                text = GetString(SI_GAMEPAD_INVENTORY_CATEGORY_HEADER),
-                callback = function()
-                    self:SwitchActiveList(INVENTORY_CATEGORY_LIST)
-                end,
-            },
-            {
-                text = GetString(SI_GAMEPAD_INVENTORY_CRAFT_BAG_HEADER),
-                callback = function()
-                    self:SwitchActiveList(INVENTORY_CRAFT_BAG_LIST)
-                end,
-            },
-        }
+            text = GetString(SI_GAMEPAD_INVENTORY_CATEGORY_HEADER),
+            callback = function()
+                self:SwitchActiveList(INVENTORY_CATEGORY_LIST)
+            end,
+        },
+        {
+            text = GetString(SI_GAMEPAD_INVENTORY_CRAFT_BAG_HEADER),
+            callback = function()
+                self:SwitchActiveList(INVENTORY_CRAFT_BAG_LIST)
+            end,
+        },
+    }
 
     self.categoryHeaderData = {
 		titleText = UpdateTitleText,
         tabBarEntries = tabBarEntries,
         tabBarData = { parent = self, onNext = BUI_TabBar_OnTabNext, onPrev = BUI_TabBar_OnTabPrev }
-
     }
 
     self.craftBagHeaderData = {
@@ -629,19 +627,21 @@ function BUI.Inventory.Class:RefreshItemList()
         else
             remaining, duration = GetItemCooldownInfo(itemData.bagId, itemData.slotIndex)
         end
+
         if remaining > 0 and duration > 0 then
             data:SetCooldown(remaining, duration)
         end
+
 		data.bestItemCategoryName = itemData.bestItemCategoryName
 		data.bestGamepadItemCategoryName = itemData.bestItemCategoryName
         data.isEquippedInCurrentCategory = itemData.isEquippedInCurrentCategory
         data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
+        data.isJunk = itemData.isJunk
 
         if itemData.bestItemCategoryName ~= lastBestItemCategoryName then
             data:SetHeader(itemData.bestItemCategoryName)
         end
 
-		data.isJunk = itemData.isJunk
         if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["Inventory"].enableJunk then
             self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
         end
@@ -674,7 +674,6 @@ function BUI.Inventory.Class:AddKeybinds()
 	end
 end
 
-
 function BUI.Inventory.Class:SetActiveKeybinds(keybindDescriptor)
     self:ClearSelectedInventoryData() --clear all the bindings from the action list
 
@@ -690,10 +689,8 @@ function BUI.Inventory.Class:SetActiveKeybinds(keybindDescriptor)
 		end
 
 	end
-
-    self:AddKeybinds()
+    if(keybindDescriptor ~= nil) then self:AddKeybinds() end
 end
-
 
 function BUI.Inventory.Class:RefreshActiveKeybinds()
     if self.currentKeybindDescriptor then
@@ -704,8 +701,6 @@ function BUI.Inventory.Class:RefreshActiveKeybinds()
 		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.currentSecondaryKeybind)
 	end
 
-	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.itemFilterKeybindStripDescriptor)
-	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.switchEquipKeybindDescriptor)
 end
 
 function BUI.Inventory.Class:UpdateRightTooltip()
@@ -929,8 +924,6 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
     end
 end
 
-
-
 function BUI.Inventory.Class:InitializeEquipSlotDialog()
     local dialog = ZO_GenericGamepadDialog_GetControl(GAMEPAD_DIALOGS.BASIC)
     local confirmString = zo_strupper(GetString(SI_DESTROY_ITEM_CONFIRMATION))
@@ -992,8 +985,6 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
         }
     })
 end
-
-
 
 function BUI.Inventory.Class:OnDeferredInitialize()
     local SAVED_VAR_DEFAULTS =
@@ -1109,7 +1100,6 @@ function BUI.Inventory.Class:Initialize(control)
     control:RegisterForEvent(EVENT_VISUAL_LAYER_CHANGED, RefreshVisualLayer)
     control:SetHandler("OnUpdate", OnUpdate)
 end
-
 
 function BUI.Inventory.Class:RefreshHeader(blockCallback)
     local currentList = self:GetCurrentList()
@@ -1231,11 +1221,9 @@ function BUI.Inventory.Class:AddList(name, callbackParam, listClass, ...)
     return list
 end
 
-
 --------------
 -- Keybinds --
 --------------
-
 function BUI.Inventory.Class:InitializeKeybindStrip()
     self.categoryListKeybindStripDescriptor =
     {
@@ -1383,7 +1371,6 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 
     ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.craftBagKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
 end
-
 
 local function BUI_TryPlaceInventoryItemInEmptySlot(targetBag)
     local emptySlotIndex = FindFirstEmptySlotInBag(targetBag)

@@ -155,13 +155,13 @@ function BUI.InitModuleOptions()
 	LAM:RegisterOptionControls("BUI_".."Modules", optionsTable)
 end
 
-function BUI.Hook(control, method, postHookFunction, overwriteOriginal)
+function BUI.PostHook(control, method, fn)
 	if control == nil then return end
 
 	local originalMethod = control[method]
 	control[method] = function(self, ...)
-		if(overwriteOriginal == false) then originalMethod(self, ...) end
-		postHookFunction(self, ...)
+		originalMethod(self, ...)
+		fn(self, ...)
 	end
 end
 
@@ -181,7 +181,7 @@ function BUI.LoadModules()
 		ddebug("Initializing BUI...")
 		BUI.GuildStore.FixMM() -- fix MM is independent of any module
 		BUI.Player.GetResearch()
-		
+
 		if(BUI.Settings.Modules["CIM"].m_enabled) then
 			BUI.CIM.Setup()
 			if(BUI.Settings.Modules["GuildStore"].m_enabled) then
@@ -203,7 +203,7 @@ function BUI.LoadModules()
 		if(BUI.Settings.Modules["Tooltips"].m_enabled) then
 			BUI.Tooltips.Setup()
 		end
-		
+
 		ddebug("Finished! BUI is loaded")
 		BUI._initialized = true
 	end
