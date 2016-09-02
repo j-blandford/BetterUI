@@ -402,6 +402,18 @@ function BUI.GuildStore.BrowseResults.AddEntryToList(self, itemData)
                 return
             end
         end
+
+		if(self.recipeUnknownFilter ~= nil) then
+			local currentItemType = GetItemLinkItemType(itemData.itemLink)
+            local isRecipeAndUnknown = false
+            if (currentItemType == ITEMTYPE_RECIPE) then
+                isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData.itemLink)
+
+				if (self.recipeUnknownFilter == "1" and not isRecipeAndUnknown) or (self.recipeUnknownFilter == "0" and isRecipeAndUnknown) then
+                	return
+            	end
+            end
+        end
         ---------------------------
 
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
@@ -579,9 +591,43 @@ function BUI.GuildStore.Browse:SetupNameFilter(control, data, selected, reselect
             end
 end
 
+function BUI.GuildStore.Browse:UpdateCheckboxFilter(newValue)
+    self.lastRecipeUnknownFilter = self.recipeUnknownFilter
+    self.recipeUnknownFilter = newValue
+    ZO_TradingHouse_SearchCriteriaChanged(SEARCH_CRITERIA_CHANGED)
+end
+
+function BUI.GuildStore.Browse:SetupCheckboxFilter(control, data, selected, reselectingDuringRebuild, enabled, active)
+    local editBox = control
+
+    self.checkFilterBox = control
+    self.checkFilterBox.edit:SetHandler("OnTextChanged", function() self:UpdateCheckboxFilter(self.checkFilterBox.edit:GetText()) end)
+
+    self.keybindStripDescriptor[1].callback = function()
+                local selectedData = self.itemList:GetSelectedData()
+                if selectedData.dropDown then
+                    self:FocusDropDown(selectedData.dropDown)
+                elseif selectedData.priceSelector then
+                    self.priceSelectorMode = selectedData.priceSelectorMode
+                    self:FocusPriceSelector(selectedData.priceSelector)
+                else
+                    self.checkFilterBox.edit:TakeFocus()
+                end
+            end
+    self.keybindStripDescriptor[1].visible = function() 
+                local selectedData = self.itemList:GetSelectedData()
+                if selectedData then
+                    return true
+                else
+                    return false
+                end
+            end
+end
+
 function BUI.GuildStore.Browse.PerformDeferredInitialization(self)
     if(self.deferred_init) then return end
-    self.itemList:AddDataTemplate("BUI_BrowseFilterEditboxTemplate", function(...) self:SetupNameFilter(...) end)
+    self.itemList:AddDataTemplate("BUI_BrowseFilterCheckboxTemplate", function(...) self:SetupCheckboxFilter(...) end)
+	self.itemList:AddDataTemplate("BUI_BrowseFilterEditboxTemplate", function(...) self:SetupNameFilter(...) end)
     self.deferred_init = true
 end
 
@@ -591,6 +637,9 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
     -- Category
     self:AddDropDownEntry("GuildStoreBrowseCategory", CATEGORY_DROP_DOWN_MODE)
     self:InitializeFilterData(filters)
+
+	local recipeUnknownFilter = ZO_GamepadEntryData:New("Unknown Recipes")
+    self.itemList:AddEntry("BUI_BrowseFilterCheckboxTemplate", recipeUnknownFilter)
 
     local nameFilter = ZO_GamepadEntryData:New("Name Filter")
     self.itemList:AddEntry("BUI_BrowseFilterEditboxTemplate", nameFilter)
@@ -610,6 +659,8 @@ function BUI.GuildStore.BrowseResults.Setup()
 	ZO_TradingHouse_BrowseResults_Gamepad_OnInitialize(BUI_BrowseResults)
 
     --/zgoo ZO_TradingHouse_Browse_GamepadList.scrollList
+	GAMEPAD_TRADING_HOUSE_BROWSE.SetupCheckboxFilter = BUI.GuildStore.Browse.SetupCheckboxFilter
+	GAMEPAD_TRADING_HOUSE_BROWSE.UpdateCheckboxFilter = BUI.GuildStore.Browse.UpdateCheckboxFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.SetupNameFilter = BUI.GuildStore.Browse.SetupNameFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.UpdateNameFilter = BUI.GuildStore.Browse.UpdateNameFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.ResetList = BUI.GuildStore.Browse.ResetList
@@ -639,7 +690,8 @@ function BUI.GuildStore.BrowseResults.Setup()
 	    end
 	    self:UnfocusPriceSelector()
 
-        GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.textFilter = string.lower(self.nameFilter)
+        GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.recipeUnknownFilter = self.recipeUnknownFilter
+		GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.textFilter = string.lower(self.nameFilter)
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(true) -- here's the change
 		BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
 

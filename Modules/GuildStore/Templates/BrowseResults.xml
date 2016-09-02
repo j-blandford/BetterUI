@@ -104,6 +104,41 @@
             </Controls>
         </Control>
 
+		<Control name="BUI_Gamepad_CheckBox" virtual="true">
+            <OnInitialized>
+                self:GetParent().edit = self:GetNamedChild("Backdrop"):GetNamedChild("Edit")
+            </OnInitialized>
+            <Controls>
+                <Label name="$(parent)Label" font="ZoFontHeader2"  horizontalAlignment="CENTER" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL"  modifyTextType="UPPERCASE" text="Unknown Recipes" >
+                    <Anchor point="TOP" offsetY="-35"/>
+                    <Dimensions x="340" y="37" />
+                </Label>
+                <Backdrop name="$(parent)Backdrop" inherits="ZO_EditBackdrop">
+                    <AnchorFill />
+                    <Controls>
+                        <EditBox name="$(parent)Edit" inherits="ZO_DefaultEditForBackdrop" font="ZoFontGamepad34">
+                            <Anchor point="TOPLEFT" offsetX="4" offsetY="8" />
+                            <Anchor point="BOTTOMRIGHT" offsetX="-6" offsetY="-2" />
+
+                            <OnEnter>
+                                self:LoseFocus()
+                            </OnEnter>
+                        </EditBox>
+                    </Controls>
+                </Backdrop>
+            </Controls>
+        </Control>
+
+        <Control name="BUI_BrowseFilterCheckboxTemplate"  virtual="true">
+            <Dimensions x="440" y="120" />
+            <Controls>
+                <Control name="$(parent)Edit" inherits="BUI_Gamepad_CheckBox" >
+                    <Anchor point="CENTER" />
+                    <Dimensions x="340" y="60" />
+                </Control>
+            </Controls>
+        </Control>
+
         <TopLevelControl name="BUI_BrowseResults" inherits="BUI_TradingHouse_ItemList_Gamepad" hidden="true" override="true">
             <Controls>
                 <Control name="$(parent)HeaderContainer" inherits="BUI_GenericHeader_Container BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
