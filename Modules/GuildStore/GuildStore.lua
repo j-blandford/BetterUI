@@ -84,8 +84,15 @@ local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selecte
             local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
             local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
 
+            local currentItemType = GetItemLinkItemType(itemData)
+            local isRecipeAndUnknown = false
+            if (currentItemType == ITEMTYPE_RECIPE) then
+                isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
+            end
+            
             if(hasEnchantment) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
             if(setItem) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
+            if isRecipeAndUnknown then labelTxt = labelTxt.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
         end
 
         label:SetText(labelTxt)
@@ -299,6 +306,17 @@ function BUI.GuildStore.BrowseResults:AddEntryToList(itemData)
                 return
             end
         end
+		if(self.recipeUnknownFilter ~= nil) then
+			local currentItemType = GetItemLinkItemType(itemData.itemLink)
+            local isRecipeAndUnknown = false
+            if (currentItemType == ITEMTYPE_RECIPE) then
+                isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData.itemLink)
+
+				if (self.recipeUnknownFilter == "1" and not isRecipeAndUnknown) or (self.recipeUnknownFilter == "0" and isRecipeAndUnknown) then
+                	return
+            	end
+            end
+        end
         ---------------------------
 
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
@@ -344,6 +362,26 @@ function BUI.GuildStore.Listings:BuildList()
     end
 end
 
+local function GetMarketPrice(itemLink, stackCount)
+    if(stackCount == nil) then stackCount = 1 end
+
+    if(BUI.Settings.Modules["GuildStore"].ddIntegration and ddDataDaedra ~= nil) then
+        local dData = ddDataDaedra:GetKeyedItem(itemLink)
+        if(dData ~= nil) then
+            if(dData.wAvg ~= nil) then
+                return dData.wAvg*stackCount
+            end
+        end
+    end
+    if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
+        local mmData = MasterMerchant:itemStats(itemLink, false)
+        if(mmData.avgPrice ~= nil) then
+            return mmData.avgPrice*stackCount
+        end
+    end
+    return 0
+end
+
 
 local function SetupSellListing(control, data, selected, selectedDuringRebuild, enabled, activated)
     BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
@@ -361,7 +399,21 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
 	end
 
 
+    -- control:GetNamedChild("Price"):SetText(data.stackSellPrice)
+	-- Replace the "Value" with the market price of the item (in yellow)
+    if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
+        local marketPrice = GetMarketPrice(GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex), data.stackCount)
+        if(marketPrice ~= 0) then
+            control:GetNamedChild("Price"):SetColor(1,0.75,0,1)
+            control:GetNamedChild("Price"):SetText(math.floor(marketPrice))
+        else
+            control:GetNamedChild("Price"):SetColor(1,1,1,1)
     control:GetNamedChild("Price"):SetText(data.stackSellPrice)
+        end
+    else
+        control:GetNamedChild("Price"):SetColor(1,1,1,1)
+        control:GetNamedChild("Price"):SetText(data.stackSellPrice)
+    end
 
     control:GetNamedChild("ItemType"):SetText(string.upper(data.dataSource.bestGamepadItemCategoryName))
 
@@ -435,20 +487,61 @@ function BUI.GuildStore.Browse:SetupNameFilter(control, data, selected, reselect
             self.nameFilterBox.edit:TakeFocus()
         end
     end
-end
+                    return false
 
+function BUI.GuildStore.Browse:UpdateCheckboxFilter(newValue)
+    self.lastRecipeUnknownFilter = self.recipeUnknownFilter
+    self.recipeUnknownFilter = newValue
+    ZO_TradingHouse_SearchCriteriaChanged(SEARCH_CRITERIA_CHANGED)
+end
 function BUI.GuildStore.Browse:PerformDeferredInitialization()
     --if(self.deferred_init) then return end
     self.itemList:AddDataTemplate("BUI_BrowseFilterEditboxTemplate", function(...) self:SetupNameFilter(...) end)
-
     --self.deferred_init = true
+end
+
+function BUI.GuildStore.Browse:SetupCheckboxFilter(control, data, selected, reselectingDuringRebuild, enabled, active)
+    local editBox = control
+
+    self.checkFilterBox = control
+    self.checkFilterBox.edit:SetHandler("OnTextChanged", function() self:UpdateCheckboxFilter(self.checkFilterBox.edit:GetText()) end)
+
+    self.keybindStripDescriptor[1].callback = function()
+                local selectedData = self.itemList:GetSelectedData()
+                if selectedData.dropDown then
+                    self:FocusDropDown(selectedData.dropDown)
+                elseif selectedData.priceSelector then
+                    self.priceSelectorMode = selectedData.priceSelectorMode
+                    self:FocusPriceSelector(selectedData.priceSelector)
+                else
+                    self.checkFilterBox.edit:TakeFocus()
+            end
+    self.keybindStripDescriptor[1].visible = function() 
+                local selectedData = self.itemList:GetSelectedData()
+                if selectedData then
+                    return true
+                else
+                    return false
+                end
+            end
+end
+
+function BUI.GuildStore.Browse.PerformDeferredInitialization(self)
+    if(self.deferred_init) then return end
+    self.itemList:AddDataTemplate("BUI_BrowseFilterCheckboxTemplate", function(...) self:SetupCheckboxFilter(...) end)
+	self.itemList:AddDataTemplate("BUI_BrowseFilterEditboxTemplate", function(...) self:SetupNameFilter(...) end)
+    self.deferred_init = true
 end
 
 function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
     self.itemList:Clear()
 
+    -- Category
     self:AddDropDownEntry("GuildStoreBrowseCategory", CATEGORY_DROP_DOWN_MODE)
     self:InitializeFilterData(filters)
+
+	local recipeUnknownFilter = ZO_GamepadEntryData:New("Unknown Recipes")
+    self.itemList:AddEntry("BUI_BrowseFilterCheckboxTemplate", recipeUnknownFilter)
 
     local nameFilter = ZO_GamepadEntryData:New("Name Filter")
     self.itemList:AddEntry("BUI_BrowseFilterEditboxTemplate", nameFilter)
@@ -467,6 +560,9 @@ function BUI.GuildStore.BrowseResults.Setup()
 	-- Now go and override GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS with our own top level control
 	ZO_TradingHouse_BrowseResults_Gamepad_OnInitialize(BUI_BrowseResults)
 
+    --/zgoo ZO_TradingHouse_Browse_GamepadList.scrollList
+	GAMEPAD_TRADING_HOUSE_BROWSE.SetupCheckboxFilter = BUI.GuildStore.Browse.SetupCheckboxFilter
+	GAMEPAD_TRADING_HOUSE_BROWSE.UpdateCheckboxFilter = BUI.GuildStore.Browse.UpdateCheckboxFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.SetupNameFilter = BUI.GuildStore.Browse.SetupNameFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.UpdateNameFilter = BUI.GuildStore.Browse.UpdateNameFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.ResetList = BUI.GuildStore.Browse.ResetList
@@ -482,9 +578,11 @@ function BUI.GuildStore.BrowseResults.Setup()
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeList = BUI.GuildStore.BrowseResults.InitializeList
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.RefreshFooter = BUI.GuildStore.BrowseResults.RefreshFooter
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeFooter = BUI.GuildStore.BrowseResults.InitializeFooter
+	--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.Initialize = BUI.GuildStore.BrowseResults.Initialize
 
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeList()
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeFooter()
+	--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:PopulateTabList()
 
 	-- Now we have to hide the header in this new guild store interface
 	GAMEPAD_TRADING_HOUSE_BROWSE.OnHiding = function(self)
@@ -493,9 +591,14 @@ function BUI.GuildStore.BrowseResults.Setup()
 	    end
 	    self:UnfocusPriceSelector()
 
+        GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.recipeUnknownFilter = self.recipeUnknownFilter
         GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.textFilter = string.lower(self.nameFilter)
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(true) -- here's the change
 		BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
+
+        if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(false)
+		end
 	end
 
 	GAMEPAD_TRADING_HOUSE_BROWSE.OnShowing = function(self)
@@ -504,12 +607,30 @@ function BUI.GuildStore.BrowseResults.Setup()
 
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(false) -- here's the change
 		BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
+        GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+
+        if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(true)
+		end
 	end
 
 	-- Replace the fragment with my own TLC to bind everything together...
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS_FRAGMENT = ZO_FadeSceneFragment:New(BUI_BrowseResults)
     GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:SetFragment(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS_FRAGMENT)
 
+    GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.OnShowing = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(true)
+        end
+    end
+
+    GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.OnHiding = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(false)
+        end
+    end
+
+    --TRADING_HOUSE_CREATE_LISTING_GAMEPAD.OnHiding = 
     TRADING_HOUSE_CREATE_LISTING_GAMEPAD.Hiding = function(self)
         self:UnfocusPriceSelector()
         KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
@@ -523,14 +644,27 @@ function BUI.GuildStore.BrowseResults.Setup()
         if newState == SCENE_SHOWING then
             ZO_GamepadGenericHeader_Activate(self.m_header)
             ZO_GamepadGenericHeader_SetActiveTabIndex(self.m_header, self:GetCurrentMode())
+               --self.m_header:SetHidden(true)
             self:RefreshHeaderData()
             self:RegisterForSceneEvents()
+
+            if wykkydsToolbar then
+                wykkydsToolbar:SetHidden(true)
+            end
         elseif newState == SCENE_SHOWN then
             if self.m_currentObject then
                 self.m_currentObject:Show()
             end
+
+            --if wykkydsToolbar then
+            --    wykkydsToolbar:SetHidden(true)
+            --end
         elseif newState == SCENE_HIDING then
             BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
+
+            if wykkydsToolbar then
+                wykkydsToolbar:SetHidden(false)
+            end
         elseif newState == SCENE_HIDDEN then
             self:UnregisterForSceneEvents()
             BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
@@ -542,6 +676,10 @@ function BUI.GuildStore.BrowseResults.Setup()
             if self.m_currentObject then
                 self.m_currentObject:Hide()
             end
+
+            --if wykkydsToolbar then
+            --    wykkydsToolbar:SetHidden(false)
+            --end
         end
     end)
 
@@ -558,9 +696,49 @@ function BUI.GuildStore.Listings.Setup()
 	GAMEPAD_TRADING_HOUSE_LISTINGS.InitializeList = BUI.GuildStore.Listings.InitializeList
 	GAMEPAD_TRADING_HOUSE_LISTINGS:InitializeList()
 
+    GAMEPAD_TRADING_HOUSE_LISTINGS.OnShowing = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(true)
+        end
+    end
+
+    GAMEPAD_TRADING_HOUSE_LISTINGS.OnHiding = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(false)
+        end
+    end
+
 	-- Now go and override GAMEPAD_TRADING_HOUSE_SELL with our own top level control
 	ZO_TradingHouse_Sell_Gamepad_OnInitialize(BUI_Sell)
 
 	GAMEPAD_TRADING_HOUSE_SELL.InitializeList = BUI.GuildStore.Sell.InitializeList
 	GAMEPAD_TRADING_HOUSE_SELL:InitializeList()
+
+    GAMEPAD_TRADING_HOUSE_SELL.OnShowing = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(true)
+end
+    end
+
+    GAMEPAD_TRADING_HOUSE_SELL.OnHiding = function(self)
+	    if wykkydsToolbar then
+            wykkydsToolbar:SetHidden(false)
+        end
+    end
+
+	-- Create Listing (Sell Item)
+	-- Automatically fill in the market price if the "replace inventory values with market price" setting is enabled
+	local orig_funct = ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing
+    	ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing = function(selectedData, bag, index, listingPrice)
+									if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
+										local marketPrice = GetMarketPrice(GetItemLink(bag, index), selectedData.stackCount)
+										if(marketPrice ~= 0) then
+											orig_funct(selectedData, bag, index, math.floor(marketPrice))
+										else
+											orig_funct(selectedData, bag, index, listingPrice)
+										end
+									else
+										orig_funct(selectedData, bag, index, listingPrice)
+									end
+                                                        	end
 end

@@ -92,7 +92,9 @@ function BUI.Tooltips.RefreshControls(self)
 
             local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
             self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
-            --self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
+			if (self.healthBar and self.healthBar.BUI_labelRef) then
+				self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
+			end
 
             for i = 1, NUM_POWER_POOLS do
                 local powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)

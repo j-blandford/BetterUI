@@ -110,7 +110,6 @@ function BUI.Tooltips.UpdateText(self, updateBarType, updateValue)
         self.BUI_labelRef:SetText(BUI.DisplayNumber(self.currentValue).." ("..string.format("%.0f",100*self.currentValue/self.maxValue).."%)")
     	self.BUI_labelRef:SetHidden(false)
     else
-    	self.BUI_labelRef:SetHidden(true)
     end
 
 end
