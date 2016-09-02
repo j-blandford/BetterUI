@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "2.11"
+BUI.version = "2.26"
 
 -- Program Global (scope of BUI, though) variable initialization
 BUI.WindowManager = GetWindowManager()
@@ -67,8 +67,7 @@ BUI.DefaultSettings = {
 
 
 function ddebug(str)
-	return ""
---return d("|c0066ff[BUI]|r "..str)
+	return d("|c0066ff[BUI]|r "..str)
 end
 
 -- Thanks to Bart Kiers for this function :)

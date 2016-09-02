@@ -124,22 +124,22 @@ function BUI.Inventory.Setup()
 
     -- Just some modification to the right tooltip to be cleaner
 	ZO_GamepadTooltipTopLevelLeftTooltipContainer.tip.maxFadeGradientSize=10
-	--ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetMouseEnabled(true)
-	--ZO_GamepadTooltipTopLevelLeftTooltipContainerTipScroll:SetMouseEnabled(true)
-	-- ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetHandler("OnMouseWheel", function(self, delta) 
-	-- 	d("OnMouseWheel")
-	-- 	d(self.scroll)
-	-- 	if true then
-	-- 		d("OnMouseWheel Active")
-	-- 		if delta > 0 then
-	-- 			--d("OnMouseWheel Prev")
-	-- 			self.scrollValue = self.scrollValue - 10
-	-- 		else
-	-- 			d("OnMouseWheel Next")
-	-- 			self.scrollValue = self.scrollValue + 10
-	-- 		end
-	-- 	end
-	-- end)
+	
+	-- This code allows the player to scroll the tooltips with their mouse
+	ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetMouseEnabled(true)
+	ZO_GamepadTooltipTopLevelLeftTooltipContainerTipScroll:SetMouseEnabled(true)
+	ZO_GamepadTooltipTopLevelLeftTooltipContainerTip:SetHandler("OnMouseWheel", function(self, delta) 
+		local newScrollValue
+		
+		if delta > 0 then
+			newScrollValue = self.scrollValue - BUI.Settings.Modules["CIM"].rhScrollSpeed
+		else
+			newScrollValue = self.scrollValue + BUI.Settings.Modules["CIM"].rhScrollSpeed
+		end
+		
+		self.scrollValue = newScrollValue
+		self.scroll:SetVerticalScroll(newScrollValue)
+	end)
 	
 
 	GAMEPAD_TOOLTIPS.tooltips.GAMEPAD_LEFT_TOOLTIP.fragment.control.container:SetAnchor(3,ZO_GamepadTooltipTopLevelLeftTooltip,3,40,-100,0)		

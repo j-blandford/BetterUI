@@ -43,9 +43,9 @@ local function TryUseItem(inventorySlot)
         CallSecureProtected("UseItem",bag, index) -- the problem with the slots gets solved here!
         return true
     end
-
-    return false
 end
+
+
 
 function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
     self.alignment = KEYBIND_STRIP_ALIGN_RIGHT
@@ -93,20 +93,7 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
         else
             ZO_InventorySlot_DiscoverSlotActionsFromActionList(inventorySlot, slotActions)
 
-			--self.actionName = slotActions:GetPrimaryActionName()
-
-            -- Instead of deleting it at add time, let's delete it now!
-            local primaryAction = slotActions:GetAction(PRIMARY_ACTION_KEY, "primary", nil)
-            
-            if primaryAction and primaryAction[INDEX_ACTION_NAME] then
-                self.actionName = primaryAction[INDEX_ACTION_NAME]
-
-                if self.actionName == GetString(SI_ITEM_ACTION_USE) or self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
-                    table.remove(slotActions.m_slotActions, PRIMARY_ACTION_KEY)
-                end
-            else
-                self.actionName = slotActions:GetPrimaryActionName()
-            end
+			self.actionName = slotActions:GetPrimaryActionName()
 
 			-- Now check if the slot that has been found for the current item needs to be replaced with the CSP ones
 			if self.actionName == GetString(SI_ITEM_ACTION_USE) then
