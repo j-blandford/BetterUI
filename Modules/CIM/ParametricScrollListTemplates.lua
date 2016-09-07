@@ -407,7 +407,7 @@ end
 function BUI_TabBarScrollList:UpdateHeaderText()
     if self.attachedTo ~= nil then
         local selectedIndex = self.targetSelectedIndex or self.selectedIndex
-        self.attachedTo:GetNamedChild("TitleContainer"):GetNamedChild("Title"):SetText(self.dataList[selectedIndex].text)
+        --self.attachedTo:GetNamedChild("TitleContainer"):GetNamedChild("Title"):SetText(self.dataList[selectedIndex].text)
     end
 end
 function BUI_TabBarScrollList:SetSelectedIndex(selectedIndex, allowEvenIfDisabled, forceAnimation)

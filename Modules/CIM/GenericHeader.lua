@@ -92,6 +92,12 @@ function BUI.GenericHeader.SetEquipText(control, isEquipMain)
     equipControl:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)
 end
 
+function BUI.GenericHeader.SetTitleText(control, titleText)
+    local titleTextControl = control:GetNamedChild("TitleContainer"):GetNamedChild("Title")
+    titleTextControl:SetText(titleText)
+end
+
+
 function BUI.GenericHeader.SetEquippedIcons(control, equipMain, equipOff, equipPoison)
 	local equipMainControl = control:GetNamedChild("TitleContainer"):GetNamedChild("MainHandIcon")
 	local equipOffControl = control:GetNamedChild("TitleContainer"):GetNamedChild("OffHandIcon")
@@ -109,6 +115,10 @@ function BUI.GenericHeader.RefreshData()
 end
 
 function BUI.GenericHeader.Refresh(control, data, blockTabBarCallbacks)
+	--ddebug("LOL")
+	--d(data)
+	
+	control:GetNamedChild("TitleContainer"):GetNamedChild("Title"):SetText(data.titleText(data.name))
 
     local tabBarControl = control.controls[TABBAR]
     tabBarControl:SetHidden(false)

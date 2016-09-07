@@ -52,48 +52,6 @@ local function AddInventoryPreInfo(tooltip, itemLink)
         end
     end
 end
----------------------------------------------------------------------------
-
-local function BUI_UpdateAttributeBar(self, current, max, effectiveMax)
-    if self.externalVisibilityRequirement and not self.externalVisibilityRequirement() then
-        return false
-    end
-    local forceInit = false
-    if(current == nil or max == nil or effectiveMax == nil) then
-        current, max, effectiveMax = GetUnitPower(self:GetEffectiveUnitTag(), self.powerType)
-        forceInit = true
-    end
-    if self.current == current and self.max == max and self.effectiveMax == effectiveMax then
-        return
-    end
-    self.current = current
-    self.max = max
-    self.effectiveMax = effectiveMax
-    local barMax = max
-    local barCurrent = current
-    if #self.barControls > 1 then
-        barMax = barMax / 2
-        barCurrent = barCurrent / 2
-    end
-    for _, control in pairs(self.barControls) do
-        ZO_StatusBar_SmoothTransition(control, barCurrent, barMax, forceInit)
-    end
-    if not forceInit then
-        self:ResetFadeOutDelay()
-    end
-    self:UpdateContextualFading()
-    if(self.textEnabled) then
-        self.label:SetText(zo_strformat(SI_UNIT_FRAME_BARVALUE, current, max))
-    end
-
-    if(BUI.Settings.Modules["Tooltips"].attributeLabels) then
-    	self.control.BUI_labelRef:SetText(BUI.DisplayNumber(current).." ("..string.format("%.0f",100*current/max).."%)")
-    	self.control.BUI_labelRef:SetHidden(false)
-    else
-    	self.control.BUI_labelRef:SetHidden(true)
-    end
-end
-
 
 function BUI.InventoryHook(tooltipControl, method, linkFunc)
 	local origMethod = tooltipControl[method]
