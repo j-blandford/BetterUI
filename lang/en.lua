@@ -25,5 +25,10 @@ ZO_CreateStringId("SI_BUI_BANKING_WITHDRAW","Withdraw")
 ZO_CreateStringId("SI_BUI_BANKING_DEPOSIT","Deposit")
 ZO_CreateStringId("SI_BUI_BANKING_BUYSPACE","Buy More Space (<<1>>)")
 
+ZO_CreateStringId("SI_BUI_INV_ACTION_TO_TEMPLATE","To <<1>>")
+
+ZO_CreateStringId("SI_BUI_INV_ACTION_CB","Crafting Bag")
+ZO_CreateStringId("SI_BUI_INV_ACTION_INV","Inventory")
+
 -- A little patch to correct the scaling of items displaying the incorrect CP values
 ZO_CreateStringId("SI_ITEM_ABILITY_SCALING_CHAMPION_POINTS_RANGE", "Scaling from <<X:1>> <<2>> to <<X:1>> <<3>>")

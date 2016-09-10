@@ -487,7 +487,9 @@ function BUI.GuildStore.Browse:SetupNameFilter(control, data, selected, reselect
             self.nameFilterBox.edit:TakeFocus()
         end
     end
-                    return false
+    
+    return false
+end
 
 function BUI.GuildStore.Browse:UpdateCheckboxFilter(newValue)
     self.lastRecipeUnknownFilter = self.recipeUnknownFilter
@@ -515,6 +517,7 @@ function BUI.GuildStore.Browse:SetupCheckboxFilter(control, data, selected, rese
                     self:FocusPriceSelector(selectedData.priceSelector)
                 else
                     self.checkFilterBox.edit:TakeFocus()
+                end
             end
     self.keybindStripDescriptor[1].visible = function() 
                 local selectedData = self.itemList:GetSelectedData()

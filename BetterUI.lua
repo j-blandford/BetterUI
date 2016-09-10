@@ -181,12 +181,12 @@ function BUI.LoadModules()
 		ddebug("Initializing BUI...")
 		BUI.GuildStore.FixMM() -- fix MM is independent of any module
 		BUI.Player.GetResearch()
-
 		if(BUI.Settings.Modules["CIM"].m_enabled) then
 			BUI.CIM.Setup()
 			if(BUI.Settings.Modules["GuildStore"].m_enabled) then
 				BUI.GuildStore.Setup()
 			end
+
 			-- if(BUI.Settings.Modules["Store"].m_enabled) then
 			-- 	--BUI.Store.Setup()
 			-- end
