@@ -738,7 +738,7 @@ function BUI.Inventory.Class:UpdateRightTooltip()
     end
 
 	if selectedItemData ~= nil then
-		if selectedItemData.dataSource.equipType == 0 then
+		if selectedData.dataSource and selectedItemData.dataSource.equipType == 0 then
 			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_RIGHT_TOOLTIP)
 		end
 	end
@@ -936,7 +936,7 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
     if newState == SCENE_SHOWING then
         self:PerformDeferredInitialize()
         BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-
+        
         --figure out which list to land on
         local listToActivate = self.previousListType or INVENTORY_CATEGORY_LIST
         -- We normally do not want to enter the gamepad inventory on the item list

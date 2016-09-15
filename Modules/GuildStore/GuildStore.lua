@@ -241,10 +241,79 @@ end
 -- Flip A (Sort) and X (Select)
 function BUI.GuildStore.HookResultsKeybinds()
 	if BUI.Settings.Modules["GuildStore"].flipGSbuttons then
-        BUI.PostHook(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS, 'InitializeKeybindStripDescriptors', function(self)
-            self.keybindStripDescriptor[1]["keybind"] = "UI_SHORTCUT_SECONDARY"
-            self.keybindStripDescriptor[2]["keybind"] = "UI_SHORTCUT_PRIMARY"
-        end)
+		BUI.Hook(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS, "InitializeKeybindStripDescriptors", function(self)
+			local function NotAwaitingResponse()
+				return not self.awaitingResponse
+			end
+			local function HasNoCoolDownAndNotAwaitingResponse()
+				return self:HasNoCooldown() and NotAwaitingResponse()
+			end
+			
+			self.keybindStripDescriptor = {
+				alignment = KEYBIND_STRIP_ALIGN_LEFT,
+				{
+					name = GetString(SI_GAMEPAD_SORT_OPTION),
+					keybind = "UI_SHORTCUT_SECONDARY",
+					alignment = KEYBIND_STRIP_ALIGN_LEFT,
+					callback = function()
+						TRADING_HOUSE_GAMEPAD:SetSearchPageData(FIRST_PAGE, NO_MORE_PAGES) -- Reset pages for new sort option
+						self:SortBySelected()
+					end,
+					enabled = HasNoCoolDownAndNotAwaitingResponse
+				},
+				{
+					name = GetString(SI_GAMEPAD_SELECT_OPTION),
+					keybind = "UI_SHORTCUT_PRIMARY",
+					alignment = KEYBIND_STRIP_ALIGN_LEFT,
+					callback = function()
+						local postedItem = self:GetList():GetTargetData()
+						self:ShowPurchaseItemConfirmation(postedItem)
+					end,
+					enabled = NotAwaitingResponse
+				},
+				{
+					name = GetString(SI_TRADING_HOUSE_GUILD_LABEL),
+					keybind = "UI_SHORTCUT_TERTIARY",
+					alignment = KEYBIND_STRIP_ALIGN_LEFT,
+					callback = function()
+						self:DisplayChangeGuildDialog()
+					end,
+					visible = function()
+						return GetSelectedTradingHouseGuildId() ~= nil and GetNumTradingHouseGuilds() > 1
+					end,
+					enabled = HasNoCoolDownAndNotAwaitingResponse
+				},
+				{
+					name = function()
+						return zo_strformat(SI_GAMEPAD_TRADING_HOUSE_SORT_TIME_PRICE_TOGGLE, self:GetTextForToggleTimePriceKey())
+					end,
+					keybind = "UI_SHORTCUT_RIGHT_STICK",
+					alignment = KEYBIND_STRIP_ALIGN_LEFT,
+					callback = function()
+						TRADING_HOUSE_GAMEPAD:SetSearchPageData(FIRST_PAGE, NO_MORE_PAGES) -- Reset pages for new sort option
+						self:ToggleSortOptions()
+					end,
+					enabled = HasNoCoolDownAndNotAwaitingResponse
+				},
+				{
+					keybind = "UI_SHORTCUT_LEFT_TRIGGER",
+					ethereal = true,
+					callback = function()
+						self:PreviousPageRequest()
+					end,
+				},
+				{
+					keybind = "UI_SHORTCUT_RIGHT_TRIGGER",
+					ethereal = true,
+					callback = function()
+						self:NextPageRequest()
+					end,
+				},
+			}
+			ZO_Gamepad_AddBackNavigationKeybindDescriptorsWithSound(self.keybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON, function() self:ShowBrowseFilters() end)
+		end, true)
+		
+		GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeKeybindStripDescriptors()
 	end
 end
 
@@ -624,7 +693,10 @@ function BUI.GuildStore.BrowseResults.Setup()
     GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.OnShowing = function(self)
 	    if wykkydsToolbar then
             wykkydsToolbar:SetHidden(true)
-        end
+	    end
+	
+	    --GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.keybindStripDescriptor[1]["keybind"] = "UI_SHORTCUT_SECONDARY"
+	    --GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.keybindStripDescriptor[2]["keybind"] = "UI_SHORTCUT_PRIMARY"
     end
 
     GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.OnHiding = function(self)
