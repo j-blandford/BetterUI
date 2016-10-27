@@ -1264,7 +1264,7 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 			EVENT_MANAGER:UnregisterForUpdate(self.callLaterRightToolTip)
 		end
 		
-		local callLaterId = zo_callLater(function() self:UpdateRightTooltip() end, INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+		local callLaterId = zo_callLater(function() self:UpdateRightTooltip() end, 100)
 		self.callLaterRightToolTip = "CallLaterFunction"..callLaterId
 		
 		self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
@@ -1273,7 +1273,7 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
 		end
 		
-		local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+		local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, 100)
 		self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
 
 	elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then
