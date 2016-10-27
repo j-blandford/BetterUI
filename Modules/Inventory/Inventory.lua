@@ -15,6 +15,8 @@ local CRAFT_BAG_ACTION_MODE = 3
 local INVENTORY_TAB_INDEX = 1
 local CRAFT_BAG_TAB_INDEX = 2
 
+local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 500
+
 local INVENTORY_CATEGORY_LIST = "categoryList"
 local INVENTORY_ITEM_LIST = "itemList"
 local INVENTORY_CRAFT_BAG_LIST = "craftBagList"
@@ -164,7 +166,14 @@ function BUI.Inventory.Class:ToSavedPosition()
 
 			if lastPosition ~= nil then
 				self._currentList:SetSelectedIndexWithoutAnimation(lastPosition, true, false)
-				self:UpdateItemLeftTooltip(self._currentList.selectedData)
+				
+				GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+				if self.callLaterLeftToolTip ~= nil then
+					EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+				end
+				
+				local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self._currentList.selectedData) end, INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+				self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
 			end
 		end
 	else
@@ -697,6 +706,8 @@ function BUI.Inventory.Class:SetActiveKeybinds(keybindDescriptor)
 	if(keybindDescriptor == self.itemFilterKeybindStripDescriptor) then
 		if self.selectedItemFilterType == ITEMFILTERTYPE_QUICKSLOT then
 			self.currentSecondaryKeybind = self.quickslotKeybindStripDescriptor
+		--elseif self.selectedItemFilterType == ITEMFILTERTYPE_CONSUMABLE then
+		--	self.currentSecondaryKeybind = self.quickslotKeybindStripDescriptor
 		else
 			self.currentSecondaryKeybind = self.switchEquipKeybindDescriptor
 		end
@@ -723,7 +734,9 @@ function BUI.Inventory.Class:UpdateRightTooltip()
 	local selectedEquipSlot
 
 	if self:GetCurrentList() == self.itemList then
-		selectedEquipSlot = BUI_GetEquipSlotForEquipType(selectedItemData.dataSource.equipType)
+		if (selectedItemData ~= nil and selectedItemData.dataSource ~= nil) then
+			selectedEquipSlot = BUI_GetEquipSlotForEquipType(selectedItemData.dataSource.equipType)
+		end
 	else
 		selectedEquipSlot = 0
 	end
@@ -737,7 +750,7 @@ function BUI.Inventory.Class:UpdateRightTooltip()
         self:UpdateTooltipEquippedIndicatorText(GAMEPAD_RIGHT_TOOLTIP, selectedEquipSlot)
     end
 
-	if selectedItemData ~= nil then
+	if selectedItemData ~= nil and selectedItemData.dataSource ~= nil and selectedData ~= nil then
 		if selectedData.dataSource and selectedItemData.dataSource.equipType == 0 then
 			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_RIGHT_TOOLTIP)
 		end
@@ -755,10 +768,17 @@ function BUI.Inventory.Class:InitializeItemList()
 		    self.currentlySelectedData = selectedData
 
 		    self:SetSelectedInventoryData(selectedData)
-
-		    self:UpdateItemLeftTooltip(selectedData)
+		
+			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+			if self.callLaterLeftToolTip ~= nil then
+				EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			end
+		
+			local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(selectedData) end, INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+			self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
+			
 		    self:PrepareNextClearNewStatus(selectedData)
-		    self.itemList:RefreshVisible()
+		    --self.itemList:RefreshVisible()
 		    self:UpdateRightTooltip()
 		    self:RefreshActiveKeybinds()
 	    end
@@ -1105,9 +1125,8 @@ function BUI.Inventory.Class:OnDeferredInitialize()
             self:RefreshCategoryList()
             end
             RefreshSelectedData() --dialog will refresh selected when it hides, so only do it if it's not showing
-        end
-
-    end
+		end
+	end
 
     SHARED_INVENTORY:RegisterCallback("FullInventoryUpdate", OnInventoryUpdated)
     SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", OnInventoryUpdated)
@@ -1240,10 +1259,22 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 		self:SetSelectedItemUniqueId(self.itemList:GetTargetData())
 		self.actionMode = ITEM_LIST_ACTION_MODE
 		self:RefreshItemActions()
-		self:UpdateRightTooltip()
+		
+		if self.callLaterRightToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterRightToolTip)
+		end
+		
+		local callLaterId = zo_callLater(function() self:UpdateRightTooltip() end, INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+		self.callLaterRightToolTip = "CallLaterFunction"..callLaterId
+		
 		self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
-
-		self:UpdateItemLeftTooltip(self.itemList.selectedData)
+		
+		if self.callLaterLeftToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+		end
+		
+		local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+		self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
 
 	elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then
 		self:SetActiveKeybinds(self.craftBagKeybindStripDescriptor)

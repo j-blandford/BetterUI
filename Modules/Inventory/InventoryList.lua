@@ -5,6 +5,7 @@ local NEW_ICON_TEXTURE = "EsoUI/Art/Miscellaneous/Gamepad/gp_icon_new.dds"
 
 local DEFAULT_GAMEPAD_ITEM_SORT =
 {
+	brandNew = { tiebreaker = "bestGamepadItemCategoryName" },
     bestGamepadItemCategoryName = { tiebreaker = "name" },
     name = { tiebreaker = "requiredLevel" },
     requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
@@ -111,7 +112,7 @@ end
 
 
 function BUI_Inventory_DefaultItemSortComparator(left, right)
-    return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
+    return ZO_TableOrderingFunction(left, right, "brandNew", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
 
 local function GetMarketPrice(itemLink, stackCount)

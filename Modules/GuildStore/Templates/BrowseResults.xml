@@ -104,6 +104,8 @@
             </Controls>
         </Control>
 
+	    <Control name="ZO_GamepadGuildStoreComboUnknownRecipes" inherits="ZO_Gamepad_Dropdown_Item_FullWidth" virtual="true"/>
+
 		<Control name="BUI_Gamepad_CheckBox" virtual="true">
             <OnInitialized>
                 self:GetParent().edit = self:GetNamedChild("Backdrop"):GetNamedChild("Edit")
