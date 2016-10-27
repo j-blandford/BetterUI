@@ -982,7 +982,12 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
 
         if wykkydsToolbar then
             wykkydsToolbar:SetHidden(false)
-        end
+		end
+
+		if self.callLaterLeftToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			self.callLaterLeftToolTip = nil
+		end
 
     elseif newState == SCENE_HIDDEN then
         BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
@@ -995,7 +1000,12 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
 
         if wykkydsToolbar then
             wykkydsToolbar:SetHidden(false)
-        end
+		end
+
+		if self.callLaterLeftToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			self.callLaterLeftToolTip = nil
+		end
     end
 end
 
@@ -1269,12 +1279,14 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 		
 		self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
 		
-		if self.callLaterLeftToolTip ~= nil then
-			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
-		end
+		self:UpdateItemLeftTooltip(self.itemList.selectedData)
 		
-		local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, 100)
-		self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
+		--if self.callLaterLeftToolTip ~= nil then
+		--	EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+		--end
+		--
+		--local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, 100)
+		--self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
 
 	elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then
 		self:SetActiveKeybinds(self.craftBagKeybindStripDescriptor)
