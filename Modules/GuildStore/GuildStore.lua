@@ -25,11 +25,13 @@ local LEVEL_TYPES =
 
 local QUALITY_COLOR_INDEX = 1
 local LIST_ITEM_HEIGHT = 120
-local DONT_SELECT_ITEM = false
-local IGNORE_CALL_BACK = true
 local MIN_POSTING_AMOUNT = 1
 local CLAMP_VALUES = true
 local SEARCH_CRITERIA_CHANGED = true
+
+local DONT_SELECT_ITEM = false
+local IGNORE_CALLBACK = true
+local IGNORE_CALL_BACK = true
 
 local SCROLL_LIST_HEADER_OFFSET_VALUE = 0
 local SCROLL_LIST_SELECTED_OFFSET_VALUE = 0
@@ -381,7 +383,7 @@ function BUI.GuildStore.BrowseResults:AddEntryToList(itemData)
             if (currentItemType == ITEMTYPE_RECIPE) then
                 isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData.itemLink)
 
-				if (self.recipeUnknownFilter == "1" and not isRecipeAndUnknown) or (self.recipeUnknownFilter == "0" and isRecipeAndUnknown) then
+				if (self.recipeUnknownFilter == 2 and not isRecipeAndUnknown) or (self.recipeUnknownFilter == 3 and isRecipeAndUnknown) then
                 	return
             	end
             end
@@ -560,47 +562,88 @@ function BUI.GuildStore.Browse:SetupNameFilter(control, data, selected, reselect
     return false
 end
 
-function BUI.GuildStore.Browse:UpdateCheckboxFilter(newValue)
-    self.lastRecipeUnknownFilter = self.recipeUnknownFilter
-    self.recipeUnknownFilter = newValue
-    ZO_TradingHouse_SearchCriteriaChanged(SEARCH_CRITERIA_CHANGED)
+ZO_TRADING_HOUSE_YES_OR_NO_ANY =
+{
+	{ 1, nil, SI_GAMEPAD_SELECT_OPTION },
+	{ 2, nil, SI_YES },
+	{ 3, nil, SI_NO },
+}
+
+function BUI.GuildStore.Browse:PopulateUnknownRecipesDropDown(dropDown)
+	dropDown:ClearItems()
+	dropDown:SetSortsItems(false)
+	
+	--ZO_TradingHouse_InitializeColoredComboBox(dropDown, ZO_TRADING_HOUSE_YES_OR_NO_ANY, self.UpdateCheckboxFilter, INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, nil, DONT_SELECT_ITEM)
+	
+	for _, data in ipairs(ZO_TRADING_HOUSE_YES_OR_NO_ANY) do
+		local entry = dropDown:CreateItemEntry(GetString(data[ZO_RANGE_COMBO_INDEX_TEXT]), self.UpdateCheckboxFilter)
+		entry.value = data[ZO_RANGE_COMBO_INDEX_MIN_VALUE]
+		
+		dropDown:AddItem(entry)
+	end
+	
+	if self.lastRecipeUnknownFilterEntryName then
+		dropDown:SelectItemByIndex(self.lastRecipeUnknownFilter, IGNORE_CALLBACK)
+		
+		dropDown:SetHighlightedItem(self.lastRecipeUnknownFilter)
+	else
+		dropDown:SelectFirstItem()
+	end
 end
-function BUI.GuildStore.Browse:PerformDeferredInitialization()
-    --if(self.deferred_init) then return end
-    self.itemList:AddDataTemplate("BUI_BrowseFilterEditboxTemplate", function(...) self:SetupNameFilter(...) end)
-    --self.deferred_init = true
-end
 
-function BUI.GuildStore.Browse:SetupCheckboxFilter(control, data, selected, reselectingDuringRebuild, enabled, active)
-    local editBox = control
-
-    self.checkFilterBox = control
-    self.checkFilterBox.edit:SetHandler("OnTextChanged", function() self:UpdateCheckboxFilter(self.checkFilterBox.edit:GetText()) end)
-
-    self.keybindStripDescriptor[1].callback = function()
-                local selectedData = self.itemList:GetSelectedData()
-                if selectedData.dropDown then
-                    self:FocusDropDown(selectedData.dropDown)
-                elseif selectedData.priceSelector then
-                    self.priceSelectorMode = selectedData.priceSelectorMode
-                    self:FocusPriceSelector(selectedData.priceSelector)
-                else
-                    self.checkFilterBox.edit:TakeFocus()
-                end
-            end
-    self.keybindStripDescriptor[1].visible = function() 
-                local selectedData = self.itemList:GetSelectedData()
-                if selectedData then
-                    return true
-                else
-                    return false
-                end
-            end
+function BUI.GuildStore.Browse:SetupUnknownRecipesFilterDropDown(control, data, selected, reselectingDuringRebuild, enabled, active)
+	ZO_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuringRebuild, enabled, active)
+	--control:SetAlpha(ZO_GamepadMenuEntryTemplate_GetAlpha(selected, data.disabled))
+	
+	local dropdown = ZO_ComboBox_ObjectFromContainer(control:GetNamedChild("Dropdown"))
+	
+	dropdown:SetDeactivatedCallback(function() self:UnfocusDropDown() end)
+	
+	--Initialize?
+	dropdown:SetSortsItems(false)
+	--dropdown:SelectFirstItem()
+	local DONT_RESELECT = false
+	dropdown:SetHighlightedItem(1, DONT_RESELECT)
+	
+	--data.initCallback(dropdown)
+	
+	self.unknownRecipesDropDown = dropdown
+	
+	self:PopulateUnknownRecipesDropDown(dropdown)
+	
+	data.dropDown = dropdown
 end
 
 function BUI.GuildStore.Browse.PerformDeferredInitialization(self)
     if(self.deferred_init) then return end
-    self.itemList:AddDataTemplate("BUI_BrowseFilterCheckboxTemplate", function(...) self:SetupCheckboxFilter(...) end)
+
+	self.UpdateCheckboxFilter = function(comboBox, entryName, entry)
+		local selectionChanged = self.lastRecipeUnknownFilterEntryName ~= entryName
+		if self.lastRecipeUnknownFilterEntryName then
+			self.lastRecipeUnknownFilter = self.unknownRecipesDropDown:GetHighlightedIndex()
+		end
+		
+		self.lastRecipeUnknownFilterEntryName = entryName
+		self.recipeUnknownFilter = entry.value
+		ZO_TradingHouse_ComboBoxSelectionChanged(comboBox, entryName, entry, selectionChanged)
+		
+		self.unknownRecipesDropDown:SetSelectedItemText(entryName)
+		
+		--if selectionChanged then
+			--self:UpdateLevelSlidersMinMax()
+		--	self.itemList:RefreshVisible()
+		--end
+		
+		--return selectionChanged
+	end
+
+	self.lastRecipeUnknownFilter = 1
+	self.lastRecipeUnknownFilterEntryName = nil
+	
+	--self:ConfigureCraftingFilterTypes()
+    
+    self.itemList:AddDataTemplateWithHeader("ZO_GamepadGuildStoreComboUnknownRecipes", function(...) self:SetupUnknownRecipesFilterDropDown(...) end, ZO_GamepadMenuEntryTemplateParametricListFunction, nil, "ZO_GamepadGuildStoreBrowseHeaderTemplate")
+--    self.itemList:AddDataTemplate("BUI_BrowseFilterCheckboxTemplate", function(...) self:SetupCheckboxFilter(...) end)
 	self.itemList:AddDataTemplate("BUI_BrowseFilterEditboxTemplate", function(...) self:SetupNameFilter(...) end)
     self.deferred_init = true
 end
@@ -612,9 +655,16 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
     self:AddDropDownEntry("GuildStoreBrowseCategory", CATEGORY_DROP_DOWN_MODE)
     self:InitializeFilterData(filters)
 
-	local recipeUnknownFilter = ZO_GamepadEntryData:New("Unknown Recipes")
-    self.itemList:AddEntry("BUI_BrowseFilterCheckboxTemplate", recipeUnknownFilter)
+	--local recipeUnknownFilter = ZO_GamepadEntryData:New("Unknown Recipes")
+    --self.itemList:AddEntry("BUI_BrowseFilterCheckboxTemplate", recipeUnknownFilter)
+    
+    --self:AddDropDownEntry("BUI_BrowseFilterCheckboxTemplate", 5)
 
+    local dropDownData = ZO_GamepadEntryData:New("Unknown Recipes")
+    dropDownData.dropDownMode = 5
+    dropDownData:SetHeader("Unknown Recipes")
+    self.itemList:AddEntryWithHeader("ZO_GamepadGuildStoreComboUnknownRecipes", dropDownData)
+    
     local nameFilter = ZO_GamepadEntryData:New("Name Filter")
     self.itemList:AddEntry("BUI_BrowseFilterEditboxTemplate", nameFilter)
 
@@ -633,12 +683,19 @@ function BUI.GuildStore.BrowseResults.Setup()
 	ZO_TradingHouse_BrowseResults_Gamepad_OnInitialize(BUI_BrowseResults)
 
     --/zgoo ZO_TradingHouse_Browse_GamepadList.scrollList
-	GAMEPAD_TRADING_HOUSE_BROWSE.SetupCheckboxFilter = BUI.GuildStore.Browse.SetupCheckboxFilter
-	GAMEPAD_TRADING_HOUSE_BROWSE.UpdateCheckboxFilter = BUI.GuildStore.Browse.UpdateCheckboxFilter
+	GAMEPAD_TRADING_HOUSE_BROWSE.SetupUnknownRecipesFilterDropDown = BUI.GuildStore.Browse.SetupUnknownRecipesFilterDropDown
+	GAMEPAD_TRADING_HOUSE_BROWSE.PopulateUnknownRecipesDropDown = BUI.GuildStore.Browse.PopulateUnknownRecipesDropDown
+	--GAMEPAD_TRADING_HOUSE_BROWSE.SetupCheckboxFilter = BUI.GuildStore.Browse.SetupCheckboxFilter
+	--GAMEPAD_TRADING_HOUSE_BROWSE.UpdateCheckboxFilter = BUI.GuildStore.Browse.UpdateCheckboxFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.SetupNameFilter = BUI.GuildStore.Browse.SetupNameFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.UpdateNameFilter = BUI.GuildStore.Browse.UpdateNameFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.ResetList = BUI.GuildStore.Browse.ResetList
-
+	GAMEPAD_TRADING_HOUSE_BROWSE.ConfigureCraftingFilterTypes = BUI.GuildStore.Browse.ConfigureCraftingFilterTypes
+	
+	--GAMEPAD_TRADING_HOUSE_BROWSE.unknownRecipesDropDown = BUI.GuildStore.Browse.unknownRecipesDropDown
+	--GAMEPAD_TRADING_HOUSE_BROWSE.lastRecipeUnknownFilter = BUI.GuildStore.Browse.lastRecipeUnknownFilter
+	--GAMEPAD_TRADING_HOUSE_BROWSE.lastRecipeUnknownFilterEntryName = BUI.GuildStore.Browse.lastRecipeUnknownFilterEntryName
+	
     BUI.PostHook(GAMEPAD_TRADING_HOUSE_BROWSE, 'PerformDeferredInitialization', function(self)
         BUI.GuildStore.Browse.PerformDeferredInitialization(self)
         self:ResetList()
@@ -662,7 +719,7 @@ function BUI.GuildStore.BrowseResults.Setup()
 	        self.dropDown:Deactivate()
 	    end
 	    self:UnfocusPriceSelector()
-
+		
         GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.recipeUnknownFilter = self.recipeUnknownFilter
         GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.textFilter = string.lower(self.nameFilter)
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(true) -- here's the change
@@ -804,16 +861,16 @@ end
 	-- Create Listing (Sell Item)
 	-- Automatically fill in the market price if the "replace inventory values with market price" setting is enabled
 	local orig_funct = ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing
-    	ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing = function(selectedData, bag, index, listingPrice)
-									if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
-										local marketPrice = GetMarketPrice(GetItemLink(bag, index), selectedData.stackCount)
-										if(marketPrice ~= 0) then
-											orig_funct(selectedData, bag, index, math.floor(marketPrice))
-										else
-											orig_funct(selectedData, bag, index, listingPrice)
-										end
-									else
-										orig_funct(selectedData, bag, index, listingPrice)
-									end
-                                                        	end
+	ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing = function(selectedData, bag, index, listingPrice)
+		if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
+			local marketPrice = GetMarketPrice(GetItemLink(bag, index), selectedData.stackCount)
+			if(marketPrice ~= 0) then
+				orig_funct(selectedData, bag, index, math.floor(marketPrice))
+			else
+				orig_funct(selectedData, bag, index, listingPrice)
+			end
+		else
+			orig_funct(selectedData, bag, index, listingPrice)
+		end
+	end
 end
