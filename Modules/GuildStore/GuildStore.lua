@@ -45,6 +45,8 @@ local SORT_OPTIONS = {
     [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE] = TRADING_HOUSE_SORT_SALE_PRICE,
 }
 
+local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 300
+
 
 -- We need to take a subclass of ZO_GamepadInventoryList to alter the "Sell" page's gradient fade background
 BUI_GamepadInventoryList = ZO_GamepadInventoryList:Subclass()
@@ -62,7 +64,7 @@ function BUI_GamepadInventoryList:RefreshList()
     self.list:Clear()
     self.dataBySlotIndex = {}
     local slots = self:GenerateSlotTable()
-    local currentBestCategoryName = nil
+    local currentBestCategoryName
     for i, itemData in ipairs(slots) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
         self:SetupItemEntry(entry, itemData)
@@ -189,7 +191,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
 
     -- MM integration
     if(BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
-	    dealValue = tonumber(dealString)
+	    local dealValue = tonumber(dealString)
 
 	    local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, dealValue)
         if dealValue == 0 then r = 0.98; g = 0.01; b = 0.01; end
@@ -352,6 +354,75 @@ function BUI.GuildStore.BrowseResults:InitializeFooter()
     self.control:RegisterForEvent(EVENT_TELVAR_STONE_UPDATE, RefreshFooter)
 end
 
+function BUI.GuildStore.BrowseResults:BuildList()
+	local numNonGuildItems = self.numItemsOnPage
+	
+	--[[
+		According to design, we need to add in guild specific items if the category filter is ALL_ITEMS
+		Guild specific items are different than items that are returned from a normal search query because they are not stored on the server and retrieved via the TradingHouseManager
+		Instead guild specific items are created in lua when specifically requested. A problem arises because search queries are returned to the client page by page and pre-sorted.
+		In order to insert the guild specific items in the correct sorted place, without knowing the full contents of the sorted list (it could be hundreds, even thousands, of items long),
+		we have to check entries as they are added to the list using a sort comparator and specifically insert in these guild items where needed, on a page by page basis
+	--]]
+	local displayGuildItems = not TRADING_HOUSE_GAMEPAD:GetSearchActiveFilter() -- TRADING_HOUSE_GAMEPAD:GetSearchActiveFilter() returns nil when the category filter combo box is set to ALL_ITEMS
+	if displayGuildItems then
+		local DONT_IGNORE_FILTERING = false
+		local CACHE_GUILD_ITEMS = true
+		self:AddGuildSpecificItemsToList(DONT_IGNORE_FILTERING, CACHE_GUILD_ITEMS) -- cache guild specific items in a table that will be removed from during the add entry block below
+	end
+	
+	for i = 1, numNonGuildItems do
+		local itemData = ZO_TradingHouse_CreateItemData(i, GetTradingHouseSearchResultItemInfo)
+		
+		if itemData then
+			itemData.itemLink = GetTradingHouseSearchResultItemLink(itemData.slotIndex)
+			self:FormatItemDataFields(itemData)
+			
+			if displayGuildItems then
+				-- Check the cached guild specific items to see if any items should be inserted between the current item and the last item added.
+				self:InsertCachedGuildSpecificItemsForSortPosition(self.cachedLastItemData, itemData)
+				self.cachedLastItemData = itemData
+			end
+			
+			self:AddEntryToList(itemData)
+		end
+	end
+	
+	if displayGuildItems and not self.hasMorePages then
+		self:InsertCachedGuildSpecificItemsForSortPosition(self.cachedLastItemData, nil) -- Check one last time to see if any guild specific items should be at the end of the list
+	end
+	
+	if (self.listResultCount == 0) then
+		if (self.nextPageCallLater ~= nil) then
+			EVENT_MANAGER:UnregisterForUpdate(self.nextPageCallLater)
+		end
+		
+		if (self.hasMorePages) then
+			self.innerCallLaterIdIsSet = false
+			local nextCallLaterId = zo_callLater(function()
+				if GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.hasMorePages and GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:HasNoCooldown() and not GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.control:IsHidden() then
+					TRADING_HOUSE_GAMEPAD:SearchNextPage()
+				else
+					local nextCallLaterId = zo_callLater(function()
+						if GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.hasMorePages and GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:HasNoCooldown() and not GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.control:IsHidden() then
+							TRADING_HOUSE_GAMEPAD:SearchNextPage()
+						end
+					end, GetTradingHouseCooldownRemaining() + 250)
+					self.nextPageCallLater = "NextPageCallLater"..nextCallLaterId
+					self.innerCallLaterIdIsSet = true
+				end
+			end, GetTradingHouseCooldownRemaining() + 100)
+		
+			if (not self.innerCallLaterIdIsSet) then
+				self.nextPageCallLater = "NextPageCallLater"..nextCallLaterId
+			end
+			
+		end
+	
+	end
+	
+	self.listResultCount = 0
+end
 
 function BUI.GuildStore.BrowseResults:InitializeList()
     self.itemList = BUI_VerticalItemParametricScrollList:New(self.control:GetNamedChild("List")) -- replace the itemList with my own generic one (with better gradient size, etc.)
@@ -359,12 +430,23 @@ function BUI.GuildStore.BrowseResults:InitializeList()
     self:GetList():AddDataTemplate("BUI_BrowseResults_Row", SetupListing, ZO_GamepadMenuEntryTemplateParametricListFunction)
 
     local BROWSE_RESULTS_ITEM_HEIGHT = 30
+	
+	self.listResultCount = 0
 
     self:GetList():SetAlignToScreenCenter(true, BROWSE_RESULTS_ITEM_HEIGHT)
     self:GetList():SetNoItemText(GetString(SI_DISPLAY_GUILD_STORE_NO_ITEMS))
     self:GetList():SetOnSelectedDataChangedCallback(
         function(list, selectedData)
-            self:LayoutTooltips(selectedData)
+			if self.callLaterLeftToolTip ~= nil then
+				EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			end
+	
+			local callLaterId = zo_callLater(function() self:LayoutTooltips(selectedData) end, GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+			self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
+		
+            --self:LayoutTooltips(selectedData)
+			
+			--self.listResultCount = 0
         end
     )
 end
@@ -389,7 +471,9 @@ function BUI.GuildStore.BrowseResults:AddEntryToList(itemData)
             end
         end
         ---------------------------
-
+	
+		self.listResultCount = self.listResultCount + 1
+	
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
         entry:InitializeTradingHouseVisualData(itemData)
         self:GetList():AddEntry("BUI_BrowseResults_Row",
@@ -404,12 +488,21 @@ end
 function BUI.GuildStore.Listings:InitializeList()
     self.itemList = BUI_VerticalItemParametricScrollList:New(self.control:GetNamedChild("List")) -- replace the itemList with my own generic one (with better gradient size, etc.)
     self:GetList():AddDataTemplate("BUI_Listings_Row", SetupListing, ZO_GamepadMenuEntryTemplateParametricListFunction)
+
     local LISTINGS_ITEM_HEIGHT = 30
     self:GetList():SetAlignToScreenCenter(true, LISTINGS_ITEM_HEIGHT)
     self:GetList():SetNoItemText(GetString(SI_GAMEPAD_TRADING_HOUSE_NO_LISTINGS))
     self:GetList():SetOnSelectedDataChangedCallback(
         function(list, selectedData)
-            self:UpdateItemSelectedTooltip(selectedData)
+			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+			if self.callLaterLeftToolTip ~= nil then
+				EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			end
+	
+			local callLaterId = zo_callLater(function() self:UpdateItemSelectedTooltip(selectedData) end, GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+			self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
+            
+			--self:UpdateItemSelectedTooltip(selectedData)
         end
     )
 end
@@ -446,7 +539,7 @@ local function GetMarketPrice(itemLink, stackCount)
     end
     if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
         local mmData = MasterMerchant:itemStats(itemLink, false)
-        if(mmData.avgPrice ~= nil) then
+        if (mmData.avgPrice ~= nil) then
             return mmData.avgPrice*stackCount
         end
     end
@@ -511,8 +604,13 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
 end
 
 function BUI.GuildStore.Sell:InitializeList()
-    local function OnSelectionChanged(...)
-        self:OnSelectionChanged(...)
+    local function OnSelectionChanged(list, selectedData, oldSelectedData)
+		if self.callLaterLeftToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+		end
+	
+		local callLaterId = zo_callLater(function() self:OnSelectionChanged(list, selectedData, oldSelectedData) end, GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+		self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
     end
 
     local USE_TRIGGERS = true
@@ -708,6 +806,10 @@ function BUI.GuildStore.BrowseResults.Setup()
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.RefreshFooter = BUI.GuildStore.BrowseResults.RefreshFooter
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeFooter = BUI.GuildStore.BrowseResults.InitializeFooter
 	--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.Initialize = BUI.GuildStore.BrowseResults.Initialize
+	
+	--EVENT_MANAGER:RegisterForEvent("BUI_OnSearchResultsReceived",
+	--	EVENT_TRADING_HOUSE_SEARCH_RESULTS_RECEIVED,
+	--	function(...) BUI.GuildStore.BrowseResults:OnSearchResultsReceived(...) end)
 
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeList()
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeFooter()
@@ -767,7 +869,15 @@ function BUI.GuildStore.BrowseResults.Setup()
         self:UnfocusPriceSelector()
         KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
 
-        BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
+		GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+		BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
+		if self.callLaterLeftToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			self.callLaterLeftToolTip = nil
+		end
+		
+		--local callLaterId = zo_callLater(function() self:UpdateItemSelectedTooltip(selectedData) end, GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+		--self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
     end
 
     TRADING_HOUSE_GAMEPAD_SCENE:UnregisterAllCallbacks("StateChange")
@@ -838,7 +948,9 @@ function BUI.GuildStore.Listings.Setup()
 	    if wykkydsToolbar then
             wykkydsToolbar:SetHidden(false)
         end
-    end
+	end
+	
+	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.BuildList = BUI.GuildStore.BrowseResults.BuildList
 
 	-- Now go and override GAMEPAD_TRADING_HOUSE_SELL with our own top level control
 	ZO_TradingHouse_Sell_Gamepad_OnInitialize(BUI_Sell)

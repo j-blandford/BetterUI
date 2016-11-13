@@ -15,7 +15,7 @@ local CRAFT_BAG_ACTION_MODE = 3
 local INVENTORY_TAB_INDEX = 1
 local CRAFT_BAG_TAB_INDEX = 2
 
-local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 500
+local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 300
 
 local INVENTORY_CATEGORY_LIST = "categoryList"
 local INVENTORY_ITEM_LIST = "itemList"
@@ -988,7 +988,7 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
 			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
 			self.callLaterLeftToolTip = nil
 		end
-
+		
     elseif newState == SCENE_HIDDEN then
         BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
 

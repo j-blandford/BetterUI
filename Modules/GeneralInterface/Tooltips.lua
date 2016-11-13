@@ -1,7 +1,8 @@
 local _
 
 local function AddInventoryPostInfo(tooltip, itemLink)
-	if itemLink  then
+	if itemLink then --and itemLink ~= tooltip.lastItemLink then
+		--tooltip.lastItemLink = itemLink
 		if MasterMerchant ~= nil and BUI.Settings.Modules["GuildStore"].mmIntegration then
 			local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
 			if(tipLine ~= nil) then
@@ -16,7 +17,7 @@ local function AddInventoryPostInfo(tooltip, itemLink)
             if(ddData ~= nil) then
                 if(ddData.wAvg ~= nil) then
                     --local dealPercent = (unitPrice/wAvg.wAvg*100)-100
-                    tipLine = "dataDaedra: wAvg="..ddData.wAvg
+                    local tipLine = "dataDaedra: wAvg="..ddData.wAvg
                     tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
                 end
             end
