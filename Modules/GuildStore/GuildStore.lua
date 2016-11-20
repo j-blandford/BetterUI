@@ -47,6 +47,7 @@ local SORT_OPTIONS = {
 
 local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 300
 
+local USE_SHORT_CURRENCY_FORMAT = true
 
 -- We need to take a subclass of ZO_GamepadInventoryList to alter the "Sell" page's gradient fade background
 BUI_GamepadInventoryList = ZO_GamepadInventoryList:Subclass()
@@ -175,7 +176,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
     local notEnoughMoney = data.purchasePrice > GetCarriedCurrencyAmount(CURT_MONEY)
 
 
-    control:GetNamedChild("Price"):SetText(data.purchasePrice)
+    control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(data.purchasePrice, USE_SHORT_CURRENCY_FORMAT))
     if(notEnoughMoney) then control:GetNamedChild("Price"):SetColor(1,0,0,1) else control:GetNamedChild("Price"):SetColor(1,1,1,1) end
 
     local sellerControl = control:GetNamedChild("SellerName")
@@ -569,14 +570,14 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
         local marketPrice = GetMarketPrice(GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex), data.stackCount)
         if(marketPrice ~= 0) then
             control:GetNamedChild("Price"):SetColor(1,0.75,0,1)
-            control:GetNamedChild("Price"):SetText(math.floor(marketPrice))
+            control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(math.floor(marketPrice), USE_SHORT_CURRENCY_FORMAT))
         else
             control:GetNamedChild("Price"):SetColor(1,1,1,1)
-    control:GetNamedChild("Price"):SetText(data.stackSellPrice)
+    		control:GetNamedChild("Price"):SetText(data.stackSellPrice)
         end
     else
         control:GetNamedChild("Price"):SetColor(1,1,1,1)
-        control:GetNamedChild("Price"):SetText(data.stackSellPrice)
+        control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(data.stackSellPrice, USE_SHORT_CURRENCY_FORMAT))
     end
 
     control:GetNamedChild("ItemType"):SetText(string.upper(data.dataSource.bestGamepadItemCategoryName))
@@ -777,6 +778,10 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
 end
 
 function BUI.GuildStore.BrowseResults.Setup()
+	if (BUI.Settings.Modules["GuildStore"].useShortFormat ~= nil) then
+		USE_SHORT_CURRENCY_FORMAT = BUI.Settings.Modules["GuildStore"].useShortFormat
+	end
+	
 	-- Now go and override GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS with our own top level control
 	ZO_TradingHouse_BrowseResults_Gamepad_OnInitialize(BUI_BrowseResults)
 
