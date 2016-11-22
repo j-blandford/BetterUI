@@ -167,7 +167,7 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
     control:GetNamedChild("Price"):SetText(data.purchasePrice)
     if(notEnoughMoney) then control:GetNamedChild("Price"):SetColor(1,0,0,1) else control:GetNamedChild("Price"):SetColor(1,1,1,1) end
 
-    local sellerControl = control:GetNamedChild("SellerName")
+    local statControl = control:GetNamedChild("StatValue")
     local unitPriceControl = control:GetNamedChild("UnitPrice")
     local buyingAdviceControl = control:GetNamedChild("BuyingAdvice")
     local sellerName, dealString, margin
@@ -194,7 +194,12 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
         end
 	end
 
-	sellerControl:SetText(ZO_FormatUserFacingDisplayName(sellerName))
+    local weaponPower = GetItemLinkWeaponPower(data.itemLink)
+    if(weaponPower ~= 0) then 
+        statControl:SetText(weaponPower)
+    else
+        statControl:SetText(GetItemLinkArmorRating(data.itemLink))
+    end
 
     if(BUI.Settings.Modules["GuildStore"].unitPrice) then
 	   	if(data.stackCount ~= 1) then
@@ -238,6 +243,8 @@ function BUI.GuildStore.HookResultsKeybinds()
             self.keybindStripDescriptor[1]["keybind"] = "UI_SHORTCUT_SECONDARY"
             self.keybindStripDescriptor[2]["keybind"] = "UI_SHORTCUT_PRIMARY"
         end)
+
+        GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeKeybindStripDescriptors()
 	end
 end
 

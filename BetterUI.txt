@@ -1,8 +1,8 @@
 ## Title: BetterUI
 ## Description: Makes the gamepad interface usable!
-## APIVersion: 100016
+## APIVersion: 100017
 ## Author: |c0066FFprasoc|r [EU]
-## Version: 2.26
+## Version: 2.30
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
@@ -48,12 +48,6 @@ Modules\CIM\Templates\InterfaceLibrary.xml
 Modules\CIM\InterfaceLibrary.lua
 Modules\CIM\Module.lua
 
-; Module: Store Enhanced
-;Modules\Store\Templates\StoreWindow.xml
-;Modules\Store\Shrinkwrap\storewindowcomponent_gamepad.lua
-;Modules\Store\Store.lua
-;Modules\Store\Module.lua
-
 ; Module: Inventory Enhanced
 Modules\Inventory\Templates\GamepadInventory.xml
 Modules\Inventory\Shrinkwrap\ZO_GamepadList.lua
@@ -63,6 +57,16 @@ Modules\Inventory\InventorySlot.lua
 Modules\Inventory\CraftList.lua
 Modules\Inventory\Inventory.lua
 Modules\Inventory\Module.lua
+
+; Module: Store Enhanced
+Modules\Store\Templates\StoreWindow.xml
+Modules\Store\Shrinkwrap\storewindow_gamepad_util.lua
+Modules\Store\Shrinkwrap\storewindowcomponent_gamepad.lua
+Modules\Store\Parametric.lua
+Modules\Store\StoreHeader.lua
+Modules\Store\StoreManager.lua
+Modules\Store\StoreBuy.lua
+Modules\Store\Module.lua
 
 ; Module: General Interface Improvements
 Modules\GeneralInterface\Tooltips.lua

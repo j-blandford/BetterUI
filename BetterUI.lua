@@ -63,7 +63,6 @@ function BUI.InitModuleOptions()
 		-- 	setFunc = function(value) BUI.Settings.Modules["Store"].m_enabled = value
 		-- 							dirtyModules = true  end,
 		-- 	disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
-		-- 	--disabled = function() return true end,
 		-- 	width = "full",
 		-- },
 		{
@@ -188,7 +187,7 @@ function BUI.LoadModules()
 				BUI.GuildStore.Setup()
 			end
 			-- if(BUI.Settings.Modules["Store"].m_enabled) then
-			-- 	--BUI.Store.Setup()
+			-- 	BUI.Store.Setup()
 			-- end
 			if(BUI.Settings.Modules["Inventory"].m_enabled) then
 				BUI.Inventory.Setup()
@@ -224,6 +223,7 @@ function BUI.Initialize(event, addon)
 		local m_Banking = BUI.ModuleOptions(BUI.Banking, BUI.Settings.Modules["Banking"])
 		local m_Writs = BUI.ModuleOptions(BUI.Writs, BUI.Settings.Modules["Writs"])
 		local m_GuildStore = BUI.ModuleOptions(BUI.GuildStore, BUI.Settings.Modules["GuildStore"])
+		local m_Store = BUI.ModuleOptions(BUI.GuildStore, BUI.Settings.Modules["Store"])
 		local m_Tooltips = BUI.ModuleOptions(BUI.Tooltips, BUI.Settings.Modules["Tooltips"])
 
 		BUI.Settings.firstInstall = false

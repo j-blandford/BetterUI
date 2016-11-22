@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "2.26"
+BUI.version = "2.30"
 
 -- Program Global (scope of BUI, though) variable initialization
 BUI.WindowManager = GetWindowManager()
@@ -17,13 +17,13 @@ BUI.GenericFooter = {}
 BUI.Interface = {}
 BUI.Interface.Window = {}
 
--- BUI.Store = {
--- 	Class = {},
--- 	Window = {},
---
--- 	List = {},
--- 	Buy = {}
--- }
+BUI.Store = {
+	Class = {},
+	Window = {},
+
+	List = {},
+	Buy = {}
+}
 
 BUI.Inventory = {
 	List = {},
@@ -92,6 +92,8 @@ function Init_ModulePanel(moduleName, moduleDesc)
 		registerForDefaults = true
 	}
 end
+
+ZO_Store_OnInitialize_Gamepad = function(...) end
 
 -- Imagery, you dont need to localise these strings
 ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT","|cFF6600<<1>>|r")

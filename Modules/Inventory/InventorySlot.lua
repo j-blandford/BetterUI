@@ -97,7 +97,9 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
 
 			-- Now check if the slot that has been found for the current item needs to be replaced with the CSP ones
 			if self.actionName == GetString(SI_ITEM_ACTION_USE) then
-				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+                if inventorySlot.questIndex == nil then
+                    slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+                end
 			end
 			if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
 				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
