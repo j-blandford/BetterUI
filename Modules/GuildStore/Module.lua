@@ -67,6 +67,16 @@ local function Init(mId, moduleName)
 		},
 		{
 			type = "checkbox",
+			name = "Short Currency Format",
+			tooltip = "Automatically formats the value column to shorten large numbers and to display the currency with commas.",
+			getFunc = function() return BUI.Settings.Modules["GuildStore"].useShortFormat end,
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].useShortFormat = value
+				ReloadUI() end,
+			width = "full",
+			warning="Reloads the UI for the change to propagate"
+		},
+		{
+			type = "checkbox",
 			name = "Unit Price in Guild Store",
 			tooltip = "Displays a price per unit in guild store listings",
 			getFunc = function() return BUI.Settings.Modules["GuildStore"].unitPrice end,
@@ -85,6 +95,8 @@ function BUI.GuildStore.InitModule(m_options)
 	m_options["unitPrice"] = true
 	m_options["scrollingDisable"] = false
 	m_options["flipGSbuttons"] = true
+	m_options["useShortFormat"] = true
+
 	return m_options
 end
 

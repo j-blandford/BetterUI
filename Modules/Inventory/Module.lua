@@ -62,6 +62,16 @@ local function Init(mId, moduleName)
             width = "full",
         },
 		{
+			type = "checkbox",
+			name = "Short Currency Format",
+			tooltip = "Automatically formats the value column to shorten large numbers and to display the currency with commas.",
+			getFunc = function() return BUI.Settings.Modules["Inventory"].useShortFormat end,
+			setFunc = function(value) BUI.Settings.Modules["Inventory"].useShortFormat = value
+				ReloadUI() end,
+			width = "full",
+			warning="Reloads the UI for the change to propagate"
+		},
+		{
             type = "checkbox",
             name = "Display character attributes on the right tooltip?",
             tooltip = "Show the character attributes on the right tooltip rather than seeing the current equipped item",
@@ -81,6 +91,8 @@ function BUI.Inventory.InitModule(m_options)
     m_options["useTriggersForSkip"] = false
     m_options["enableJunk"] = false
 	m_options["displayCharAttributes"] = true
+	m_options["useShortFormat"] = true
+
     return m_options
 end
 
