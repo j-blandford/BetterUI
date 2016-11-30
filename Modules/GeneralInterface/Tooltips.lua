@@ -1,13 +1,14 @@
 local _
 
 local function AddInventoryPostInfo(tooltip, itemLink)
-	if itemLink  then
+	if itemLink then --and itemLink ~= tooltip.lastItemLink then
+		--tooltip.lastItemLink = itemLink
 		if MasterMerchant ~= nil and BUI.Settings.Modules["GuildStore"].mmIntegration then
 			local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
 			if(tipLine ~= nil) then
-				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			else
-				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			end
 		end
 
@@ -16,8 +17,8 @@ local function AddInventoryPostInfo(tooltip, itemLink)
             if(ddData ~= nil) then
                 if(ddData.wAvg ~= nil) then
                     --local dealPercent = (unitPrice/wAvg.wAvg*100)-100
-                    tipLine = "dataDaedra: wAvg="..ddData.wAvg
-                    tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+                    local tipLine = "dataDaedra: wAvg="..ddData.wAvg
+                    tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
                 end
             end
         end
@@ -52,48 +53,6 @@ local function AddInventoryPreInfo(tooltip, itemLink)
         end
     end
 end
----------------------------------------------------------------------------
-
-local function BUI_UpdateAttributeBar(self, current, max, effectiveMax)
-    if self.externalVisibilityRequirement and not self.externalVisibilityRequirement() then
-        return false
-    end
-    local forceInit = false
-    if(current == nil or max == nil or effectiveMax == nil) then
-        current, max, effectiveMax = GetUnitPower(self:GetEffectiveUnitTag(), self.powerType)
-        forceInit = true
-    end
-    if self.current == current and self.max == max and self.effectiveMax == effectiveMax then
-        return
-    end
-    self.current = current
-    self.max = max
-    self.effectiveMax = effectiveMax
-    local barMax = max
-    local barCurrent = current
-    if #self.barControls > 1 then
-        barMax = barMax / 2
-        barCurrent = barCurrent / 2
-    end
-    for _, control in pairs(self.barControls) do
-        ZO_StatusBar_SmoothTransition(control, barCurrent, barMax, forceInit)
-    end
-    if not forceInit then
-        self:ResetFadeOutDelay()
-    end
-    self:UpdateContextualFading()
-    if(self.textEnabled) then
-        self.label:SetText(zo_strformat(SI_UNIT_FRAME_BARVALUE, current, max))
-    end
-
-    if(BUI.Settings.Modules["Tooltips"].attributeLabels) then
-    	self.control.BUI_labelRef:SetText(BUI.DisplayNumber(current).." ("..string.format("%.0f",100*current/max).."%)")
-    	self.control.BUI_labelRef:SetHidden(false)
-    else
-    	self.control.BUI_labelRef:SetHidden(true)
-    end
-end
-
 
 function BUI.InventoryHook(tooltipControl, method, linkFunc)
 	local origMethod = tooltipControl[method]

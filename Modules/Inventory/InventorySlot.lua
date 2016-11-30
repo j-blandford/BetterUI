@@ -47,6 +47,8 @@ local function TryUseItem(inventorySlot)
     return false
 end
 
+
+
 function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
     self.alignment = KEYBIND_STRIP_ALIGN_RIGHT
 
@@ -105,16 +107,16 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
                     table.remove(slotActions.m_slotActions, PRIMARY_ACTION_KEY)
                 end
             else
-                self.actionName = slotActions:GetPrimaryActionName()
-            end
-
-			-- Now check if the slot that has been found for the current item needs to be replaced with the CSP ones
-			if self.actionName == GetString(SI_ITEM_ACTION_USE) then
-				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+				self.actionName = slotActions:GetPrimaryActionName()
 			end
-			if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
-				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
-			end
+             
+			    -- Now check if the slot that has been found for the current item needs to be replaced with the CSP ones
+                if self.actionName == GetString(SI_ITEM_ACTION_USE) then
+                    slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+                end
+                if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
+                    slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+                end
         end
     end
 

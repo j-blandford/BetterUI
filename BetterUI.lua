@@ -105,6 +105,15 @@ function BUI.InitModuleOptions()
 			name = "Enhanced Interface Global Behaviour",
 			width = "full",
 		},
+		{
+            type = "editbox",
+            name = "Mouse Scrolling speed on Left Hand tooltip",
+            tooltip = "Change how quickly the menu skips when pressing the triggers.",
+            getFunc = function() return BUI.Settings.Modules["CIM"].rhScrollSpeed end,
+            setFunc = function(value) BUI.Settings.Modules["CIM"].rhScrollSpeed = value end,
+            disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
+            width = "full",
+        },
         {
             type = "editbox",
             name = "Number of lines to skip on trigger",
@@ -146,9 +155,19 @@ function BUI.InitModuleOptions()
 	LAM:RegisterOptionControls("BUI_".."Modules", optionsTable)
 end
 
-function BUI.Hook(control, method, postHookFunction, overwriteOriginal)
+function BUI.PostHook(control, method, fn)
 	if control == nil then return end
 
+	local originalMethod = control[method]
+	control[method] = function(self, ...)
+		originalMethod(self, ...)
+		fn(self, ...)
+	end
+end
+
+function BUI.Hook(control, method, postHookFunction, overwriteOriginal)
+	if control == nil then return end
+	
 	local originalMethod = control[method]
 	control[method] = function(self, ...)
 		if(overwriteOriginal == false) then originalMethod(self, ...) end
@@ -172,12 +191,12 @@ function BUI.LoadModules()
 		ddebug("Initializing BUI...")
 		BUI.GuildStore.FixMM() -- fix MM is independent of any module
 		BUI.Player.GetResearch()
-		
 		if(BUI.Settings.Modules["CIM"].m_enabled) then
 			BUI.CIM.Setup()
 			if(BUI.Settings.Modules["GuildStore"].m_enabled) then
 				BUI.GuildStore.Setup()
 			end
+
 			-- if(BUI.Settings.Modules["Store"].m_enabled) then
 			-- 	--BUI.Store.Setup()
 			-- end
@@ -194,7 +213,7 @@ function BUI.LoadModules()
 		if(BUI.Settings.Modules["Tooltips"].m_enabled) then
 			BUI.Tooltips.Setup()
 		end
-		
+
 		ddebug("Finished! BUI is loaded")
 		BUI._initialized = true
 	end
@@ -206,7 +225,7 @@ function BUI.Initialize(event, addon)
 	if addon ~= BUI.name then return end
 
 	-- load our saved variables
-	BUI.Settings = ZO_SavedVars:New("BetterUISavedVars", 2.6, nil, BUI.DefaultSettings)
+	BUI.Settings = ZO_SavedVars:New("BetterUISavedVars", 2.65, nil, BUI.DefaultSettings)
 
 	-- Has the settings savedvars JUST been applied? then re-init the module settings
 	if(BUI.Settings.firstInstall) then
@@ -229,17 +248,6 @@ function BUI.Initialize(event, addon)
 	else
 		BUI._initialized = false
 	end
-	
-	-- local panelData = {
-	-- 	id = KEYBOARD_OPTIONS.currentPanelId,
-	-- 	name = "|cAFD3FFBetterUI|r|ceeeeee Modules",
-	-- }
-	-- 
-	-- KEYBOARD_OPTIONS.currentPanelId = panelData.id + 1
-	-- KEYBOARD_OPTIONS.panelNames[panelData.id] = panelData.name
-	-- 
-	-- ZO_GameMenu_AddSettingPanel(panelData)
-
 
 end
 

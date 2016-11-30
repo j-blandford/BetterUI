@@ -4,8 +4,6 @@ local BLOCK_TABBAR_CALLBACK = true
 ZO_GAMEPAD_INVENTORY_SCENE_NAME = "gamepad_inventory_root"
 
 -- Note: "ZOS_*" functions correspond to the shrinkwrapped modules
--- BUI.Inventory.Class = ZOS_GamepadInventory:Subclass()
-
 BUI.Inventory.Class = ZO_GamepadInventory:Subclass()
 
 local NEW_ICON_TEXTURE = "EsoUI/Art/Miscellaneous/Gamepad/gp_icon_new.dds"
@@ -16,6 +14,8 @@ local CRAFT_BAG_ACTION_MODE = 3
 
 local INVENTORY_TAB_INDEX = 1
 local CRAFT_BAG_TAB_INDEX = 2
+
+local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 300
 
 local INVENTORY_CATEGORY_LIST = "categoryList"
 local INVENTORY_ITEM_LIST = "itemList"
@@ -86,64 +86,15 @@ local function TryUseQuestItem(inventorySlot)
     if inventorySlot then
         if inventorySlot.toolIndex then
             UseQuestTool(inventorySlot.questIndex, inventorySlot.toolIndex)
-        elseif inventorySlot.conditionIndex then
+        else
             UseQuestItem(inventorySlot.questIndex, inventorySlot.stepIndex, inventorySlot.conditionIndex)
         end
     end
 end
 
-local function GetCategoryTypeFromWeaponType(bagId, slotIndex)
-    local weaponType = GetItemWeaponType(bagId, slotIndex)
-    if weaponType == WEAPONTYPE_AXE or weaponType == WEAPONTYPE_HAMMER or weaponType == WEAPONTYPE_SWORD or weaponType == WEAPONTYPE_DAGGER then
-        return GAMEPAD_WEAPON_CATEGORY_ONE_HANDED_MELEE
-    elseif weaponType == WEAPONTYPE_TWO_HANDED_SWORD or weaponType == WEAPONTYPE_TWO_HANDED_AXE or weaponType == WEAPONTYPE_TWO_HANDED_HAMMER then
-        return GAMEPAD_WEAPON_CATEGORY_TWO_HANDED_MELEE
-    elseif weaponType == WEAPONTYPE_FIRE_STAFF or weaponType == WEAPONTYPE_FROST_STAFF or weaponType == WEAPONTYPE_LIGHTNING_STAFF then
-        return GAMEPAD_WEAPON_CATEGORY_DESTRUCTION_STAFF
-    elseif weaponType == WEAPONTYPE_HEALING_STAFF then
-        return GAMEPAD_WEAPON_CATEGORY_RESTORATION_STAFF
-    elseif weaponType == WEAPONTYPE_BOW then
-        return GAMEPAD_WEAPON_CATEGORY_TWO_HANDED_BOW
-    elseif weaponType ~= WEAPONTYPE_NONE then
-        return GAMEPAD_WEAPON_CATEGORY_UNCATEGORIZED
-    end
-end
-
-local function IsTwoHandedWeaponCategory(categoryType)
-    return (categoryType == GAMEPAD_WEAPON_CATEGORY_TWO_HANDED_MELEE or
-            categoryType == GAMEPAD_WEAPON_CATEGORY_DESTRUCTION_STAFF or
-            categoryType == GAMEPAD_WEAPON_CATEGORY_RESTORATION_STAFF or
-            categoryType == GAMEPAD_WEAPON_CATEGORY_TWO_HANDED_BOW)
-end
-
-local function GetBestItemCategoryDescription(itemData)
-    if itemData.equipType == EQUIP_TYPE_INVALID then
-        return GetString("SI_ITEMTYPE", itemData.itemType)
-    end
-    local categoryType = GetCategoryTypeFromWeaponType(itemData.bagId, itemData.slotIndex)
-    if categoryType ==  GAMEPAD_WEAPON_CATEGORY_UNCATEGORIZED then
-        local weaponType = GetItemWeaponType(itemData.bagId, itemData.slotIndex)
-        return GetString("SI_WEAPONTYPE", weaponType)
-    elseif categoryType then
-        return GetString("SI_GAMEPADWEAPONCATEGORY", categoryType)
-    end
-    local armorType = GetItemArmorType(itemData.bagId, itemData.slotIndex)
-    local itemLink = GetItemLink(itemData.bagId,itemData.slotIndex)
-    if armorType ~= ARMORTYPE_NONE then
-        return GetString("SI_ARMORTYPE", armorType).." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
-    end
-    local fullDesc = GetString("SI_ITEMTYPE", itemData.itemType)
-	
-	-- Stops types like "Poison" displaying "Poison" twice
-	if( fullDesc ~= GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))) then
-		fullDesc = fullDesc.." "..GetString("SI_EQUIPTYPE",GetItemLinkEquipType(itemLink))
-	end
-	
-	return fullDesc
-end
-
 function BUI_InventoryUtils_MatchWeapons(itemData)
-    return ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, ITEMFILTERTYPE_WEAPONS) or ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, ITEMFILTERTYPE_CONSUMABLE)
+    return ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, ITEMFILTERTYPE_WEAPONS) or
+		   ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, ITEMFILTERTYPE_CONSUMABLE) -- weapons now include consumables
 end
 
 function BUI_InventoryUtils_All(itemData)
@@ -164,8 +115,11 @@ function BUI_TabBar_OnTabNext(parent, successful)
         parent.categoryList.targetSelectedIndex = WrapValue(parent.categoryList.targetSelectedIndex + 1, #parent.categoryList.dataList)
         parent.categoryList.selectedIndex = parent.categoryList.targetSelectedIndex
         parent.categoryList.selectedData = parent.categoryList.dataList[parent.categoryList.selectedIndex]
+        parent.categoryList.defaultSelectedIndex = parent.categoryList.selectedIndex
 
-        parent:RefreshItemList()
+        --parent:RefreshItemList()
+		BUI.GenericHeader.SetTitleText(parent.header, parent.categoryList.selectedData.text)
+
         parent:ToSavedPosition()
     end
 end
@@ -176,8 +130,11 @@ function BUI_TabBar_OnTabPrev(parent, successful)
         parent.categoryList.targetSelectedIndex = WrapValue(parent.categoryList.targetSelectedIndex - 1, #parent.categoryList.dataList)
         parent.categoryList.selectedIndex = parent.categoryList.targetSelectedIndex
         parent.categoryList.selectedData = parent.categoryList.dataList[parent.categoryList.selectedIndex]
+        parent.categoryList.defaultSelectedIndex = parent.categoryList.selectedIndex
 
-        parent:RefreshItemList()
+        --parent:RefreshItemList()
+		BUI.GenericHeader.SetTitleText(parent.header, parent.categoryList.selectedData.text)
+
         parent:ToSavedPosition()
     end
 end
@@ -185,34 +142,53 @@ end
 
 function BUI.Inventory.Class:ToSavedPosition()
     if self.categoryList.selectedData ~= nil then
-        --KEYBIND_STRIP:RemoveKeybindButton(self.quickslotKeybindDescriptor)
-        --KEYBIND_STRIP:RemoveKeybindButton(self.switchEquipKeybindDescriptor)
-
         if not self.categoryList:GetTargetData().onClickDirection then
             self:SwitchActiveList(INVENTORY_ITEM_LIST)
+			self:RefreshItemList()
         else
             self:SwitchActiveList(INVENTORY_CRAFT_BAG_LIST)
-            self._currentList:RefreshList()
+            --self._currentList:RefreshList()
+            self:RefreshCraftBagList()
         end
     end
 
 	if(BUI.Settings.Modules["Inventory"].savePosition) then
-		local lastPosition = self.categoryPositions[self.categoryList.selectedIndex]
-		if(lastPosition ~= nil) then
-			lastPosition = (#self.itemList.dataList > lastPosition) and lastPosition or #self.itemList.dataList
-			self.itemList:SetSelectedIndexWithoutAnimation(lastPosition, true, false)
+		local lastPosition
 
-			self:UpdateItemLeftTooltip(self.itemList.selectedData)
+		if self:GetCurrentList() == self.itemList then
+			lastPosition = self.categoryPositions[self.categoryList.selectedIndex]
+		else
+			lastPosition = self.categoryCraftPositions[self.categoryList.selectedIndex]
+		end
+
+		if lastPosition ~= nil and self._currentList.dataList ~= nil then
+			lastPosition = (#self._currentList.dataList > lastPosition) and lastPosition or #self._currentList.dataList
+
+			if lastPosition ~= nil then
+				self._currentList:SetSelectedIndexWithoutAnimation(lastPosition, true, false)
+				
+				GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+				if self.callLaterLeftToolTip ~= nil then
+					EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+				end
+				
+				local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self._currentList.selectedData) end, INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+				self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
+			end
 		end
 	else
-		self.itemList:SetSelectedIndexWithoutAnimation(1, true, false)
+		self._currentList:SetSelectedIndexWithoutAnimation(1, true, false)
 	end
 
 end
 
 
 function BUI.Inventory.Class:SaveListPosition()
-    self.categoryPositions[self.categoryList.selectedIndex] = self._currentList.selectedIndex
+	if self:GetCurrentList() == self.itemList then
+	    self.categoryPositions[self.categoryList.selectedIndex] = self._currentList.selectedIndex
+	else
+		self.categoryCraftPositions[self.categoryList.selectedIndex] = self._currentList.selectedIndex
+	end
 end
 
 function BUI.Inventory.Class:InitializeCategoryList()
@@ -220,17 +196,20 @@ function BUI.Inventory.Class:InitializeCategoryList()
     self.categoryList = self:AddList("Category", SetupCategoryList)
     self.categoryList:SetNoItemText(GetString(SI_GAMEPAD_INVENTORY_EMPTY))
 
-	self.categoryList:SetDefaultSelectedIndex(1)
+	--self.categoryList:SetDefaultSelectedIndex(1)
+	----self.categoryList:SetDefaultSelectedIndex(2)
 
     --Match the tooltip to the selected data because it looks nicer
     local function OnSelectedCategoryChanged(list, selectedData)
-        self:UpdateCategoryLeftTooltip(selectedData)
-
-        if selectedData.onClickDirection then
-            self:SwitchActiveList(INVENTORY_CRAFT_BAG_LIST)
-        else
-            self:SwitchActiveList(INVENTORY_ITEM_LIST)
-        end
+	    if selectedData ~= nil and self.scene:IsShowing() then
+		    self:UpdateCategoryLeftTooltip(selectedData)
+		
+		    if selectedData.onClickDirection then
+			    self:SwitchActiveList(INVENTORY_CRAFT_BAG_LIST)
+		    else
+			    self:SwitchActiveList(INVENTORY_ITEM_LIST)
+		    end
+	    end
     end
 
     self.categoryList:SetOnSelectedDataChangedCallback(OnSelectedCategoryChanged)
@@ -256,7 +235,7 @@ local function GetItemDataFilterComparator(filteredEquipSlot, nonEquipableFilter
     return function(itemData)
         if nonEquipableFilterType then
 
-            return ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, nonEquipableFilterType) or 
+            return ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, nonEquipableFilterType) or
 				(itemData.equipType == EQUIP_TYPE_POISON and nonEquipableFilterType == ITEMFILTERTYPE_WEAPONS) -- will fix soon, patched to allow Poison in "Weapons"
         else
 			-- for "All"
@@ -293,7 +272,7 @@ function BUI.Inventory.Class:TryEquipItem(inventorySlot)
 	elseif equipType == EQUIP_TYPE_OFF_HAND then
 		-- Shields
 		CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_OFF_HAND or EQUIP_SLOT_BACKUP_OFF, 1)
-		
+
 	else
         -- Else, it's a weapon, so show a dialog so the user can pick either slot!
         ZO_Dialogs_ShowDialog(BUI_EQUIP_SLOT_DIALOG, {inventorySlot, self.equipToMainSlot}, {mainTextParams={GetString(SI_BUI_INV_EQUIPSLOT_MAIN)}}, true)
@@ -319,71 +298,205 @@ function BUI.Inventory.Class:NewCategoryItem(categoryName, filterType, iconFile,
 end
 
 function BUI.Inventory.Class:RefreshCategoryList()
+
+    --local currentPosition = self.header.tabBar.
+
     self.categoryList:Clear()
     self.header.tabBar:Clear()
 
-	self:NewCategoryItem(SI_BUI_INV_ITEM_ALL, nil, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_all.dds", BUI_InventoryUtils_All)
-    
-    self:NewCategoryItem(SI_BUI_INV_ITEM_CONSUMABLE, ITEMFILTERTYPE_CONSUMABLE, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_consumables.dds")
-    
-    self:NewCategoryItem(SI_BUI_INV_ITEM_WEAPONS, ITEMFILTERTYPE_WEAPONS, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_weapons.dds")
-    self:NewCategoryItem(SI_BUI_INV_ITEM_APPAREL, ITEMFILTERTYPE_ARMOR, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_apparel.dds")
+	local currentList = self:GetCurrentList()
 
-    self:NewCategoryItem(SI_BUI_INV_ITEM_MATERIALS, ITEMFILTERTYPE_CRAFTING, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds")
-    self:NewCategoryItem(SI_BUI_INV_ITEM_MISC, ITEMFILTERTYPE_MISCELLANEOUS, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_miscellaneous.dds")
+	if currentList == self.craftBagList then
+	    do
+	        local name = "Crafting Bag"
+	        local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_all.dds"
+	        local data = ZO_GamepadEntryData:New(name, iconFile)
+	        data.onClickDirection = "CRAFTBAG"
+	        data:SetIconTintOnSelection(true)
 
-    self:NewCategoryItem(SI_BUI_INV_ITEM_QUICKSLOT, ITEMFILTERTYPE_QUICKSLOT, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_quickslot.dds")
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
 
-    -- do
-    --     local questCache = SHARED_INVENTORY:GenerateFullQuestCache()
-    --     if next(questCache) then
-    --         local name = GetString(SI_GAMEPAD_INVENTORY_QUEST_ITEMS)
-    --         local iconFile = "/esoui/art/notifications/gamepad/gp_notificationicon_quest.dds"
-    --         local data = ZO_GamepadEntryData:New(name, iconFile)
-    --         data.filterType = ITEMFILTERTYPE_QUEST
-    --         data:SetIconTintOnSelection(true)
-    --         self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
-    --     --    BUI.GenericHeader.AddToList(self.header, data)
-    --         if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
-    --     end
-    -- end
+	        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+	        BUI.GenericHeader.AddToList(self.header, data)
+	        if not self.populatedCraftPos then self.categoryCraftPositions[#self.categoryCraftPositions+1] = 1 end
+	    end
 
-    do
-        if(BUI.Settings.Modules["Inventory"].enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
-            local isListEmpty = self:IsItemListEmpty(nil, nil)
-            if not isListEmpty then
-                local name = GetString(SI_BUI_INV_ITEM_JUNK)
-                local iconFile = "BetterUI/Modules/CIM/Images/inv_junk.dds"
-                local hasAnyNewItems = SHARED_INVENTORY:AreAnyItemsNew(BUI_InventoryUtils_All, nil, BAG_BACKPACK)
-                local data = ZO_GamepadEntryData:New(name, iconFile, nil, nil, hasAnyNewItems)
-                data.showJunk = true
-                data:SetIconTintOnSelection(true)
-                self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
-                BUI.GenericHeader.AddToList(self.header, data)
-                if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
-            end
-        end
-    end
+		do
+			local name = "Blacksmithing"
+			local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_blacksmithing.dds"
+			local data = ZO_GamepadEntryData:New(name, iconFile)
+			data.onClickDirection = "CRAFTBAG"
+			data:SetIconTintOnSelection(true)
 
-    
-    do
-        local name = "Crafting Bag"
-        local iconFile = "/EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds"
-        local data = ZO_GamepadEntryData:New(name, iconFile)
-        data.onClickDirection = "CRAFTBAG"
-        data:SetIconTintOnSelection(true)
+			data.filterType = ITEMFILTERTYPE_BLACKSMITHING
 
-		if not HasCraftBagAccess() then
-			data.enabled = false
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
+
+			self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+			BUI.GenericHeader.AddToList(self.header, data)
+			if not self.populatedCraftPos then self.categoryCraftPositions[#self.categoryCraftPositions+1] = 1 end
 		end
 
-        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
-        BUI.GenericHeader.AddToList(self.header, data)
-        if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
-	
-    end
+		do
+	        local name = "Alchemy"
+	        local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_alchemy.dds"
+	        local data = ZO_GamepadEntryData:New(name, iconFile)
+	        data.onClickDirection = "CRAFTBAG"
+	        data:SetIconTintOnSelection(true)
 
-    self.populatedCategoryPos = true
+			data.filterType = ITEMFILTERTYPE_ALCHEMY
+
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
+
+	        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+	        BUI.GenericHeader.AddToList(self.header, data)
+	        if not self.populatedCraftPos then self.categoryCraftPositions[#self.categoryCraftPositions+1] = 1 end
+	    end
+
+		do
+	        local name = "Enchanting"
+	        local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_enchanting.dds"
+	        local data = ZO_GamepadEntryData:New(name, iconFile)
+	        data.onClickDirection = "CRAFTBAG"
+	        data:SetIconTintOnSelection(true)
+
+			data.filterType = ITEMFILTERTYPE_ENCHANTING
+
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
+
+	        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+	        BUI.GenericHeader.AddToList(self.header, data)
+	        if not self.populatedCraftPos then self.categoryCraftPositions[#self.categoryCraftPositions+1] = 1 end
+	    end
+
+		do
+	        local name = "Provisioning"
+	        local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds"
+	        local data = ZO_GamepadEntryData:New(name, iconFile)
+	        data.onClickDirection = "CRAFTBAG"
+	        data:SetIconTintOnSelection(true)
+
+			data.filterType = ITEMFILTERTYPE_PROVISIONING
+
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
+
+	        self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+	        BUI.GenericHeader.AddToList(self.header, data)
+	        if not self.populatedCraftPos then self.categoryCraftPositions[#self.categoryCraftPositions+1] = 1 end
+	    end
+
+		do
+			local name = "Woodworking"
+			local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_woodworking.dds"
+			local data = ZO_GamepadEntryData:New(name, iconFile)
+			data:SetIconTintOnSelection(true)
+			data.onClickDirection = "CRAFTBAG"
+
+			data.filterType = ITEMFILTERTYPE_WOODWORKING
+
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
+
+			self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+			BUI.GenericHeader.AddToList(self.header, data)
+			if not self.populatedCraftPos then self.categoryCraftPositions[#self.categoryCraftPositions+1] = 1 end
+		end
+
+		do
+			local name = "Clothing"
+			local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_clothing.dds"
+			local data = ZO_GamepadEntryData:New(name, iconFile)
+			data:SetIconTintOnSelection(true)
+			data.onClickDirection = "CRAFTBAG"
+
+			data.filterType = ITEMFILTERTYPE_CLOTHING
+
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
+
+			self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+			BUI.GenericHeader.AddToList(self.header, data)
+			if not self.populatedCraftPos then self.categoryCraftPositions[#self.categoryCraftPositions+1] = 1 end
+		end
+
+		do
+			local name = "Trait/Style Gems"
+			local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_itemtrait.dds"
+			local data = ZO_GamepadEntryData:New(name, iconFile)
+			data:SetIconTintOnSelection(true)
+			data.onClickDirection = "CRAFTBAG"
+
+			data.filterType = { ITEMFILTERTYPE_TRAIT_ITEMS, ITEMFILTERTYPE_STYLE_MATERIALS, ITEMFILTERTYPE_MISCELLANEOUS }
+
+
+			if not HasCraftBagAccess() then
+				data.enabled = false
+			end
+
+			self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+			BUI.GenericHeader.AddToList(self.header, data)
+			if not self.populatedCraftPos then self.categoryCraftPositions[#self.categoryCraftPositions+1] = 1 end
+		end
+
+		self.populatedCraftPos = true
+	else
+		self:NewCategoryItem(SI_BUI_INV_ITEM_ALL, nil, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_all.dds", BUI_InventoryUtils_All)
+
+		self:NewCategoryItem(SI_BUI_INV_ITEM_CONSUMABLE, ITEMFILTERTYPE_CONSUMABLE, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_consumables.dds")
+
+	    self:NewCategoryItem(SI_BUI_INV_ITEM_WEAPONS, ITEMFILTERTYPE_WEAPONS, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_weapons.dds")
+	    self:NewCategoryItem(SI_BUI_INV_ITEM_APPAREL, ITEMFILTERTYPE_ARMOR, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_apparel.dds")
+
+	    self:NewCategoryItem(SI_BUI_INV_ITEM_MATERIALS, ITEMFILTERTYPE_CRAFTING, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_materials.dds")
+	    self:NewCategoryItem(SI_BUI_INV_ITEM_MISC, ITEMFILTERTYPE_MISCELLANEOUS, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_miscellaneous.dds")
+
+	    self:NewCategoryItem(SI_BUI_INV_ITEM_QUICKSLOT, ITEMFILTERTYPE_QUICKSLOT, "EsoUI/Art/Inventory/Gamepad/gp_inventory_icon_quickslot.dds")
+
+		do
+			local questCache = SHARED_INVENTORY:GenerateFullQuestCache()
+			if next(questCache) then
+				local name = GetString(SI_GAMEPAD_INVENTORY_QUEST_ITEMS)
+				local iconFile = "/esoui/art/inventory/gamepad/gp_inventory_icon_quest.dds"
+				local data = ZO_GamepadEntryData:New(name, iconFile)
+				data.filterType = ITEMFILTERTYPE_QUEST
+				data:SetIconTintOnSelection(true)
+				self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+				BUI.GenericHeader.AddToList(self.header, data)
+				if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
+			end
+		end
+
+	    do
+	        if(BUI.Settings.Modules["Inventory"].enableJunk and HasAnyJunk(BAG_BACKPACK, false)) then
+	            local isListEmpty = self:IsItemListEmpty(nil, nil)
+	            if not isListEmpty then
+	                local name = GetString(SI_BUI_INV_ITEM_JUNK)
+	                local iconFile = "BetterUI/Modules/CIM/Images/inv_junk.dds"
+	                local hasAnyNewItems = SHARED_INVENTORY:AreAnyItemsNew(BUI_InventoryUtils_All, nil, BAG_BACKPACK)
+	                local data = ZO_GamepadEntryData:New(name, iconFile, nil, nil, hasAnyNewItems)
+	                data.showJunk = true
+	                data:SetIconTintOnSelection(true)
+	                self.categoryList:AddEntry("BUI_GamepadItemEntryTemplate", data)
+	                BUI.GenericHeader.AddToList(self.header, data)
+	                if not self.populatedCategoryPos then self.categoryPositions[#self.categoryPositions+1] = 1 end
+	            end
+	        end
+	    end
+
+		self.populatedCategoryPos = true
+	end
 
     self.categoryList:Commit()
     self.header.tabBar:Commit()
@@ -391,32 +504,32 @@ end
 
 function BUI.Inventory.Class:InitializeHeader()
     local function UpdateTitleText()
-        return self.categoryList:GetTargetData().text
+		return GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_CB or SI_BUI_INV_ACTION_INV)
     end
 
-    local tabBarEntries =
+    local tabBarEntries = {
         {
-            {
-                text = GetString(SI_GAMEPAD_INVENTORY_CATEGORY_HEADER),
-                callback = function()
-                    self:SwitchActiveList(INVENTORY_CATEGORY_LIST)
-                end,
-            },
-            {
-                text = GetString(SI_GAMEPAD_INVENTORY_CRAFT_BAG_HEADER),
-                callback = function()
-                    self:SwitchActiveList(INVENTORY_CRAFT_BAG_LIST)
-                end,
-            },
-        }
+            text = GetString(SI_GAMEPAD_INVENTORY_CATEGORY_HEADER),
+            callback = function()
+                self:SwitchActiveList(INVENTORY_CATEGORY_LIST)
+            end,
+        },
+        {
+            text = GetString(SI_GAMEPAD_INVENTORY_CRAFT_BAG_HEADER),
+            callback = function()
+                self:SwitchActiveList(INVENTORY_CRAFT_BAG_LIST)
+            end,
+        },
+    }
 
     self.categoryHeaderData = {
+		titleText = UpdateTitleText,
         tabBarEntries = tabBarEntries,
         tabBarData = { parent = self, onNext = BUI_TabBar_OnTabNext, onPrev = BUI_TabBar_OnTabPrev }
-
     }
 
     self.craftBagHeaderData = {
+		titleText = UpdateTitleText,
         tabBarEntries = tabBarEntries,
 
         data1HeaderText = GetString(SI_GAMEPAD_INVENTORY_AVAILABLE_FUNDS),
@@ -446,12 +559,7 @@ function BUI.Inventory.Class:InitializeHeader()
 
 	 BUI.GenericFooter.Initialize(self)
 	 BUI.GenericFooter.Refresh(self)
-
-	 self.header.tabBar:SetDefaultSelectedIndex(1)
-end
-
-function BUI.Inventory.Class:RefreshCraftBagList()
-    self.craftBagList:RefreshList()
+	 --self.header.tabBar:SetDefaultSelectedIndex(1)
 end
 
 function BUI.Inventory.Class:InitializeInventoryVisualData(itemData)
@@ -466,6 +574,11 @@ function BUI.Inventory.Class:InitializeInventoryVisualData(itemData)
     self.cooldownIcon = itemData.icon or itemData.iconFile
 
     self:SetFontScaleOnSelection(false)    --item entries don't grow on selection
+end
+
+function BUI.Inventory.Class:RefreshCraftBagList()
+	-- we need to pass in our current filterType, as refreshing the craft bag list is distinct from the item list's methods (only slightly)
+	self.craftBagList:RefreshList(self.categoryList:GetTargetData().filterType)
 end
 
 function BUI.Inventory.Class:RefreshItemList()
@@ -535,13 +648,16 @@ function BUI.Inventory.Class:RefreshItemList()
         else
             remaining, duration = GetItemCooldownInfo(itemData.bagId, itemData.slotIndex)
         end
+
         if remaining > 0 and duration > 0 then
             data:SetCooldown(remaining, duration)
         end
+
 		data.bestItemCategoryName = itemData.bestItemCategoryName
 		data.bestGamepadItemCategoryName = itemData.bestItemCategoryName
         data.isEquippedInCurrentCategory = itemData.isEquippedInCurrentCategory
         data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
+        data.isJunk = itemData.isJunk
 
         if itemData.bestItemCategoryName ~= lastBestItemCategoryName then
             data:SetHeader(itemData.bestItemCategoryName)
@@ -552,10 +668,7 @@ function BUI.Inventory.Class:RefreshItemList()
             self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
         end
 
-
-
         lastBestItemCategoryName = itemData.bestItemCategoryName
-
     end
 
     self.itemList:Commit()
@@ -569,6 +682,8 @@ function BUI.Inventory.Class:RemoveKeybinds()
 	if self.currentSecondaryKeybind then
 		KEYBIND_STRIP:RemoveKeybindButtonGroup(self.currentSecondaryKeybind)
 	end
+
+	KEYBIND_STRIP:RemoveKeybindButtonGroup(self.itemFilterKeybindStripDescriptor)
 end
 
 function BUI.Inventory.Class:AddKeybinds()
@@ -581,7 +696,6 @@ function BUI.Inventory.Class:AddKeybinds()
 	end
 end
 
-
 function BUI.Inventory.Class:SetActiveKeybinds(keybindDescriptor)
     self:ClearSelectedInventoryData() --clear all the bindings from the action list
 
@@ -592,16 +706,16 @@ function BUI.Inventory.Class:SetActiveKeybinds(keybindDescriptor)
 	if(keybindDescriptor == self.itemFilterKeybindStripDescriptor) then
 		if self.selectedItemFilterType == ITEMFILTERTYPE_QUICKSLOT then
 			self.currentSecondaryKeybind = self.quickslotKeybindStripDescriptor
+		--elseif self.selectedItemFilterType == ITEMFILTERTYPE_CONSUMABLE then
+		--	self.currentSecondaryKeybind = self.quickslotKeybindStripDescriptor
 		else
 			self.currentSecondaryKeybind = self.switchEquipKeybindDescriptor
 		end
 
 	end
-
-    self:AddKeybinds()
-
+    --self:AddKeybinds()
+    if(keybindDescriptor ~= nil) then self:AddKeybinds() end
 end
-
 
 function BUI.Inventory.Class:RefreshActiveKeybinds()
     if self.currentKeybindDescriptor then
@@ -611,13 +725,24 @@ function BUI.Inventory.Class:RefreshActiveKeybinds()
 	if self.currentSecondaryKeybind then
 		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.currentSecondaryKeybind)
 	end
+
 end
 
 function BUI.Inventory.Class:UpdateRightTooltip()
     local selectedItemData = self.currentlySelectedData
-	local selectedEquipSlot = BUI_GetEquipSlotForEquipType(selectedItemData.dataSource.equipType)
-    local equipSlotHasItem = select(2, GetEquippedItemInfo(selectedEquipSlot))
+	--local selectedEquipSlot = BUI_GetEquipSlotForEquipType(selectedItemData.dataSource.equipType)
+	local selectedEquipSlot
+
+	if self:GetCurrentList() == self.itemList then
+		if (selectedItemData ~= nil and selectedItemData.dataSource ~= nil) then
+			selectedEquipSlot = BUI_GetEquipSlotForEquipType(selectedItemData.dataSource.equipType)
+		end
+	else
+		selectedEquipSlot = 0
+	end
 	
+    local equipSlotHasItem = select(2, GetEquippedItemInfo(selectedEquipSlot))
+
     if selectedItemData and (not equipSlotHasItem or BUI.Settings.Modules["Inventory"].displayCharAttributes) then
         GAMEPAD_TOOLTIPS:LayoutItemStatComparison(GAMEPAD_RIGHT_TOOLTIP, selectedItemData.bagId, selectedItemData.slotIndex, selectedEquipSlot)
         GAMEPAD_TOOLTIPS:SetStatusLabelText(GAMEPAD_RIGHT_TOOLTIP, GetString(SI_GAMEPAD_INVENTORY_ITEM_COMPARE_TOOLTIP_TITLE))
@@ -625,10 +750,11 @@ function BUI.Inventory.Class:UpdateRightTooltip()
         self:UpdateTooltipEquippedIndicatorText(GAMEPAD_RIGHT_TOOLTIP, selectedEquipSlot)
     end
 
-	if selectedItemData.dataSource.equipType == 0 then
-		GAMEPAD_TOOLTIPS:Reset(GAMEPAD_RIGHT_TOOLTIP)
+	if selectedItemData ~= nil and selectedItemData.dataSource ~= nil and selectedData ~= nil then
+		if selectedData.dataSource and selectedItemData.dataSource.equipType == 0 then
+			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_RIGHT_TOOLTIP)
+		end
 	end
-
 end
 
 
@@ -638,15 +764,24 @@ function BUI.Inventory.Class:InitializeItemList()
     self.itemList:SetSortFunction(ZO_GamepadInventory_DefaultItemSortComparator)
 
     self.itemList:SetOnSelectedDataChangedCallback(function(list, selectedData)
-        self.currentlySelectedData = selectedData
+	    if selectedData ~= nil and self.scene:IsShowing() then
+		    self.currentlySelectedData = selectedData
 
-        self:SetSelectedInventoryData(selectedData)
-
-        self:UpdateItemLeftTooltip(selectedData)
-        self:PrepareNextClearNewStatus(selectedData)
-        self.itemList:RefreshVisible()
-        self:UpdateRightTooltip()
-        self:RefreshActiveKeybinds()
+		    self:SetSelectedInventoryData(selectedData)
+		
+			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+			if self.callLaterLeftToolTip ~= nil then
+				EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			end
+		
+			local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(selectedData) end, INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS)
+			self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
+			
+		    self:PrepareNextClearNewStatus(selectedData)
+		    --self.itemList:RefreshVisible()
+		    self:UpdateRightTooltip()
+		    self:RefreshActiveKeybinds()
+	    end
     end)
 
     self.itemList.maxOffset = 0
@@ -658,17 +793,18 @@ end
 
 function BUI.Inventory.Class:InitializeCraftBagList()
     local function OnSelectedDataCallback(list, selectedData)
-        self.currentlySelectedData = selectedData
-        self:UpdateItemLeftTooltip(selectedData)
-
-        self:SetSelectedInventoryData(selectedData)
-
-        local currentList = self:GetCurrentList()
-        if currentList == self.craftBagList or ZO_Dialogs_IsShowing(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG) then
-            self:SetSelectedInventoryData(selectedData)
-            self.craftBagList:RefreshVisible()
-        end
-        self:RefreshActiveKeybinds()
+	    if selectedData ~= nil and self.scene:IsShowing() then
+		    self.currentlySelectedData = selectedData
+		    self:UpdateItemLeftTooltip(selectedData)
+		
+		    --self:SetSelectedInventoryData(selectedData)
+		    local currentList = self:GetCurrentList()
+		    if currentList == self.craftBagList or ZO_Dialogs_IsShowing(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG) then
+			    self:SetSelectedInventoryData(selectedData)
+			    self.craftBagList:RefreshVisible()
+		    end
+		    self:RefreshActiveKeybinds()
+	    end
     end
 
     local function VendorEntryTemplateSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
@@ -676,9 +812,11 @@ function BUI.Inventory.Class:InitializeCraftBagList()
         BUI_SharedGamepadEntry_OnSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
     end
 
-    self.craftBagList = self:AddList("CraftBag", true, BUI.Inventory.List, BAG_VIRTUAL, SLOT_TYPE_CRAFT_BAG_ITEM, OnSelectedDataCallback, nil, nil, nil, false, "BUI_GamepadItemSubEntryTemplate")
+    self.craftBagList = self:AddList("CraftBag", true, BUI.Inventory.CraftList, BAG_VIRTUAL, SLOT_TYPE_CRAFT_BAG_ITEM, OnSelectedDataCallback, nil, nil, nil, false, "BUI_GamepadItemSubEntryTemplate")
     self.craftBagList:SetNoItemText(GetString(SI_GAMEPAD_INVENTORY_CRAFT_BAG_EMPTY))
     self.craftBagList:SetAlignToScreenCenter(true, 30)
+
+	self.craftBagList:SetSortFunction(ZO_GamepadInventory_DefaultItemSortComparator)
 
 end
 
@@ -687,20 +825,34 @@ function BUI.Inventory.Class:InitializeItemActions()
 end
 
 function BUI.Inventory.Class:ActionsDialogSetup(dialog)
-    dialog.entryList:SetOnSelectedDataChangedCallback(  function(list, selectedData)
-                                                            self.itemActions:SetSelectedAction(selectedData and selectedData.action)
-                                                        end)
-														
-														
+	dialog.entryList:SetOnSelectedDataChangedCallback(  function(list, selectedData)
+		self.itemActions:SetSelectedAction(selectedData and selectedData.action)
+	end)
+
+    local function MarkAsJunk()
+        local target = GAMEPAD_INVENTORY.itemList:GetTargetData()
+        SetItemIsJunk(target.bagId, target.slotIndex, true)
+    end
+    local function UnmarkAsJunk()
+        local target = GAMEPAD_INVENTORY.itemList:GetTargetData()
+        SetItemIsJunk(target.bagId, target.slotIndex, false)
+    end
+
     local parametricList = dialog.info.parametricList
-	
-
-    ZO_ClearTable(parametricList)
-	
-
+    ZO_ClearNumericallyIndexedTable(parametricList)
 
     self:RefreshItemActions()
 
+    --ZO_ClearTable(parametricList)
+    if(BUI.Settings.Modules["Inventory"].enableJunk) then
+        if(self.categoryList:GetTargetData().showJunk ~= nil) then
+            self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Unmark as Junk", UnmarkAsJunk, "secondary"}
+        else
+            self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Mark as Junk", MarkAsJunk, "secondary"}
+        end
+    end
+
+    --self:RefreshItemActions()
     local actions = self.itemActions:GetSlotActions()
     local numActions = actions:GetNumSlotActions()
 
@@ -720,7 +872,7 @@ function BUI.Inventory.Class:ActionsDialogSetup(dialog)
         }
 		
 		--if actionName ~= "Use" and actionName ~= "Equip" and i ~= 1 then
-	        table.insert(parametricList, listItem)
+        table.insert(parametricList, listItem)
 		--end
     end
 
@@ -791,7 +943,7 @@ function BUI.Inventory.Class:InitializeActionsDialog()
                             ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
                         end
                     else
-                        self.itemActions:DoSelectedAction()
+                    	self.itemActions:DoSelectedAction()
                     end
                 end,
             },
@@ -804,7 +956,7 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
     if newState == SCENE_SHOWING then
         self:PerformDeferredInitialize()
         BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-
+        
         --figure out which list to land on
         local listToActivate = self.previousListType or INVENTORY_CATEGORY_LIST
         -- We normally do not want to enter the gamepad inventory on the item list
@@ -830,8 +982,13 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
 
         if wykkydsToolbar then
             wykkydsToolbar:SetHidden(false)
-        end
+		end
 
+		if self.callLaterLeftToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			self.callLaterLeftToolTip = nil
+		end
+		
     elseif newState == SCENE_HIDDEN then
         BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
 
@@ -843,11 +1000,14 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
 
         if wykkydsToolbar then
             wykkydsToolbar:SetHidden(false)
-        end
+		end
+
+		if self.callLaterLeftToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			self.callLaterLeftToolTip = nil
+		end
     end
 end
-
-
 
 function BUI.Inventory.Class:InitializeEquipSlotDialog()
     local dialog = ZO_GenericGamepadDialog_GetControl(GAMEPAD_DIALOGS.BASIC)
@@ -911,8 +1071,6 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
     })
 end
 
-
-
 function BUI.Inventory.Class:OnDeferredInitialize()
     local SAVED_VAR_DEFAULTS =
     {
@@ -922,8 +1080,10 @@ function BUI.Inventory.Class:OnDeferredInitialize()
 
     self:SetListsUseTriggerKeybinds(true)
 
-    self.categoryPositions = { }
+    self.categoryPositions = {}
+	self.categoryCraftPositions = {}
     self.populatedCategoryPos = false
+	self.populatedCraftPos = false
     self.equipToMainSlot = true
 
     self:InitializeCategoryList()
@@ -975,9 +1135,8 @@ function BUI.Inventory.Class:OnDeferredInitialize()
             self:RefreshCategoryList()
             end
             RefreshSelectedData() --dialog will refresh selected when it hides, so only do it if it's not showing
-        end
-
-    end
+		end
+	end
 
     SHARED_INVENTORY:RegisterCallback("FullInventoryUpdate", OnInventoryUpdated)
     SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", OnInventoryUpdated)
@@ -1006,9 +1165,9 @@ function BUI.Inventory.Class:Initialize(control)
     end
 
     self.trySetClearNewFlagCallback =   function(callId)
-                                            self:TrySetClearNewFlag(callId)
-                                        end
-
+	    self:TrySetClearNewFlag(callId)
+    end
+    
     local function RefreshVisualLayer()
         if self.scene:IsShowing() then
             self:OnUpdate()
@@ -1026,7 +1185,6 @@ function BUI.Inventory.Class:Initialize(control)
     control:SetHandler("OnUpdate", OnUpdate)
 end
 
-
 function BUI.Inventory.Class:RefreshHeader(blockCallback)
     local currentList = self:GetCurrentList()
     local headerData
@@ -1039,17 +1197,17 @@ function BUI.Inventory.Class:RefreshHeader(blockCallback)
     end
 
     BUI.GenericHeader.Refresh(self.header, headerData, blockCallback)
-	
+
 	if(self.equipToMainSlot) then
 		BUI.GenericHeader.SetEquippedIcons(self.header, GetEquippedItemInfo(EQUIP_SLOT_MAIN_HAND), GetEquippedItemInfo(EQUIP_SLOT_OFF_HAND), GetEquippedItemInfo(EQUIP_SLOT_POISON))
 	else
-		BUI.GenericHeader.SetEquippedIcons(self.header, GetEquippedItemInfo(EQUIP_SLOT_BACKUP_MAIN), GetEquippedItemInfo(EQUIP_SLOT_BACKUP_OFF), GetEquippedItemInfo(EQUIP_SLOT_BACKUP_POISON))	
+		BUI.GenericHeader.SetEquippedIcons(self.header, GetEquippedItemInfo(EQUIP_SLOT_BACKUP_MAIN), GetEquippedItemInfo(EQUIP_SLOT_BACKUP_OFF), GetEquippedItemInfo(EQUIP_SLOT_BACKUP_POISON))
 	end
 
     self:RefreshCategoryList()
 end
 
-function BUI.Inventory.RefreshFooter(self)
+function BUI.Inventory:RefreshFooter()
     BUI.GenericFooter.Refresh(self.footer)
 end
 
@@ -1061,20 +1219,34 @@ function BUI.Inventory.Class:Select()
     end
 end
 
+function BUI.Inventory.Class:Switch()
+    if self:GetCurrentList() == self.craftBagList then
+        self:SwitchActiveList(INVENTORY_ITEM_LIST)
+    else
+        self:SwitchActiveList(INVENTORY_CRAFT_BAG_LIST)
+		self:RefreshCraftBagList()
+    end
+end
+
 function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 	if listDescriptor == self.currentListType then return end
 
 	self.previousListType = self.currentListType
 	self.currentListType = listDescriptor
 
-	-- TODO: Better way to handle this?
-	if self.previousListType == INVENTORY_ITEM_LIST then
+	if self.previousListType == INVENTORY_ITEM_LIST or self.previousListType == INVENTORY_CATEGORY_LIST then
 	 	KEYBIND_STRIP:RemoveKeybindButton(self.quickslotKeybindStripDescriptor)
 	 	KEYBIND_STRIP:RemoveKeybindButton(self.switchEquipKeybindDescriptor)
 
 		self.listWaitingOnDestroyRequest = nil
 		self:TryClearNewStatusOnHidden()
 		ZO_SavePlayerConsoleProfile()
+    else
+        KEYBIND_STRIP:RemoveKeybindButton(self.craftBagKeybindStripDescriptor)
+
+        self.listWaitingOnDestroyRequest = nil
+        self:TryClearNewStatusOnHidden()
+        ZO_SavePlayerConsoleProfile()
 	end
 
 	GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
@@ -1082,28 +1254,46 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 
 	if listDescriptor == INVENTORY_CATEGORY_LIST then
         listDescriptor = INVENTORY_ITEM_LIST
+    elseif listDescriptor ~= INVENTORY_ITEM_LIST and listDescriptor ~= INVENTORY_CATEGORY_LIST then
+        listDescriptor = INVENTORY_CRAFT_BAG_LIST
     end
 
 	if listDescriptor == INVENTORY_ITEM_LIST then
 		self:SetActiveKeybinds(self.itemFilterKeybindStripDescriptor)
-		
-		self:RefreshItemList()
 
 		self:SetCurrentList(self.itemList)
+
+		self:RefreshCategoryList()
+		self:RefreshItemList()
 
 		self:SetSelectedItemUniqueId(self.itemList:GetTargetData())
 		self.actionMode = ITEM_LIST_ACTION_MODE
 		self:RefreshItemActions()
-		self:UpdateRightTooltip()
+		
+		if self.callLaterRightToolTip ~= nil then
+			EVENT_MANAGER:UnregisterForUpdate(self.callLaterRightToolTip)
+		end
+		
+		local callLaterId = zo_callLater(function() self:UpdateRightTooltip() end, 100)
+		self.callLaterRightToolTip = "CallLaterFunction"..callLaterId
+		
 		self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
-
+		
 		self:UpdateItemLeftTooltip(self.itemList.selectedData)
+		
+		--if self.callLaterLeftToolTip ~= nil then
+		--	EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+		--end
+		--
+		--local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, 100)
+		--self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
 
 	elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then
 		self:SetActiveKeybinds(self.craftBagKeybindStripDescriptor)
 
         self:SetCurrentList(self.craftBagList)
 
+		self:RefreshCategoryList()
 		self:RefreshCraftBagList()
 
 		self:SetSelectedItemUniqueId(self.craftBagList:GetTargetData())
@@ -1113,10 +1303,15 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 		self:ActivateHeader()
 		self:LayoutCraftBagTooltip(GAMEPAD_RIGHT_TOOLTIP)
 
-		TriggerTutorial(TUTORIAL_TRIGGER_CRAFT_BAG_OPENED)
+		--TriggerTutorial(TUTORIAL_TRIGGER_CRAFT_BAG_OPENED)
 	end
 
 	self:RefreshActiveKeybinds()
+end
+
+function BUI.Inventory.Class:ActivateHeader()
+    ZO_GamepadGenericHeader_Activate(self.header)
+    self.header.tabBar:SetSelectedIndexWithoutAnimation(self.categoryList.selectedIndex, true, false)
 end
 
 function BUI.Inventory.Class:AddList(name, callbackParam, listClass, ...)
@@ -1168,6 +1363,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             order = 1000,
             visible = function()
                 return self.selectedItemUniqueId ~= nil or self.itemList:GetTargetData() ~= nil
+                --return self.selectedItemUniqueId ~= nil
             end,
 
             callback = function()
@@ -1176,17 +1372,20 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
         },
         {
 
-            name = GetString(SI_ITEM_ACTION_STACK_ALL),
+            name = function()
+					return zo_strformat(GetString(SI_BUI_INV_ACTION_TO_TEMPLATE), GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_INV or SI_BUI_INV_ACTION_CB))
+				end,
             keybind = "UI_SHORTCUT_LEFT_STICK",
             order = 1500,
             disabledDuringSceneHiding = true,
             callback = function()
-                StackBag(BAG_BACKPACK)
+                --StackBag(BAG_BACKPACK)
+                self:Switch()
             end,
         },
     }
 
-    --ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.categoryListKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
+    ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.categoryListKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
 
     self.itemFilterKeybindStripDescriptor =
     {
@@ -1224,34 +1423,34 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 				end
             end,
 		},
-		--	name = GetString(SI_ITEM_ACTION_STACK_ALL),
+		----	name = GetString(SI_ITEM_ACTION_STACK_ALL),
+        ----    keybind = "UI_SHORTCUT_LEFT_STICK",
+        ----    order = 1500,
+        ----    disabledDuringSceneHiding = true,
+        ----    callback = function()
+        ----        StackBag(BAG_BACKPACK)
+        ----    end,
+        ----},
+		--{
+        --    name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
         --    keybind = "UI_SHORTCUT_LEFT_STICK",
         --    order = 1500,
         --    disabledDuringSceneHiding = true,
         --    callback = function()
-        --        StackBag(BAG_BACKPACK)
-        --    end,
+        --        --Also perform bag stack!
+		--		StackBag(BAG_BACKPACK)
+		--		--link in chat
+		--		local targetData = self.itemList:GetTargetData()
+		--		local itemLink
+		--		local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
+		--		if bag and slot then
+		--			itemLink = GetItemLink(bag, slot)
+		--		end
+		--		if itemLink then
+		--			ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+		--		end
+		--	end,
         --},
-        {
-            name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
-            keybind = "UI_SHORTCUT_LEFT_STICK",
-            order = 1500,
-            disabledDuringSceneHiding = true,
-            callback = function()
-                --Also perform bag stack!
-				StackBag(BAG_BACKPACK)
-				--link in chat
-				local targetData = self.itemList:GetTargetData()
-				local itemLink
-				local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
-				if bag and slot then
-					itemLink = GetItemLink(bag, slot)
-				end
-				if itemLink then
-					ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
-				end
-            end,
-        },
         {
             name = function()
 				if (self.selectedItemUniqueId ~= nil) then
@@ -1268,19 +1467,23 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 				--return (selectedData.filterType == ITEMFILTERTYPE_JUNK) and GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK) or 
 				--		GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
 			end,
+            --name = GetString(SI_ITEM_ACTION_DESTROY),
             keybind = "UI_SHORTCUT_RIGHT_STICK",
             order = 2000,
             disabledDuringSceneHiding = true,
 
-            visible = function()
+			visible = function()
 				if (self.selectedItemUniqueId ~= nil) then
+				--*--if self.selectedItemUniqueId ~= nil then
 					local targetData = self.itemList:GetTargetData()
 					return IsInventorySlotLockedOrJunk(targetData)
-                else
+					--*--return ZO_InventorySlot_CanDestroyItem(targetData)
+				else
                     local targetData = self.itemList:GetTargetData()
                     if (targetData ~= nil) then
                         return IsInventorySlotLockedOrJunk(targetData)
-                    end
+					--*--return true
+					end
 				end
 				----return (self.selectedItemUniqueId ~= nil)
                 --local targetData = self.itemList:GetTargetData()
@@ -1290,18 +1493,21 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
                 --return self.selectedItemUniqueId ~= nil and ZO_InventorySlot_CanDestroyItem(targetData)
 				--end
 				return false
-            end,
+			end,
 
             callback = function()
 				if (self.selectedItemUniqueId ~= nil) then
-					local targetData = self.itemList:GetTargetData()
+                local targetData = self.itemList:GetTargetData()
 					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
 					local isJunk = not IsItemJunk(bag, index)
 					if (not IsItemPlayerLocked(bag, index) or (IsItemPlayerLocked(bag, index) and not isJunk)) then
 						SetItemIsJunk(bag, index, isJunk)
 						PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
-					end
-                end
+                	--*--if(ZO_InventorySlot_CanDestroyItem(targetData) and ZO_InventorySlot_InitiateDestroyItem(targetData)) then
+                	--*--    self.itemList:Deactivate()
+                	--*--    self.listWaitingOnDestroyRequest = self.itemList
+                	end
+            	end
             end
         }
     }
@@ -1320,8 +1526,18 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
                 BUI.GenericHeader.SetEquipText(self.header, self.equipToMainSlot)
 				self:RefreshHeader()
             end,
+	        {
+	            name = function()
+					return zo_strformat(GetString(SI_BUI_INV_ACTION_TO_TEMPLATE), GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_INV or SI_BUI_INV_ACTION_CB))
+				end,
+	            keybind = "UI_SHORTCUT_LEFT_STICK",
+	            order = 1500,
+	            disabledDuringSceneHiding = true,
+	            callback = function()
+	                self:Switch()
+	            end,
+	        },
     }
-
 
     self.quickslotKeybindStripDescriptor =
     {
@@ -1347,15 +1563,15 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
                 self:ShowActions()
             end,
         },
-		        {
-            name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
-            keybind = "UI_SHORTCUT_LEFT_STICK",
-            order = 1500,
-            disabledDuringSceneHiding = true,
-            callback = function()
-                --Also perform bag stack!
-				StackBag(BAG_BACKPACK)
-				--mark as junk
+		{
+			name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
+			keybind = "UI_SHORTCUT_RIGHT_STICK",
+			order = 1500,
+			disabledDuringSceneHiding = true,
+			callback = function()
+				--Also perform bag stack!
+				--StackBag(BAG_BACKPACK)
+				--link in chat
 				local targetData = self.craftBagList:GetTargetData()
 				local itemLink
 				local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
@@ -1365,8 +1581,28 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 				if itemLink then
 					ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
 				end
-            end,
-        },
+			end,
+		},
+		--        {
+        --    name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
+        --    keybind = "UI_SHORTCUT_LEFT_STICK",
+        --    order = 1500,
+        --    disabledDuringSceneHiding = true,
+        --    callback = function()
+        --        ----Also perform bag stack!
+		--		--StackBag(BAG_BACKPACK)
+		--		--mark as junk
+		--		local targetData = self.craftBagList:GetTargetData()
+		--		local itemLink
+		--		local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
+		--		if bag and slot then
+		--			itemLink = GetItemLink(bag, slot)
+		--		end
+		--		if itemLink then
+		--			ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+		--		end
+        --    end,
+        --},
         --{
         --    name = GetString(SI_ITEM_ACTION_MARK_AS_JUNK),
         --    keybind = "UI_SHORTCUT_RIGHT_STICK",
@@ -1402,7 +1638,6 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 
     ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.craftBagKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
 end
-
 
 local function BUI_TryPlaceInventoryItemInEmptySlot(targetBag)
     local emptySlotIndex = FindFirstEmptySlotInBag(targetBag)

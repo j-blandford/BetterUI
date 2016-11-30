@@ -7,6 +7,8 @@ function BUI.CIM.InitModule(m_options)
 	m_options["triggerSpeed"] = 10
 	m_options["condenseLtooltip"] = false
 	m_options["enhanceCompat"] = false
+	
+	m_options["rhScrollSpeed"] = 50
 
 	return m_options
 end
@@ -23,8 +25,8 @@ function BUI.CIM.Setup()
 		if BUI.Settings.Modules["Inventory"].m_enabled then
 			-- Replace the default interface class with the shrinkwrapped version. This means that any hooks applied by other addons
 			-- get hooked into BUI.Inventory.Class instead
-			ZO_GamepadInventory = ZOS_GamepadInventory
-			zo_calllater(function() ddebug("Compatibility patch for ZO_GamepadInventory enabled.") end, 1000)
+			--ZO_GamepadInventory = ZOS_GamepadInventory
+			--zo_calllater(function() ddebug("Compatibility patch for ZO_GamepadInventory enabled.") end, 1000)
 		end
 	end
 end
