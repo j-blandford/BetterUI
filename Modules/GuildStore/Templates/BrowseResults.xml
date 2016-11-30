@@ -10,7 +10,7 @@
                 <Label name="$(parent)PageNumberText" inherits="BUI_PagedListLabelTemplate">
                     <Anchor point="CENTER" />
                 </Label>
-                
+
                 <Button name="$(parent)PreviousButton">
                     <Anchor point="RIGHT" relativeTo="$(parent)PageNumberText" relativePoint="LEFT" offsetX="-10" />
                     <Dimensions x="50" y="50"/>
@@ -148,14 +148,14 @@
                         <Control name="$(parent)HeaderColumnBar" inherits="BUI_GamepadHeaderTitleAnchors">
                             <Controls>
                                 <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" text="|cFF6600Search Results|r" hidden="false">
-                                    <Anchor point="CENTER" offsetY="40" />   
+                                    <Anchor point="CENTER" offsetY="40" />
                                 </Label>
                                  <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
                                         <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
-                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Seller">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="385" />
+                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Stat">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="485" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                  <Label name="$(parent)Column3Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Time Left">
@@ -201,7 +201,7 @@
                 <Control name="$(parent)Container" override="true" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
                     <Controls>
                         <Control name="$(grandparent)Footer" inherits="BUI_PagedListFooterBar BUI_GamepadGenericScreenFooter" />
-                        
+
                         <Control name="$(grandparent)List" override="true">
                             <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="0" offsetY="90"/>
                             <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="15" />

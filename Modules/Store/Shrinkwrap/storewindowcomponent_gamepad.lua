@@ -1,74 +1,3 @@
-local MODE_TO_UPDATE_FUNC = {
-        [ZO_MODE_STORE_BUY] =          {updateFunc = GetBuyItems,           sortFunc = ItemSortFunc},
-        [ZO_MODE_STORE_BUY_BACK] =     {updateFunc = GetBuybackItems,       sortFunc = ItemSortFunc},
-        [ZO_MODE_STORE_SELL] =         {updateFunc = GetSellItems,          sortFunc = ItemSortFunc},
-        [ZO_MODE_STORE_REPAIR] =       {updateFunc = GetRepairItems,        sortFunc = ItemSortFunc},
-        [ZO_MODE_STORE_SELL_STOLEN] =  {updateFunc = GetStolenSellItems,    sortFunc = ItemSortFunc},
-        [ZO_MODE_STORE_LAUNDER] =      {updateFunc = GetLaunderItems,       sortFunc = ItemSortFunc},
-        [ZO_MODE_STORE_STABLE] =       {updateFunc = GetStableItems},
-    }
-
-ZOS_GamepadStoreList = ZO_GamepadVerticalParametricScrollList:Subclass()
-
-function ZOS_GamepadStoreList:New(control, mode, setupFunction, overrideTemplate, overrideHeaderTemplateSetupFunction)
-    local object = ZO_GamepadVerticalParametricScrollList.New(self, control)
-    object:SetMode(mode, setupFunction, overrideTemplate, overrideHeaderTemplateSetupFunction)
-    return object
-end
-
-local function VendorEntryHeaderTemplateSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
-    control:SetText(data.bestGamepadItemCategoryName)
-end
-
-function ZOS_GamepadStoreList:SetMode(mode, setupFunction, overrideTemplate, overrideHeaderTemplateSetupFunction)
-    self.storeMode = mode
-    self.updateFunc = MODE_TO_UPDATE_FUNC[mode].updateFunc
-    self.sortFunc = MODE_TO_UPDATE_FUNC[mode].sortFunc
-    self.template = overrideTemplate or "ZO_GamepadPricedVendorItemEntryTemplate"
-    local headerTemplateSetupFunction = overrideHeaderTemplateSetupFunction or VendorEntryHeaderTemplateSetup
-
-    self:AddDataTemplate(self.template, setupFunction, ZO_GamepadMenuEntryTemplateParametricListFunction)
-    self:AddDataTemplateWithHeader(self.template, setupFunction, ZO_GamepadMenuEntryTemplateParametricListFunction, nil, "ZO_GamepadMenuEntryHeaderTemplate", headerTemplateSetupFunction)
-end
-
-function ZOS_GamepadStoreList:AddItems(items, prePaddingOverride, postPaddingOverride)
-    local currentBestCategoryName = nil
-
-    for i, itemData in ipairs(items) do
-        local nextItemData = items[i + 1]
-        local isNextEntryAHeader = nextItemData and nextItemData.bestGamepadItemCategoryName ~= itemData.bestGamepadItemCategoryName
-        local postPadding = postPaddingOverride or (isNextEntryAHeader and STORE_ITEM_HEADER_DEFAULT_PADDING)
-
-        local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
-        entry.data = itemData.data
-        if not itemData.ignoreStoreVisualInit then
-            entry:InitializeStoreVisualData(itemData)
-        end
-
-        if itemData.locked then
-            entry.enabled = false
-        end
-        if itemData.bestGamepadItemCategoryName and itemData.bestGamepadItemCategoryName ~= currentBestCategoryName then
-            currentBestCategoryName = itemData.bestGamepadItemCategoryName
-            entry:SetHeader(currentBestCategoryName)
-            self:AddEntryWithHeader(self.template, entry)
-        else
-            self:AddEntry(self.template, entry)
-        end
-    end
-
-    self:Commit()
-end
-
-function ZOS_GamepadStoreList:UpdateList()
-    self:Clear()
-    local items, prePaddingOverride, postPaddingOverride = self.updateFunc()
-    if self.sortFunc then
-        table.sort(items, self.sortFunc)
-    end
-    self:AddItems(items)
-end
-
 --Gamepad Store Component
 ---------------------------
 
@@ -137,6 +66,54 @@ function ZOS_GamepadStoreListComponent:New(...)
     return ZOS_GamepadStoreComponent.New(self, ...)
 end
 
+function ZOS_GamepadStoreListComponent:Initialize(scene, storeMode, tabText, overrideTemplate, overrideHeaderTemplateSetupFunction)
+    self.list = self:CreateItemList(scene, storeMode, overrideTemplate, overrideHeaderTemplateSetupFunction)
+    self.list:UpdateList()
+    local control = self.list:GetControl()
+    ZOS_GamepadStoreComponent.Initialize(self, control, storeMode, tabText)
+end
+
+function ZOS_GamepadStoreListComponent:Refresh()
+    self.list:UpdateList()
+end
+
+function ZOS_GamepadStoreListComponent:SetupEntry(control, data, selected, selectedDuringRebuild, enabled, activated)
+
+end
+
+function ZOS_GamepadStoreListComponent:SetupStoreItem(control, data, selected, selectedDuringRebuild, enabled, activated, price, forceValid, mode)
+    ZO_SharedGamepadEntry_OnSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
+    control:SetHidden(selected and self.confirmationMode)
+
+    -- Default to CURT_MONEY
+    local useDefaultCurrency = (not data.currencyType1) or (data.currencyType1 == 0)
+    local currencyType = CURT_MONEY
+
+    if not useDefaultCurrency then
+        currencyType = data.currencyType1
+    end
+
+    self:SetupPrice(control, price, forceValid, mode, currencyType)
+end
+
+function ZOS_GamepadStoreListComponent:SetupPrice(control, price, forceValid, mode, currencyType)
+    local options = self:GetCurrencyOptions()
+    local invalidPrice = not forceValid and price > GetCarriedCurrencyAmount(currencyType) or false
+    local priceControl = control:GetNamedChild("Price")
+
+    local storeUsesAP, storeUsesTelvarStones = select(2, GetStoreCurrencyTypes())
+    if storeUsesAP and mode == ZOS_MODE_STORE_BUY and currencyType == CURT_ALLIANCE_POINTS then
+        invalidPrice = not forceValid and price > GetCarriedCurrencyAmount(CURT_ALLIANCE_POINTS) or false
+    elseif storeUsesTelvarStones and mode == ZOS_MODE_STORE_BUY and currencyType == CURT_TELVAR_STONES then
+        invalidPrice = not forceValid and price > GetCarriedCurrencyAmount(CURT_TELVAR_STONES) or false
+    end
+
+    --ZO_CurrencyControl_SetSimpleCurrency(priceControl, currencyType, price, options, CURRENCY_SHOW_ALL, invalidPrice)
+end
+
+function ZOS_GamepadStoreListComponent:OnSelectedItemChanged(data)
+
+end
 
 function ZOS_GamepadStoreListComponent:CreateItemList(scene, storeMode, overrideTemplate, overrideHeaderTemplateSetupFunction)
     local setupFunction = function(...) self:SetupEntry(...) end
@@ -171,56 +148,6 @@ function ZOS_GamepadStoreListComponent:CreateItemList(scene, storeMode, override
 
     return list
 end
-
-function ZOS_GamepadStoreListComponent:Initialize(scene, storeMode, tabText, overrideTemplate, overrideHeaderTemplateSetupFunction)
-    self.list = self:CreateItemList(scene, storeMode, overrideTemplate, overrideHeaderTemplateSetupFunction)
-    self.list:UpdateList()
-    local control = self.list:GetControl()
-    ZOS_GamepadStoreComponent.Initialize(self, control, storeMode, tabText)
-end
-
-function ZOS_GamepadStoreListComponent:Refresh()
-    self.list:UpdateList()
-end
-
-function ZOS_GamepadStoreListComponent:SetupEntry(control, data, selected, selectedDuringRebuild, enabled, activated)
-
-end
-
-function ZOS_GamepadStoreListComponent:SetupStoreItem(control, data, selected, selectedDuringRebuild, enabled, activated, price, forceValid, mode)
-    ZO_SharedGamepadEntry_OnSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
-    control:SetHidden(selected and self.confirmationMode)
-
-    -- Default to CURT_MONEY
-    local useDefaultCurrency = (not data.currencyType1) or (data.currencyType1 == 0)
-    local currencyType = CURT_MONEY
-
-    if not useDefaultCurrency then
-        currencyType = data.currencyType1
-    end
-
-    self:SetupPrice(control, price, forceValid, mode, currencyType)
-end
-
-function ZOS_GamepadStoreListComponent:SetupPrice(control, price, forceValid, mode, currencyType)
-    local options = self:GetCurrencyOptions()
-    local invalidPrice = not forceValid and price > GetCarriedCurrencyAmount(CURT_MONEY) or false
-    local priceControl = control:GetNamedChild("Price")
-
-    local storeUsesAP, storeUsesTelvarStones = select(2, GetStoreCurrencyTypes())
-    if storeUsesAP and mode == ZO_MODE_STORE_BUY and currencyType == CURT_ALLIANCE_POINTS then
-        invalidPrice = not forceValid and price > GetCarriedCurrencyAmount(CURT_ALLIANCE_POINTS) or false
-    elseif storeUsesTelvarStones and mode == ZO_MODE_STORE_BUY and currencyType == CURT_TELVAR_STONES then
-        invalidPrice = not forceValid and price > GetCarriedCurrencyAmount(CURT_TELVAR_STONES) or false
-    end
-
-    ZO_CurrencyControl_SetSimpleCurrency(priceControl, currencyType, price, options, CURRENCY_SHOW_ALL, invalidPrice)
-end
-
-function ZOS_GamepadStoreListComponent:OnSelectedItemChanged(data)
-
-end
-
 
 function ZOS_GamepadStoreListComponent:OnExitUnselectItem()
     if self.confirmationMode then

@@ -1,6 +1,234 @@
 <GuiXml>
     <Controls>
-        <TopLevelControl name="BUI_StoreWindow" inherits="BUI_Gamepad_ParametricList_Screen">
+
+        <Control name="BUI_StoreGenericScreenHeader" virtual="true">
+            <Anchor point="TOPLEFT" />
+            <Anchor point="TOPRIGHT" offsetY="26" />
+
+            <Controls>
+                <Control name="$(parent)TitleContainer" inherits="BUI_GamepadHeaderTitleAnchors">
+                    <Controls>
+                        <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" hidden="false">
+                            <Anchor point="LEFT" />
+                        </Label>
+                    </Controls>
+                </Control>
+
+                <Control name="$(parent)TabBar" inherits="BUI_GamepadTabBarScrollListTemplate" hidden="false">
+                    <Anchor point="TOPLEFT" offsetY="75"/>
+                    <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" />
+                    <Controls>
+
+                        <Button name="$(parent)SelectedBg">
+                            <Dimensions x="50" y="25"/>
+                            <Anchor point="CENTER" relativeTo="$(parent)" offsetY="32"/>
+                            <Textures normal="BetterUI/Modules/CIM/Images/select_tabbar.dds"/>
+                        </Button>
+
+                        <Button name="$(parent)LeftIcon">
+                           <Dimensions x="50" y="50"/>
+                           <Anchor point="LEFT" relativeTo="$(parent)"/>
+                           <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
+                           <OnClicked>
+                               self:GetParent().scrollList:MovePrevious(true)
+                           </OnClicked>
+                       </Button>
+                       <Button name="$(parent)RightIcon">
+                           <Dimensions x="50" y="50"/>
+                           <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
+                           <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
+                           <OnClicked>
+                               self:GetParent().scrollList:MoveNext(true)
+                           </OnClicked>
+                       </Button>
+
+
+                        <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
+                            <Anchor point="LEFT" relativeTo="$(parent)parent" relativePoint="BOTTOMLEFT" offsetX="0" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)parent" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="77" />
+                        </Control>
+                        <Control name="$(parent)DividerBottomS" inherits="BUI_GamepadHeaderHorizontalDivider">
+                            <Anchor point="LEFT" relativeTo="$(parent)parent" relativePoint="BOTTOMLEFT" offsetX="0" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)parent" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="81" />
+                        </Control>
+                    </Controls>
+                </Control>
+
+
+                <Control name="$(parent)DividerBottom" inherits="BUI_GamepadHeaderHorizontalDivider">
+                    <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="0" />
+                    <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="110" />
+                </Control>
+
+                <Control name="$(parent)ColumnBar" inherits="BUI_GamepadHeaderTitleAnchors">
+                    <Controls>
+                         <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                         <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Type">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="515" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                         <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Stat">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="705" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                         <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Value">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="775" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                    </Controls>
+                </Control>
+            </Controls>
+        </Control>
+
+        <Control name="ZOS_GamepadGenericScreenHeader" virtual="true">
+            <Anchor point="TOPLEFT" />
+            <Anchor point="TOPRIGHT" />
+
+            <Controls>
+                <Control name="$(parent)TitleContainer" inherits="BUI_GamepadHeaderTitleAnchors">
+                    <Controls>
+                        <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" excludeFromResizeToFitExtents="true" >
+                            <Anchor point="BOTTOMLEFT" />
+                            <Anchor point="BOTTOMRIGHT" />
+                        </Label>
+                    </Controls>
+                </Control>
+
+                <!-- <Control name="$(parent)TabBar" inherits="ZO_TabBarScrollListTemplate ZO_GamepadHeaderTitleAnchors" hidden="true" /> -->
+
+                <Control name="$(parent)TabBar" inherits="BUI_GamepadTabBarScrollListTemplate" hidden="false">
+                    <Anchor point="TOPLEFT" offsetY="75"/>
+                    <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" />
+                    <Controls>
+                         <Button name="$(parent)LeftIcon">
+                            <Dimensions x="50" y="50"/>
+                            <Anchor point="LEFT" relativeTo="$(parent)"/>
+                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_LB.dds"/>
+                            <OnClicked>
+                                TRADING_HOUSE_GAMEPAD.m_header.tabBar:MovePrevious()
+                            </OnClicked>
+                        </Button>
+                        <Button name="$(parent)RightIcon">
+                            <Dimensions x="50" y="50"/>
+                            <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-50"/>
+                            <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
+                            <OnClicked>
+                                TRADING_HOUSE_GAMEPAD.m_header.tabBar:MoveNext()
+                            </OnClicked>
+                        </Button>
+
+
+                        <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
+                            <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="77" />
+                        </Control>
+                        <Control name="$(parent)DividerBottomS" inherits="BUI_GamepadHeaderHorizontalDivider">
+                            <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="81" />
+                        </Control>
+                    </Controls>
+                </Control>
+
+                <Control name="$(parent)DividerSimple" inherits="ZO_GamepadHeaderHorizontalDividerSimple">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)TitleContainer" relativePoint="BOTTOMLEFT" />
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)TitleContainer" relativePoint="BOTTOMRIGHT" offsetY="ZO_GAMEPAD_CONTENT_TITLE_DIVIDER_PADDING_Y" />
+                </Control>
+
+                <Control name="$(parent)DividerPipped" inherits="ZO_GamepadHeaderHorizontalDividerWithTabs" hidden="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)TitleContainer" relativePoint="BOTTOMLEFT" />
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)TitleContainer" relativePoint="BOTTOMRIGHT" offsetY="ZO_GAMEPAD_CONTENT_TITLE_DIVIDER_PADDING_Y" />
+                </Control>
+
+                <!-- Note: The anchors for these data elements are setup dynamically. -->
+                <Label name="$(parent)Data1Header" inherits="ZO_GamepadHeaderLabelTextTemplate" />
+                <Label name="$(parent)Data1" inherits="ZO_GamepadHeaderDataTextTemplate" />
+                <Label name="$(parent)Data2Header" inherits="ZO_GamepadHeaderLabelTextTemplate" />
+                <Label name="$(parent)Data2" inherits="ZO_GamepadHeaderDataTextTemplate" />
+                <Label name="$(parent)Data3Header" inherits="ZO_GamepadHeaderLabelTextTemplate" />
+                <Label name="$(parent)Data3" inherits="ZO_GamepadHeaderDataTextTemplate" />
+                <Label name="$(parent)Data4Header" inherits="ZO_GamepadHeaderLabelTextTemplate" />
+                <Label name="$(parent)Data4" inherits="ZO_GamepadHeaderDataTextTemplate" />
+
+                <Label name="$(parent)Message" inherits="ZO_GamepadScreenHeaderMessageTextTemplate" />
+
+                <Control name="$(parent)DividerBottom" inherits="BUI_GamepadHeaderHorizontalDivider">
+                    <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="0" />
+                    <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="110" />
+                </Control>
+
+                <Control name="$(parent)ColumnBar" inherits="BUI_GamepadHeaderTitleAnchors">
+                    <Controls>
+                         <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                         <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Type">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="515" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                         <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Stat">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="705" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                         <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Value">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="775" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                    </Controls>
+                </Control>
+            </Controls>
+        </Control>
+
+
+        <Control name="BUI_StoreScreenHeaderContainer" virtual="true">
+            <Dimensions y="115" x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
+            <Controls>
+                <Control name="$(parent)Header" inherits="ZOS_GamepadGenericScreenHeader">
+                    <Dimensions y="115" x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH" />
+                    <OnInitialized>
+                        self:GetParent().header = self
+                    </OnInitialized>
+                </Control>
+            </Controls>
+        </Control>
+
+        <Control name="BUI_Store_ParametricList_Screen_ListContainer" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors" virtual="true">
+            <AnchorFill/>
+            <Controls>
+                <Control name="$(parent)List" inherits="BUI_VerticalParametricScrollListTemplate">
+                    <OnInitialized>
+                        self:GetParent().list = self
+                    </OnInitialized>
+
+                    <Anchor point="TOPLEFT" relativeTo="$(grandparent)HeaderContainerHeader" relativePoint="BOTTOMLEFT" offsetX="-50" offsetY="-25"/>
+                    <Anchor point="BOTTOMRIGHT" relativeTo="$(grandparent)FooterContainerFooter" relativePoint="TOPRIGHT" offsetX="0" offsetY="10" />
+
+                </Control>
+            </Controls>
+        </Control>
+
+        <Control name="BUI_Store_ParametricList_Screen" hidden="true" virtual="true">
+            <Controls>
+                <Scroll name="$(parent)Mask" inherits="BUI_GamepadGrid_NavQuadrant_1_Anchors">
+                    <Controls>
+                        <Control name="$(parent)Container">
+                            <AnchorFill />
+
+                            <Controls>
+                                <Control name="$(parent)HeaderContainer" inherits="BUI_StoreScreenHeaderContainer BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors" />
+                                <Control name="$(parent)FooterContainer" inherits="BUI_GamepadScreenFooterContainer BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors" />
+
+                            </Controls>
+                        </Control>
+                    </Controls>
+                </Scroll>
+            </Controls>
+        </Control>
+
+        <TopLevelControl name="BUI_StoreWindow" inherits="BUI_Store_ParametricList_Screen">
             <OnInitialized>
                 --ZO_Store_OnInitialize_Gamepad(self)
             </OnInitialized>

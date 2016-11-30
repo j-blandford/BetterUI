@@ -63,7 +63,6 @@ function BUI.InitModuleOptions()
 		-- 	setFunc = function(value) BUI.Settings.Modules["Store"].m_enabled = value
 		-- 							dirtyModules = true  end,
 		-- 	disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
-		-- 	--disabled = function() return true end,
 		-- 	width = "full",
 		-- },
 		{
@@ -165,16 +164,6 @@ function BUI.PostHook(control, method, fn)
 	end
 end
 
-function BUI.Hook(control, method, postHookFunction, overwriteOriginal)
-	if control == nil then return end
-	
-	local originalMethod = control[method]
-	control[method] = function(self, ...)
-		if(overwriteOriginal == false) then originalMethod(self, ...) end
-		postHookFunction(self, ...)
-	end
-end
-
 function BUI.RGBToHex(rgba)
 	r,g,b,a = unpack(rgba)
 	return string.format("%02x%02x%02x", r*255, g*255, b*255)
@@ -191,14 +180,14 @@ function BUI.LoadModules()
 		ddebug("Initializing BUI...")
 		BUI.GuildStore.FixMM() -- fix MM is independent of any module
 		BUI.Player.GetResearch()
+
 		if(BUI.Settings.Modules["CIM"].m_enabled) then
 			BUI.CIM.Setup()
 			if(BUI.Settings.Modules["GuildStore"].m_enabled) then
 				BUI.GuildStore.Setup()
 			end
-
 			-- if(BUI.Settings.Modules["Store"].m_enabled) then
-			-- 	--BUI.Store.Setup()
+			-- 	BUI.Store.Setup()
 			-- end
 			if(BUI.Settings.Modules["Inventory"].m_enabled) then
 				BUI.Inventory.Setup()
@@ -234,6 +223,7 @@ function BUI.Initialize(event, addon)
 		local m_Banking = BUI.ModuleOptions(BUI.Banking, BUI.Settings.Modules["Banking"])
 		local m_Writs = BUI.ModuleOptions(BUI.Writs, BUI.Settings.Modules["Writs"])
 		local m_GuildStore = BUI.ModuleOptions(BUI.GuildStore, BUI.Settings.Modules["GuildStore"])
+		local m_Store = BUI.ModuleOptions(BUI.GuildStore, BUI.Settings.Modules["Store"])
 		local m_Tooltips = BUI.ModuleOptions(BUI.Tooltips, BUI.Settings.Modules["Tooltips"])
 
 		BUI.Settings.firstInstall = false

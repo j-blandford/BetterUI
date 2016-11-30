@@ -23,11 +23,7 @@ end
 
 function BUI.Store.InitModule(m_options)
     -- m_options["savePosition"] = true
-    -- m_options["enableWrapping"] = true
-    -- m_options["showMarketPrice"] = false
-    -- m_options["useTriggersForSkip"] = false
-    -- m_options["enableJunk"] = false
-	-- m_options["displayCharAttributes"] = true
+
     return m_options
 end
 
@@ -35,9 +31,18 @@ end
 function BUI.Store.Setup()
 	Init("Store", "Store")
 
-	BUI.Store.Window = BUI.Store.Class:New(BUI_StoreWindow)
+	BUI_GAMEPAD_VENDOR_FRAGMENT = ZO_SimpleSceneFragment:New(BUI_StoreWindow)
 
-    BUI.Store.Window:AddComponent(BUI.Store.Buy:New(BUI.Store.Window))
+	STORE_WINDOW_GAMEPAD = BUI.Store.Class:New(BUI_StoreWindow)
+    STORE_WINDOW_GAMEPAD:AddComponent(BUI.Store.Buy:New(STORE_WINDOW_GAMEPAD))
+
+	GAMEPAD_VENDOR_SCENE:AddFragmentGroup(FRAGMENT_GROUP.GAMEPAD_DRIVEN_UI_WINDOW)
+	GAMEPAD_VENDOR_SCENE:AddFragmentGroup(FRAGMENT_GROUP.FRAME_TARGET_GAMEPAD)
+	GAMEPAD_VENDOR_SCENE:AddFragment(BUI_GAMEPAD_VENDOR_FRAGMENT)
+	GAMEPAD_VENDOR_SCENE:AddFragment(GAMEPAD_NAV_QUADRANT_1_BACKGROUND_FRAGMENT)
+	GAMEPAD_VENDOR_SCENE:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+	GAMEPAD_VENDOR_SCENE:AddFragment(GAMEPAD_GENERIC_FOOTER_FRAGMENT)
 
 	store = STORE_WINDOW_GAMEPAD
+
 end
