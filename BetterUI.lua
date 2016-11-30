@@ -164,6 +164,16 @@ function BUI.PostHook(control, method, fn)
 	end
 end
 
+function BUI.Hook(control, method, postHookFunction, overwriteOriginal)
+	if control == nil then return end
+	
+	local originalMethod = control[method]
+	control[method] = function(self, ...)
+		if(overwriteOriginal == false) then originalMethod(self, ...) end
+		postHookFunction(self, ...)
+	end
+end
+
 function BUI.RGBToHex(rgba)
 	r,g,b,a = unpack(rgba)
 	return string.format("%02x%02x%02x", r*255, g*255, b*255)
