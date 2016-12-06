@@ -154,8 +154,8 @@
                                         <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
-                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Stat">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="485" />
+                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Seller">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="385" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                  <Label name="$(parent)Column3Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Time Left">
