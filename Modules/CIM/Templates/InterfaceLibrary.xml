@@ -244,7 +244,6 @@
                             </OnClicked>
                         </Button>
 
-
                         <Control name="$(parent)DividerBottomF" inherits="BUI_GamepadHeaderHorizontalDivider">
                             <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
                             <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="77" />
