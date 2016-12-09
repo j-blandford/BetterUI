@@ -15,6 +15,8 @@ local CRAFT_BAG_ACTION_MODE = 3
 local INVENTORY_TAB_INDEX = 1
 local CRAFT_BAG_TAB_INDEX = 2
 
+local DIALOG_QUEUE_WORKAROUND_TIMEOUT_DURATION = 300
+
 local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 300
 
 local INVENTORY_CATEGORY_LIST = "categoryList"
@@ -253,16 +255,32 @@ end
 
 
 
-function BUI.Inventory.Class:TryEquipItem(inventorySlot)
+function BUI.Inventory.Class:TryEquipItem(inventorySlot, isCallingFromActionDialog)
     local equipType = inventorySlot.dataSource.equipType
 
-    -- Check if the current item is an armour (or two handed, where it doesn't need a dialog menu), if so, then just equip into it's slot
+	-- Binding handling
+	local bound = IsItemBound(inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex)
+	local equipItemLink = GetItemLink(inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex)
+	local bindType = GetItemLinkBindType(equipItemLink)
+
+	local isBindCheckItem = false
+	local equipItemCallback = function() end
+	
+	-- Check if the current item is an armour (or two handed, where it doesn't need a dialog menu), if so, then just equip into it's slot
     local armorType = GetItemArmorType(inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex)
     if armorType ~= ARMORTYPE_NONE or equipType == EQUIP_TYPE_TWO_HAND or equipType == EQUIP_TYPE_NECK then
         if equipType == EQUIP_TYPE_TWO_HAND then
+			equipItemCallback = function()
             CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_MAIN_HAND or EQUIP_SLOT_BACKUP_MAIN, 1)
-        else
+			end
+			
+			isBindCheckItem = true
+		else
+			equipItemCallback = function()
             CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
+			end
+			
+			isBindCheckItem = true
         end
     elseif equipType == EQUIP_TYPE_COSTUME then
         CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_COSTUME, 1)
@@ -271,12 +289,44 @@ function BUI.Inventory.Class:TryEquipItem(inventorySlot)
 		CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_POISON or EQUIP_SLOT_BACKUP_POISON, 1)
 	elseif equipType == EQUIP_TYPE_OFF_HAND then
 		-- Shields
+		equipItemCallback = function()
 		CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_OFF_HAND or EQUIP_SLOT_BACKUP_OFF, 1)
-
+		end
+		
+		isBindCheckItem = true
 	else
         -- Else, it's a weapon, so show a dialog so the user can pick either slot!
-        ZO_Dialogs_ShowDialog(BUI_EQUIP_SLOT_DIALOG, {inventorySlot, self.equipToMainSlot}, {mainTextParams={GetString(SI_BUI_INV_EQUIPSLOT_MAIN)}}, true)
-    end
+		equipItemCallback = function()
+			local function showEquipSingleSlotItemDialog()
+				-- should check if ZO_Dialogs_IsShowingDialog
+				ZO_Dialogs_ShowDialog(BUI_EQUIP_SLOT_DIALOG, {inventorySlot, self.equipToMainSlot}, {mainTextParams={GetString(SI_BUI_INV_EQUIPSLOT_MAIN)}}, true)
+			end
+			
+			if isCallingFromActionDialog ~= nil and isCallingFromActionDialog then
+				zo_callLater(showEquipSingleSlotItemDialog, DIALOG_QUEUE_WORKAROUND_TIMEOUT_DURATION)
+			else
+				showEquipSingleSlotItemDialog()
+			end
+		end
+	
+		-- we check the binding dialog later
+		isBindCheckItem = false
+	end
+	
+	if not bound and bindType == BIND_TYPE_ON_EQUIP and isBindCheckItem and BUI.Settings.Modules["Inventory"].bindOnEquipProtection then
+		local function promptForBindOnEquip()
+			ZO_Dialogs_ShowPlatformDialog("CONFIRM_EQUIP_BOE", {callback=equipItemCallback}, {mainTextParams={equipItemLink}})
+		end
+		
+		if isCallingFromActionDialog ~= nil and isCallingFromActionDialog then
+			zo_callLater(promptForBindOnEquip, DIALOG_QUEUE_WORKAROUND_TIMEOUT_DURATION)
+		else
+			promptForBindOnEquip()
+		end
+	else
+		equipItemCallback()
+	end
+	
 end
 
 function BUI.Inventory.Class:NewCategoryItem(categoryName, filterType, iconFile, FilterFunct)
@@ -1015,22 +1065,34 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
 
     local function ReleaseDialog(data, mainSlot)
         local equipType = data[1].dataSource.equipType
-
-        if(equipType ~= EQUIP_TYPE_RING) then
-            if(mainSlot) then
-                CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_MAIN_HAND or EQUIP_SLOT_BACKUP_MAIN, 1)
-            else
-                CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_OFF_HAND or EQUIP_SLOT_BACKUP_OFF, 1)
-            end
-        else
-            if(mainSlot) then
-                CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_RING1, 1)
-            else
-                CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_RING2, 1)
-            end
-        end
-
-        ZO_Dialogs_ReleaseDialogOnButtonPress(BUI_EQUIP_SLOT_DIALOG)
+	
+		local bound = IsItemBound(data[1].dataSource.bagId, data[1].dataSource.slotIndex)
+		local equipItemLink = GetItemLink(data[1].dataSource.bagId, data[1].dataSource.slotIndex)
+		local bindType = GetItemLinkBindType(equipItemLink)
+	
+		local equipItemCallback = function()
+			if(equipType ~= EQUIP_TYPE_RING) then
+				if(mainSlot) then
+					CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_MAIN_HAND or EQUIP_SLOT_BACKUP_MAIN, 1)
+				else
+					CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_OFF_HAND or EQUIP_SLOT_BACKUP_OFF, 1)
+				end
+			else
+				if(mainSlot) then
+					CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_RING1, 1)
+				else
+					CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_RING2, 1)
+				end
+			end
+		end
+	
+		ZO_Dialogs_ReleaseDialogOnButtonPress(BUI_EQUIP_SLOT_DIALOG)
+	
+		if not bound and bindType == BIND_TYPE_ON_EQUIP and BUI.Settings.Modules["Inventory"].bindOnEquipProtection then
+			zo_callLater(function() ZO_Dialogs_ShowPlatformDialog("CONFIRM_EQUIP_BOE", {callback=equipItemCallback}, {mainTextParams={equipItemLink}}) end, DIALOG_QUEUE_WORKAROUND_TIMEOUT_DURATION)
+		else
+			equipItemCallback()
+		end
     end
     ZO_Dialogs_RegisterCustomDialog(BUI_EQUIP_SLOT_DIALOG,
     {
