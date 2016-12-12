@@ -979,8 +979,23 @@ end
 	-- Automatically fill in the market price if the "replace inventory values with market price" setting is enabled
 	local orig_funct = ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing
 	ZO_TradingHouse_CreateListing_Gamepad_BeginCreateListing = function(selectedData, bag, index, listingPrice)
-		if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
-			local marketPrice = GetMarketPrice(GetItemLink(bag, index), selectedData.stackCount)
+		if(BUI.Settings.Modules["Inventory"].showMarketPrice and BUI.Settings.Modules["GuildStore"].mmIntegration) then
+			local itemLink = GetItemLink(bag, index)
+			
+			-- MM Integration
+			local mmSuggestedPrice
+			if (MasterMerchant ~= nil) then
+				local settingsToUse = MasterMerchant:ActiveSettings()
+			
+				local theIID = string.match(itemLink, '|H.-:item:(.-):')
+				local itemIndex = MasterMerchant.makeIndexFromLink(itemLink)
+			
+				if settingsToUse.pricingData and settingsToUse.pricingData[tonumber(theIID)] and settingsToUse.pricingData[tonumber(theIID)][itemIndex] then
+					mmSuggestedPrice = math.floor(settingsToUse.pricingData[tonumber(theIID)][itemIndex] * selectedData.stackCount)
+				end
+			end
+			
+			local marketPrice = mmSuggestedPrice or GetMarketPrice(itemLink, selectedData.stackCount)
 			if(marketPrice ~= 0) then
 				orig_funct(selectedData, bag, index, math.floor(marketPrice))
 			else
