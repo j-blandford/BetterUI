@@ -27,11 +27,11 @@
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                  <Label name="$(parent)Column3Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Time Left">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="535" />
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="530" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                  <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Deal">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="630" />
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="625" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                  <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Price">
@@ -63,7 +63,7 @@
                         <Control name="$(grandparent)Footer" inherits="BUI_ListingsFooterBar BUI_GamepadGenericScreenFooter" hidden="true"/>
                         
                         <Control name="$(grandparent)List" override="true">
-                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="0" offsetY="90"/>
+                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="-28" offsetY="90"/>
                             <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="15" />
                         </Control>
                     </Controls>

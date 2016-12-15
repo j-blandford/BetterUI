@@ -103,6 +103,7 @@ end
 function BUI.GuildStore.Setup()
 
 	Init("GS", "Guild Store")
+
 	BUI.GuildStore.BrowseResults.Setup()
 	BUI.GuildStore.Listings.Setup()
 
@@ -126,4 +127,65 @@ function BUI.GuildStore.Setup()
         -- replace the ridiculous "OnInitialInteraction" function which resets the filters with an empty dummy
 		GAMEPAD_TRADING_HOUSE_BROWSE.OnInitialInteraction = function() end
 	end
+	
+	if (BUI.Settings.Modules["GuildStore"].mmIntegration) then
+		-- Remember the listings made in MM
+		local exitOnFinished = true
+		ESO_Dialogs["TRADING_HOUSE_CONFIRM_SELL_ITEM"] =
+		{
+			gamepadInfo =
+			{
+				dialogType = GAMEPAD_DIALOGS.BASIC,
+			},
+			title =
+			{
+				text = SI_GAMEPAD_TRADING_HOUSE_CONFIRM_SELL_DIALOG_TITLE,
+			},
+			mainText =
+			{
+				text = SI_GAMEPAD_TRADING_HOUSE_CONFIRM_SELL_DIALOG_TEXT,
+			},
+			setup = function()
+				exitOnFinished = false
+			end,
+			finishedCallback = function(dialog)
+				if exitOnFinished then
+					SCENE_MANAGER:HideCurrentScene()
+				end
+			end,
+			buttons =
+			{
+				[1] =
+				{
+					text =      SI_DIALOG_YES,
+					callback =  function(dialog)
+						local stackCount = dialog.data.stackCount
+						local desiredPrice = dialog.data.price
+						local listingIndex = dialog.data.listingIndex
+						
+						local newSelf = {
+							m_pendingItemSlot = listingIndex,
+							m_invoiceSellPrice = {
+								sellPrice = desiredPrice
+							}
+						}
+						
+						if (MasterMerchant ~= nil and MasterMerchant.PostPendingItem ~= nil) then
+							MasterMerchant.PostPendingItem(newSelf)
+						end
+						
+						RequestPostItemOnTradingHouse(BAG_BACKPACK, listingIndex, stackCount, desiredPrice)
+						TRADING_HOUSE_GAMEPAD:SetSearchAllowed(true) -- allow update to cached search results to find newly sold items
+						exitOnFinished = true
+					end
+				},
+				
+				[2] =
+				{
+					text =       SI_DIALOG_NO,
+				}
+			}
+		}
+	end
+
 end

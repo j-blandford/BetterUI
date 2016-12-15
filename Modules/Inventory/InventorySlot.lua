@@ -115,7 +115,7 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
                     slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
                 end
                 if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
-                    slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+                    slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot, ZO_Dialogs_IsShowingDialog()) end, "primary", nil, {visibleWhenDead = false})
                 end
         end
     end
