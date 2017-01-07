@@ -179,6 +179,7 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 
     local function UpdateSingle_Handler(eventId, bagId, slotId, isNewItem, itemSound)
         self:UpdateSingleItem(bagId, slotId, self.spinner:GetValue())
+        self:selectedDataCallback(self.list:GetSelectedControl(), self.list:GetSelectedData())
     end
 
     local function UpdateCurrency_Handler()
