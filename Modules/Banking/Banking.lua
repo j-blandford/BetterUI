@@ -178,7 +178,8 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
     end
 
     local function UpdateSingle_Handler(eventId, bagId, slotId, isNewItem, itemSound)
-        self:UpdateSingleItem(bagId, slotId, self.spinner:GetValue())
+        self:UpdateSingleItem(bagId, slotId)
+        self:selectedDataCallback(self.list:GetSelectedControl(), self.list:GetSelectedData())
     end
 
     local function UpdateCurrency_Handler()
@@ -268,7 +269,7 @@ end
 
 function BUI.Banking.Class:MoveItem(list, quantity)
 	local bag, index = ZO_Inventory_GetBagAndIndex(list:GetSelectedData())
-	local stackCountBackpack, stackCountBank = GetItemLinkStacks(GetItemLink(bag, index))
+    local stackCount = GetSlotStackSize(bag, index)
 
 	local toBag = self.currentMode == LIST_WITHDRAW and BAG_BACKPACK or BAG_BANK
 	local fromBag = self.currentMode == LIST_WITHDRAW and BAG_BANK or BAG_BACKPACK
@@ -276,7 +277,7 @@ function BUI.Banking.Class:MoveItem(list, quantity)
 	-- Check to see if we're calling this function from within the spinner class...
 	if(quantity == nil) then
 		-- We're not, so either (a) move the item, or (b) display the spinner
-	    if(stackCountBank > 1 and self.currentMode == LIST_WITHDRAW or stackCountBackpack > 1 and self.currentMode == LIST_DEPOSIT) then
+	    if stackCount > 1 then
 		    self:UpdateSpinnerConfirmation(true, self.list)
 		    self:SetSpinnerValue(list:GetSelectedData().stackCount, list:GetSelectedData().stackCount)
 		else
@@ -552,30 +553,34 @@ function BUI.Banking.Class:RefreshList()
 end
 
 -- Go through and get the item which has been passed to us through the event
-function BUI.Banking.Class:UpdateSingleItem(bagId, slotIndex, delta_qty)
+function BUI.Banking.Class:UpdateSingleItem(bagId, slotIndex)
+    if GetSlotStackSize(bagId, slotIndex) > 0 then
+        self.list:RefreshVisible()
+        return
+    end
+    
     for index = 1, #self.list.dataList do
         if self.list.dataList[index].bagId == bagId and self.list.dataList[index].slotIndex == slotIndex then
-            self:RemoveItemStack(index, delta_qty)
+            self:RemoveItemStack(index)
             break
         end
     end
 end
 
 -- This is the final function for the Event "EVENT_INVENTORY_SINGLE_SLOT_UPDATE".
-function BUI.Banking.Class:RemoveItemStack(itemIndex, delta_qty)
-    if(delta_qty == self.list.dataList[itemIndex].stackCount) then
-        -- the player has transferred this item, remove it from the current list
-      if(itemIndex >= #self.list.dataList) then
-          self.list:MovePrevious()
-      end
-      table.remove(self.list.dataList,itemIndex)
-      table.remove(self.list.templateList,itemIndex)
-      table.remove(self.list.prePadding,itemIndex)
-      table.remove(self.list.postPadding,itemIndex)
-      table.remove(self.list.preSelectedOffsetAdditionalPadding,itemIndex)
-      table.remove(self.list.postSelectedOffsetAdditionalPadding,itemIndex)
-      table.remove(self.list.selectedCenterOffset,itemIndex)
+function BUI.Banking.Class:RemoveItemStack(itemIndex)
+    ddebug("Remove Item stack")
+
+    if(itemIndex >= #self.list.dataList) then
+      self.list:MovePrevious()
     end
+    table.remove(self.list.dataList,itemIndex)
+    table.remove(self.list.templateList,itemIndex)
+    table.remove(self.list.prePadding,itemIndex)
+    table.remove(self.list.postPadding,itemIndex)
+    table.remove(self.list.preSelectedOffsetAdditionalPadding,itemIndex)
+    table.remove(self.list.postSelectedOffsetAdditionalPadding,itemIndex)
+    table.remove(self.list.selectedCenterOffset,itemIndex)
 
     self.list:RefreshVisible()
 end
