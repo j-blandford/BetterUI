@@ -569,7 +569,6 @@ end
 
 -- This is the final function for the Event "EVENT_INVENTORY_SINGLE_SLOT_UPDATE".
 function BUI.Banking.Class:RemoveItemStack(itemIndex)
-    ddebug("Remove Item stack")
 
     if(itemIndex >= #self.list.dataList) then
       self.list:MovePrevious()
