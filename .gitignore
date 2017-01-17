@@ -52,3 +52,7 @@ Temporary Items
 /.idea/modules.xml
 /.idea/vcs.xml
 /.idea/workspace.xml
+/.idea/codeStyleSettings.xml
+/.idea/deployment.xml
+/.idea/externalDependencies.xml
+/.idea/webServers.xml
