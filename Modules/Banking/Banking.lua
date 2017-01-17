@@ -85,9 +85,16 @@ local function SetupListing(control, data)
 
         local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
         local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
+	
+		local currentItemType = GetItemLinkItemType(itemData) --GetItemType(bagId, slotIndex)
+		local isRecipeAndUnknown = false
+		if (currentItemType == ITEMTYPE_RECIPE) then
+			isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
+		end
 
         if(hasEnchantment) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
         if(setItem) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
+		if isRecipeAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
     end
     control:GetNamedChild("ItemType"):SetText(string.upper(data.itemCategoryName))
     control:GetNamedChild("Stat"):SetText((data.statValue == 0) and "-" or data.statValue)
@@ -96,8 +103,20 @@ local function SetupListing(control, data)
     control:GetNamedChild("Icon"):AddIcon(data.iconFile)
     control:GetNamedChild("Icon"):SetHidden(false)
     if not data.meetsUsageRequirement then control:GetNamedChild("Icon"):SetColor(1,0,0,1) else control:GetNamedChild("Icon"):SetColor(1,1,1,1) end
-
-    control:GetNamedChild("Value"):SetText(data.stackSellPrice)
+	
+	if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
+		local marketPrice = GetMarketPrice(GetItemLink(data.bagId,data.slotIndex), data.stackCount)
+		if(marketPrice ~= 0) then
+			control:GetNamedChild("Value"):SetColor(1,0.75,0,1)
+			control:GetNamedChild("Value"):SetText(ZO_CurrencyControl_FormatCurrency(math.floor(marketPrice), USE_SHORT_CURRENCY_FORMAT))
+		else
+			control:GetNamedChild("Value"):SetColor(1,1,1,1)
+			control:GetNamedChild("Value"):SetText(data.stackSellPrice)
+		end
+	else
+		control:GetNamedChild("Value"):SetColor(1,1,1,1)
+		control:GetNamedChild("Value"):SetText(ZO_CurrencyControl_FormatCurrency(data.stackSellPrice, USE_SHORT_CURRENCY_FORMAT))
+	end
 end
 
 local function SetupLabelListing(control, data)
@@ -209,10 +228,10 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
         self.control:UnregisterForEvent(EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
 	end
 
-    local selectorChild = self.control:GetNamedChild("Container"):GetNamedChild("InputContainer"):GetNamedChild("Selector")
-    self.selector = ZO_CurrencySelector_Gamepad:New(selectorChild)
-	self.selectorCurrency = self.control:GetNamedChild("Container"):GetNamedChild("InputContainer"):GetNamedChild("CurrencyTexture")
-    self.selector:SetClampValues(true)
+    local selectorContainer = self.control:GetNamedChild("Container"):GetNamedChild("InputContainer")
+    self.selector = ZO_CurrencySelector_Gamepad:New(selectorContainer:GetNamedChild("Selector"))
+	self.selector:SetClampValues(true)
+	self.selectorCurrency = selectorContainer:GetNamedChild("CurrencyTexture")
 
     self.list:SetOnSelectedDataChangedCallback(SelectionChangedCallback)
 
@@ -318,8 +337,8 @@ function BUI.Banking.Class:DisplaySelector(currencyType)
 	
 		local CURRENCY_TYPE_TO_TEXTURE =
 		{
-			[CURT_MONEY] = "EsoUI/Art/currency/gamepad/gp_gold.dds",
-			[CURT_TELVAR_STONES] = "EsoUI/Art/currency/gamepad/gp_telvar.dds",
+			[CURRENCY.GOLD] = "EsoUI/Art/currency/gamepad/gp_gold.dds",
+			[CURRENCY.TELVAR] = "EsoUI/Art/currency/gamepad/gp_telvar.dds",
 		}
 	
 		self.selectorCurrency:SetTexture(CURRENCY_TYPE_TO_TEXTURE[currencyType])
@@ -631,6 +650,10 @@ function BUI.Banking.Init()
     BUI.Banking.Window:RefreshVisible()
 
     SCENE_MANAGER.scenes['gamepad_banking'] = SCENE_MANAGER.scenes['BUI_BANKING']
+	
+	if ((not USE_SHORT_CURRENCY_FORMAT ~= nil) and BUI.Settings.Modules["Inventory"].useShortFormat ~= nil) then
+		USE_SHORT_CURRENCY_FORMAT = BUI.Settings.Modules["Inventory"].useShortFormat
+	end
 
     --tw = BUI.Banking.Window --dev mode
 end
