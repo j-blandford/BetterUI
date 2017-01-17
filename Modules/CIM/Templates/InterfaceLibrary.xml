@@ -191,31 +191,31 @@
 
         <Control name="BUI_GenericEntry_Template" inherits="BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
            <!--  <Dimensions y="32" /> -->
-            <Anchor point="TOPLEFT" offsetX="10"/>
+            <Anchor point="TOPLEFT" offsetX="55"/>
             <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
 
             <Controls>
                 <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick">
-                        <Anchor point="TOPLEFT" offsetX="140"/>
+                        <Anchor point="TOPLEFT" offsetX="28"/>
                 </Label>
                 <Texture name="$(parent)Icon" inherits="BUI_MenuEntryIconTemplate" edgeColor="00000000">
                     <Dimensions x="28" y="28" />
                 </Texture>
                 <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="500"/>
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="485"/>
                 </Label>
                 <Label name="$(parent)Stat" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="690"/>
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="679"/>
                 </Label>
                 <Label name="$(parent)Value" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="765"/>
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="744"/>
                 </Label>
             </Controls>
         </Control>
 
 		<Label name="BUI_GenericColumn_Label" inherits="BUI_GenericColumn_TextTemplate BUI_HeaderTitleAnchors" text="..." virtual="true">
-                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
-                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="28" />
+                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="2" offsetY="95" />
          </Label>
 
         <Control name="BUI_GenericInterfaceHeader" resizeToFitDescendents="true" virtual="true">
@@ -237,7 +237,7 @@
                         </Button>
                         <Button name="$(parent)RightIcon" hidden="true">
                             <Dimensions x="50" y="50"/>
-                            <Anchor point="RIGHT" relativeTo="$(parent)"/>
+                            <Anchor point="RIGHT" relativeTo="$(parent)" offsetX="-3"/>
                             <Textures normal="EsoUI/Art/Buttons/Gamepad/Xbox/Nav_XBone_RB.dds"/>
                             <OnClicked>
                                 self:GetParent().header:MoveNext(true)
@@ -302,17 +302,17 @@
                 <Control name="$(parent)DividerBottomT" inherits="BUI_GamepadFooterHorizontalDivider">
                     <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_HWIDTH" y="5" />
                     <Anchor point="CENTER" relativeTo="$(parent)SelectBg" relativePoint="CENTER" offsetX="0" />
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)SelectBg" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING_OTHER" offsetY="0" />
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)SelectBg" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="0" />
                 </Control>
 
                 <Control name="$(parent)DividerBottomB" inherits="BUI_GamepadFooterHorizontalDivider">
                     <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_HWIDTH" y="5" />
                     <Anchor point="CENTER" relativeTo="$(parent)SelectBg" relativePoint="CENTER" offsetX="0" />
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)SelectBg" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING_OTHER" offsetY="6" />
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)SelectBg" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="6" />
                 </Control>
 
                 <Control name="$(parent)Withdraw">
-                    <Anchor point="LEFT" relativeTo="$(parent)DividerBottomT" relativePoint="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING_OTHER" offsetY="45" />
+                    <Anchor point="LEFT" relativeTo="$(parent)DividerBottomT" relativePoint="TOPLEFT" offsetX="40" offsetY="45" />
                     <Controls>
                         <Button name="$(parent)Button">
                             <Dimensions x="250" y="30" />
@@ -339,7 +339,7 @@
 
                 <Control name="$(parent)Deposit">
 
-                    <Anchor point="RIGHT" relativeTo="$(parent)DividerBottomT" relativePoint="TOPRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING_OTHER" offsetY="45"/>
+                    <Anchor point="RIGHT" relativeTo="$(parent)DividerBottomT" relativePoint="TOPRIGHT" offsetX="0" offsetY="45"/>
                     <Controls>
                         <Button name="$(parent)Button">
                             <Dimensions x="250" y="30" />
@@ -369,22 +369,22 @@
 
         <TopLevelControl name="BUI_BankingFooterBar" level="120" tier="2" layer="1" hidden="true">
             <Controls>
-                <Label name="$(parent)Data1Header" level="0" tier="2" layer="2" text="GOLD" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="BBBBBB">
-                    <Dimensions y="30" />
-                    <Anchor point="BOTTOMRIGHT" relativeTo="GuiRoot" relativePoint="BOTTOMRIGHT" offsetX="-300" offsetY="-61" />
+	            <Label name="$(parent)Data1Value" level="0" tier="2" layer="2" text="100,000" font="$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="FFBF00">
+		            <Dimensions y="36" />
+		            <Anchor point="BOTTOMRIGHT" relativeTo="GuiRoot" relativePoint="BOTTOMRIGHT" offsetX="-300" offsetY="-61" />
+	            </Label>
+                <Label name="$(parent)Data1Header" level="0" tier="2" layer="2" text="|t32:32:esoui/art/currency/currency_gold_32.dds|t" font="$(GAMEPAD_MEDIUM_FONT)|32|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
+                    <Dimensions y="32" />
+	                <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data1Value" relativePoint="BOTTOMRIGHT" offsetX="10" offsetY="-2" />
                 </Label>
-                <Label name="$(parent)Data1Value" level="0" tier="2" layer="2" text="100,000" font="$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
+                <Label name="$(parent)Data2Value" level="0" tier="2" layer="2" text="100,000" font="$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="0066FF">
                     <Dimensions y="36" />
-                    <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data1Header" relativePoint="BOTTOMRIGHT" offsetX="10" />
+                    <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data1Header" relativePoint="BOTTOMRIGHT" offsetX="25" />
                 </Label>
-                <Label name="$(parent)Data2Header" level="0" tier="2" layer="2" text="TEL-VAR" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="BBBBBB">
-                    <Dimensions y="30" />
-                    <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data1Value" relativePoint="BOTTOMRIGHT" offsetX="25" />
-                </Label>
-                <Label name="$(parent)Data2Value" level="0" tier="2" layer="2" text="100,000" font="$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
-                    <Dimensions y="36" />
-                    <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data2Header" relativePoint="BOTTOMRIGHT" offsetX="10" />
-                </Label>
+	            <Label name="$(parent)Data2Header" level="0" tier="2" layer="2" text="|t32:32:esoui/art/currency/currency_telvar_32.dds|t" font="$(GAMEPAD_MEDIUM_FONT)|32|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
+		            <Dimensions y="32" />
+		            <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data2Value" relativePoint="BOTTOMRIGHT" offsetX="10" offsetY="-2" />
+	            </Label>
             </Controls>
         </TopLevelControl>
 

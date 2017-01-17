@@ -211,6 +211,7 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 
     local selectorChild = self.control:GetNamedChild("Container"):GetNamedChild("InputContainer"):GetNamedChild("Selector")
     self.selector = ZO_CurrencySelector_Gamepad:New(selectorChild)
+	self.selectorCurrency = self.control:GetNamedChild("Container"):GetNamedChild("InputContainer"):GetNamedChild("CurrencyTexture")
     self.selector:SetClampValues(true)
 
     self.list:SetOnSelectedDataChangedCallback(SelectionChangedCallback)
@@ -314,7 +315,15 @@ function BUI.Banking.Class:DisplaySelector(currencyType)
         self.selector:SetMaxValue(currency_max)
         self.selector:SetClampValues(0, currency_max)
         self.selector.control:GetParent():SetHidden(false)
-
+	
+		local CURRENCY_TYPE_TO_TEXTURE =
+		{
+			[CURT_MONEY] = "EsoUI/Art/currency/gamepad/gp_gold.dds",
+			[CURT_TELVAR_STONES] = "EsoUI/Art/currency/gamepad/gp_telvar.dds",
+		}
+	
+		self.selectorCurrency:SetTexture(CURRENCY_TYPE_TO_TEXTURE[currencyType])
+	
         self.selector:Activate()
         self.list:Deactivate()
 
@@ -529,8 +538,8 @@ function BUI.Banking.Class:RefreshList()
 
     -- We have to add 2 rows to the list, one for Withdraw/Deposit GOLD and one for Withdraw/Deposit TEL-VAR
     local wdString = self.currentMode == LIST_WITHDRAW and "WITHDRAW" or "DEPOSIT"
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFD700"..wdString.." GOLD|r", currencyType = CURRENCY.GOLD}, 0, 0, 0, 0)
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|c0066FF"..wdString.." TEL-VAR|r", currencyType = CURRENCY.TELVAR}, 0, 0, 0, 0)
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFBF00"..wdString.." GOLD|r", currencyType = CURRENCY.GOLD}, 0, 0, 0, 0)
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|c0066FF"..wdString.." TEL VAR|r", currencyType = CURRENCY.TELVAR}, 0, 0, 0, 0)
 
 
 	local current_bag = (self.currentMode == LIST_WITHDRAW) and BAG_BANK or BAG_BACKPACK
@@ -611,10 +620,10 @@ end
 
 function BUI.Banking.Init()
     BUI.Banking.Window = BUI.Banking.Class:New("BUI_TestWindow", BUI_TEST_SCENE)
-    BUI.Banking.Window:SetTitle("|c0066FF[Enhanced Bank]|r")
+    BUI.Banking.Window:SetTitle("|c0066FFBank|r")
 
     -- Set the column headings up, maybe put them into a table?
-    BUI.Banking.Window:AddColumn("Name",10)
+    BUI.Banking.Window:AddColumn("Name",20)
     BUI.Banking.Window:AddColumn("Type",515)
     BUI.Banking.Window:AddColumn("Stat",705)
     BUI.Banking.Window:AddColumn("Value",775)
