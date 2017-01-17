@@ -73,6 +73,26 @@ local function ItemSortFunc(data1, data2)
      return ZO_TableOrderingFunction(data1, data2, "itemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
 
+local function GetMarketPrice(itemLink, stackCount)
+	if(stackCount == nil) then stackCount = 1 end
+	
+	if(BUI.Settings.Modules["GuildStore"].ddIntegration and ddDataDaedra ~= nil) then
+		local dData = ddDataDaedra:GetKeyedItem(itemLink)
+		if(dData ~= nil) then
+			if(dData.wAvg ~= nil) then
+				return dData.wAvg*stackCount
+			end
+		end
+	end
+	if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
+		local mmData = MasterMerchant:itemStats(itemLink, false)
+		if (mmData.avgPrice ~= nil) then
+			return mmData.avgPrice*stackCount
+		end
+	end
+	return 0
+end
+
 local function SetupListing(control, data)
     local itemQualityColour = ZO_ColorDef:FromInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, data.quality)
     local fullItemName = itemQualityColour:Colorize(data.name)..(data.stackCount > 1 and " ("..data.stackCount..")" or "")
@@ -82,7 +102,10 @@ local function SetupListing(control, data)
         local bagId = dS.bagId
         local slotIndex = dS.slotIndex
         local itemData = GetItemLink(bagId, slotIndex)
-
+		local isLocked = dS.isPlayerLocked
+	
+		if isLocked then fullItemName = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. fullItemName end
+		
         local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
         local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
 	
@@ -91,7 +114,10 @@ local function SetupListing(control, data)
 		if (currentItemType == ITEMTYPE_RECIPE) then
 			isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
 		end
-
+	
+		local isUnbound = not IsItemBound(bagId, slotIndex) and not data.stolen and data.quality ~= ITEM_QUALITY_TRASH
+	
+		if isUnbound then fullItemName = fullItemName.." |t16:16:/esoui/art/guild/gamepad/gp_ownership_icon_guildtrader.dds|t" end
         if(hasEnchantment) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
         if(setItem) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
 		if isRecipeAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
@@ -212,6 +238,10 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
             self:selectedDataCallback(self.list:GetSelectedControl(), self.list:GetSelectedData())
         end
         self.list:Activate()
+	
+		if wykkydsToolbar then
+			wykkydsToolbar:SetHidden(true)
+		end
 
         self.control:RegisterForEvent(EVENT_INVENTORY_FULL_UPDATE, UpdateItems_Handler)
         self.control:RegisterForEvent(EVENT_INVENTORY_SINGLE_SLOT_UPDATE, UpdateSingle_Handler)
@@ -223,6 +253,10 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 
         KEYBIND_STRIP:RemoveAllKeyButtonGroups()
         GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+	
+		if wykkydsToolbar then
+			wykkydsToolbar:SetHidden(false)
+		end
 
         self.control:UnregisterForEvent(EVENT_INVENTORY_FULL_UPDATE)
         self.control:UnregisterForEvent(EVENT_INVENTORY_SINGLE_SLOT_UPDATE)

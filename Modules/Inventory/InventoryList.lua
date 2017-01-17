@@ -155,16 +155,14 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
         local slotIndex = dS.slotIndex
         local isLocked = dS.isPlayerLocked
 
-        local labelTxt = ""
+        local labelTxt = data.text
 
-        if isLocked then labelTxt = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" end
-
-        labelTxt = labelTxt .. data.text
-
-        if(data.stackCount > 1) then
-           labelTxt = labelTxt..zo_strformat(" |cFFFFFF(<<1>>)|r",data.stackCount)
-        end
-
+		--labelTxt = labelTxt..zo_strformat(" |cFFFFFF(<<1>>)|r",data.stackCount)
+		local itemQualityColour = ZO_ColorDef:FromInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, data.quality)
+		labelTxt = itemQualityColour:Colorize(labelTxt)..(data.stackCount > 1 and " ("..data.stackCount..")" or "")
+	
+		if isLocked then labelTxt = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. labelTxt end
+	
         if(BUI.Settings.Modules["CIM"].attributeIcons) then
             local itemData = GetItemLink(bagId, slotIndex)
 
@@ -175,9 +173,12 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
             local isRecipeAndUnknown = false
             if (currentItemType == ITEMTYPE_RECIPE) then
                 isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
-        	end
+			end
+	
+			local isUnbound = not IsItemBound(bagId, slotIndex) and not data.stolen and data.quality ~= ITEM_QUALITY_TRASH
 
             if data.stolen then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/CIM/Images/inv_stolen.dds|t" end
+			if isUnbound then labelTxt = labelTxt.." |t16:16:/esoui/art/guild/gamepad/gp_ownership_icon_guildtrader.dds|t" end
             if hasEnchantment then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/CIM/Images/inv_enchanted.dds|t" end
             if setItem then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/CIM/Images/inv_setitem.dds|t" end
             --if data.stolen then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_stolen.dds|t" end
@@ -547,10 +548,10 @@ function BUI.Inventory.List:RefreshList()
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
 		self:SetupItemEntry(entry, itemData)
 
-		if itemData.bestGamepadItemCategoryName ~= currentBestCategoryName then
-			currentBestCategoryName = itemData.bestGamepadItemCategoryName
-			entry:SetHeader(currentBestCategoryName)
-		end
+		--if itemData.bestGamepadItemCategoryName ~= currentBestCategoryName then
+		--	currentBestCategoryName = itemData.bestGamepadItemCategoryName
+		--	entry:SetHeader(currentBestCategoryName)
+		--end
 
         self.list:AddEntry(self.template, entry)
 

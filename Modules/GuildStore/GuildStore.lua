@@ -53,7 +53,39 @@ local USE_SHORT_CURRENCY_FORMAT = true
 BUI_GamepadInventoryList = ZO_GamepadInventoryList:Subclass()
 
 function BUI_GamepadInventoryList:RefreshList()
-
+	local function GetSellLabelText(data)
+		local itemQualityColour = ZO_ColorDef:FromInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, data.quality)
+		local fullItemName = itemQualityColour:Colorize(data.name)
+		
+		if(BUI.Settings.Modules["CIM"].attributeIcons) then
+			local dS = data
+			local bagId = dS.bagId
+			local slotIndex = dS.slotIndex
+			local itemData = GetItemLink(bagId, slotIndex)
+			local isLocked = dS.isPlayerLocked
+			
+			if isLocked then fullItemName = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. fullItemName end
+			
+			local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
+			local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
+			
+			local currentItemType = GetItemLinkItemType(itemData) --GetItemType(bagId, slotIndex)
+			local isRecipeAndUnknown = false
+			if (currentItemType == ITEMTYPE_RECIPE) then
+				isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
+			end
+			
+			local isUnbound = not IsItemBound(bagId, slotIndex) and not data.stolen and data.quality ~= ITEM_QUALITY_TRASH
+			
+			if isUnbound then fullItemName = fullItemName.." |t16:16:/esoui/art/guild/gamepad/gp_ownership_icon_guildtrader.dds|t" end
+			if(hasEnchantment) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
+			if(setItem) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
+			if isRecipeAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
+		end
+		
+		return fullItemName
+	end
+	
     self.list.scrollControl:SetFadeGradient(1, 0, 1, 5)
     self.list.scrollControl:SetFadeGradient(2, 0, -1, 5)
 
@@ -63,13 +95,19 @@ function BUI_GamepadInventoryList:RefreshList()
     end
     self.isDirty = false
     self.list:Clear()
+
+	--self.list:AddDataTemplate("BUI_Sell_Row", SetupListing, ZO_GamepadMenuEntryTemplateParametricListFunction)
+	--self:SetupList("BUI_Sell_Row", SetupListing)
+	--self:AddTemplate("BUI_HeaderRow_Template",SetupLabelListing)
+
     self.dataBySlotIndex = {}
     local slots = self:GenerateSlotTable()
     local currentBestCategoryName
     for i, itemData in ipairs(slots) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
         self:SetupItemEntry(entry, itemData)
-        self.list:AddEntry(self.template, entry)
+		entry.text = GetSellLabelText(itemData)
+        self.list:AddEntry("BUI_Sell_Row", entry)
         self.dataBySlotIndex[itemData.slotIndex] = entry
     end
     self.list:Commit()
@@ -162,16 +200,20 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
     BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
     BUI_SharedGamepadEntryIconSetup(control.icon, control.stackCountLabel, data, selected)
 
-    if control.highlight then
-        if selected and data.highlight then
-            control.highlight:SetTexture(data.highlight)
-        end
-        control.highlight:SetHidden(not selected or not data.highlight)
-    end
-    if(data.stackCount > 1) then
-	    local labelTxt = control.label:GetText()
-	    control.label:SetText(zo_strformat("<<1>> |cFFFFFF(<<2>>)|r",labelTxt,data.stackCount))
+	local labelColor = data:GetNameColor(selected)
+	if type(labelColor) == "function" then
+		labelColor = labelColor(data)
 	end
+	control.label:SetColor(labelColor:UnpackRGBA())
+	if ZO_ItemSlot_SetupTextUsableAndLockedColor then
+		ZO_ItemSlot_SetupTextUsableAndLockedColor(control.label, data.meetsUsageRequirements)
+	end
+
+    --if(data.stackCount > 1) then
+	--    control.label:SetText(zo_strformat("<<1>> |cFFFFFF(<<2>>)|r",labelTxt,data.stackCount))
+	--else
+	--	control.label:SetText(labelTxt)
+	--end
 
     local notEnoughMoney = data.purchasePrice > GetCarriedCurrencyAmount(CURT_MONEY)
 
@@ -430,6 +472,8 @@ function BUI.GuildStore.BrowseResults:InitializeList()
 
     self:GetList():AddDataTemplate("BUI_BrowseResults_Row", SetupListing, ZO_GamepadMenuEntryTemplateParametricListFunction)
 
+	--self.template = "BUI_BrowseResults_Row"
+
     local BROWSE_RESULTS_ITEM_HEIGHT = 30
 	
 	self.listResultCount = 0
@@ -562,6 +606,7 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
 	    local labelTxt = control.label:GetText()
 	    control.label:SetText(zo_strformat("<<1>> |cFFFFFF(<<2>>)|r",labelTxt,data.stackCount))
 	end
+	
 
 
     -- control:GetNamedChild("Price"):SetText(data.stackSellPrice)
