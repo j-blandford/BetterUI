@@ -943,30 +943,30 @@ function BUI.Inventory.Class:InitializeActionsDialog()
         },
         parametricList = {}, --we'll generate the entries on setup
         finishedCallback =  function()
-                                -- make sure to wipe out the keybinds added by actions
-                                self:SetActiveKeybinds(self.currentKeybindDescriptor)
-                                --restore the selected inventory item
-                                if self.actionMode == CATEGORY_ITEM_ACTION_MODE then
-                                    --if we refresh item actions we will get a keybind conflict
-                                    local currentList = self:GetCurrentList()
-                                    if currentList then
-                                        local targetData = currentList:GetTargetData()
-                                        if currentList == self.categoryList then
-                                            targetData = self:GenerateItemSlotData(targetData)
-                                        end
-                                        self:SetSelectedItemUniqueId(targetData)
-                                    end
-                                else
-                                    self:RefreshItemActions()
-                                end
-                                --refresh so keybinds react to newly selected item
-                                self:RefreshActiveKeybinds()
+			-- make sure to wipe out the keybinds added by actions
+			self:SetActiveKeybinds(self.currentKeybindDescriptor)
+			--restore the selected inventory item
+			if self.actionMode == CATEGORY_ITEM_ACTION_MODE then
+				--if we refresh item actions we will get a keybind conflict
+				local currentList = self:GetCurrentList()
+				if currentList then
+					local targetData = currentList:GetTargetData()
+					if currentList == self.categoryList then
+						targetData = self:GenerateItemSlotData(targetData)
+					end
+					self:SetSelectedItemUniqueId(targetData)
+				end
+			else
+				self:RefreshItemActions()
+			end
+			--refresh so keybinds react to newly selected item
+			self:RefreshActiveKeybinds()
 
-                                self:OnUpdate()
-                                if self.actionMode == CATEGORY_ITEM_ACTION_MODE then
-                                    self:RefreshCategoryList()
-                                end
-                            end,
+			self:OnUpdate()
+			if self.actionMode == CATEGORY_ITEM_ACTION_MODE then
+				self:RefreshCategoryList()
+			end
+		end,
         buttons =
         {
             {
@@ -1472,7 +1472,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 									 GetString(SI_BUI_INV_SWITCH_EQUIPSLOT) end,
             keybind = "UI_SHORTCUT_SECONDARY",
             visible = function()
-                return true
+				return self.selectedItemUniqueId ~= nil or self.itemList:GetTargetData() ~= nil
             end,
             callback = function()
 				local selectedData = self.categoryList.selectedData

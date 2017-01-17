@@ -206,7 +206,7 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 
         self.control:UnregisterForEvent(EVENT_INVENTORY_FULL_UPDATE)
         self.control:UnregisterForEvent(EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
-    end
+	end
 
     local selectorChild = self.control:GetNamedChild("Container"):GetNamedChild("InputContainer"):GetNamedChild("Selector")
     self.selector = ZO_CurrencySelector_Gamepad:New(selectorChild)
@@ -361,6 +361,10 @@ function BUI.Banking.Class:CreateListTriggerKeybindDescriptors(list)
 end
 
 function BUI.Banking.Class:InitializeKeybind()
+	if not BUI.Settings.Modules["Banking"].m_enabled then
+		return
+	end
+	
 	self.coreKeybinds = {
                 alignment = KEYBIND_STRIP_ALIGN_LEFT,
 		        {
