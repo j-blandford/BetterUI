@@ -155,14 +155,16 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
         local slotIndex = dS.slotIndex
         local isLocked = dS.isPlayerLocked
 
-        local labelTxt = data.text
+        local labelTxt = ""
 
-		--labelTxt = labelTxt..zo_strformat(" |cFFFFFF(<<1>>)|r",data.stackCount)
-		local itemQualityColour = ZO_ColorDef:FromInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, data.quality)
-		labelTxt = itemQualityColour:Colorize(labelTxt)..(data.stackCount > 1 and " ("..data.stackCount..")" or "")
-	
-		if isLocked then labelTxt = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. labelTxt end
-	
+        if isLocked then labelTxt = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" end
+
+        labelTxt = labelTxt .. data.text
+
+        if(data.stackCount > 1) then
+           labelTxt = labelTxt..zo_strformat(" |cFFFFFF(<<1>>)|r",data.stackCount)
+        end
+
         if(BUI.Settings.Modules["CIM"].attributeIcons) then
             local itemData = GetItemLink(bagId, slotIndex)
 

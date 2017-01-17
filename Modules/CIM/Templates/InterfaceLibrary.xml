@@ -375,7 +375,7 @@
 	            </Label>
                 <Label name="$(parent)Data1Header" level="0" tier="2" layer="2" text="|t32:32:esoui/art/currency/currency_gold_32.dds|t" font="$(GAMEPAD_MEDIUM_FONT)|32|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
                     <Dimensions y="32" />
-	                <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data1Value" relativePoint="BOTTOMRIGHT" offsetX="5" offsetY="-2" />
+	                <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data1Value" relativePoint="BOTTOMRIGHT" offsetX="" offsetY="-2" />
                 </Label>
                 <Label name="$(parent)Data2Value" level="0" tier="2" layer="2" text="100,000" font="$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="0066FF">
                     <Dimensions y="36" />
@@ -383,7 +383,7 @@
                 </Label>
 	            <Label name="$(parent)Data2Header" level="0" tier="2" layer="2" text="|t32:32:esoui/art/currency/currency_telvar_32.dds|t" font="$(GAMEPAD_MEDIUM_FONT)|32|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
 		            <Dimensions y="32" />
-		            <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data2Value" relativePoint="BOTTOMRIGHT" offsetX="5" offsetY="-2" />
+		            <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data2Value" relativePoint="BOTTOMRIGHT" offsetX="10" offsetY="-2" />
 	            </Label>
             </Controls>
         </TopLevelControl>

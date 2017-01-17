@@ -79,13 +79,9 @@
                 self.type = self:GetNamedChild("ItemType")
             </OnInitialized>
             <Controls>
-                <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick">
-	                <Anchor point="TOPLEFT" offsetX="28"/>
-                </Label>
+                <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate"/>
 
-                <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true" edgeColor="00000000">
-	                <Dimensions x="28" y="28" />
-                </Texture>
+                <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true" />
 
                 <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text=" " font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="490"/>

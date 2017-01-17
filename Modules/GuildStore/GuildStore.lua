@@ -54,17 +54,19 @@ BUI_GamepadInventoryList = ZO_GamepadInventoryList:Subclass()
 
 function BUI_GamepadInventoryList:RefreshList()
 	local function GetSellLabelText(data)
-		local itemQualityColour = ZO_ColorDef:FromInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, data.quality)
-		local fullItemName = itemQualityColour:Colorize(data.name)
+		--local itemQualityColour = ZO_ColorDef:FromInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, data.quality)
+		--local fullItemName = itemQualityColour:Colorize(data.name)
 		
+		local fullItemName = data.name
+	
 		if(BUI.Settings.Modules["CIM"].attributeIcons) then
 			local dS = data
 			local bagId = dS.bagId
 			local slotIndex = dS.slotIndex
 			local itemData = GetItemLink(bagId, slotIndex)
-			local isLocked = dS.isPlayerLocked
+			--local isLocked = dS.isPlayerLocked
 			
-			if isLocked then fullItemName = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. fullItemName end
+			--if isLocked then fullItemName = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. fullItemName end
 			
 			local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
 			local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
@@ -105,9 +107,9 @@ function BUI_GamepadInventoryList:RefreshList()
     local currentBestCategoryName
     for i, itemData in ipairs(slots) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
+		if self.template == "BUI_Sell_Row" then entry.text = GetSellLabelText(itemData) end
         self:SetupItemEntry(entry, itemData)
-		entry.text = GetSellLabelText(itemData)
-        self.list:AddEntry("BUI_Sell_Row", entry)
+        self.list:AddEntry(self.template, entry)
         self.dataBySlotIndex[itemData.slotIndex] = entry
     end
     self.list:Commit()
@@ -197,23 +199,19 @@ end
 
 -- Called for each listing row being added. We have to get lots of information here!
 local function SetupListing(control, data, selected, selectedDuringRebuild, enabled, activated)
-    BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
-    BUI_SharedGamepadEntryIconSetup(control.icon, control.stackCountLabel, data, selected)
-
-	local labelColor = data:GetNameColor(selected)
-	if type(labelColor) == "function" then
-		labelColor = labelColor(data)
+	BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
+	BUI_SharedGamepadEntryIconSetup(control.icon, control.stackCountLabel, data, selected)
+	
+	if control.highlight then
+		if selected and data.highlight then
+			control.highlight:SetTexture(data.highlight)
+		end
+		control.highlight:SetHidden(not selected or not data.highlight)
 	end
-	control.label:SetColor(labelColor:UnpackRGBA())
-	if ZO_ItemSlot_SetupTextUsableAndLockedColor then
-		ZO_ItemSlot_SetupTextUsableAndLockedColor(control.label, data.meetsUsageRequirements)
+	if(data.stackCount > 1) then
+		local labelTxt = control.label:GetText()
+		control.label:SetText(zo_strformat("<<1>> |cFFFFFF(<<2>>)|r",labelTxt,data.stackCount))
 	end
-
-    --if(data.stackCount > 1) then
-	--    control.label:SetText(zo_strformat("<<1>> |cFFFFFF(<<2>>)|r",labelTxt,data.stackCount))
-	--else
-	--	control.label:SetText(labelTxt)
-	--end
 
     local notEnoughMoney = data.purchasePrice > GetCarriedCurrencyAmount(CURT_MONEY)
 
