@@ -161,13 +161,13 @@ end
 local function SetupListing(control, data, selected, selectedDuringRebuild, enabled, activated)
     BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
     BUI_SharedGamepadEntryIconSetup(control.icon, control.stackCountLabel, data, selected)
+
     if control.highlight then
         if selected and data.highlight then
             control.highlight:SetTexture(data.highlight)
         end
         control.highlight:SetHidden(not selected or not data.highlight)
     end
-
     if(data.stackCount > 1) then
 	    local labelTxt = control.label:GetText()
 	    control.label:SetText(zo_strformat("<<1>> |cFFFFFF(<<2>>)|r",labelTxt,data.stackCount))
@@ -714,7 +714,7 @@ function BUI.GuildStore.Browse:SetupUnknownRecipesFilterDropDown(control, data, 
 end
 
 function BUI.GuildStore.Browse.PerformDeferredInitialization(self)
-    if(self.deferred_init) then return end
+    if (self.deferred_init) then return end
 
 	self.UpdateCheckboxFilter = function(comboBox, entryName, entry)
 		local selectionChanged = self.lastRecipeUnknownFilterEntryName ~= entryName
