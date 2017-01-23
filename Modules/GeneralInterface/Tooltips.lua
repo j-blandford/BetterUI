@@ -1,13 +1,14 @@
 local _
 
 local function AddInventoryPostInfo(tooltip, itemLink)
-	if itemLink  then
+	if itemLink then --and itemLink ~= tooltip.lastItemLink then
+		--tooltip.lastItemLink = itemLink
 		if MasterMerchant ~= nil and BUI.Settings.Modules["GuildStore"].mmIntegration then
 			local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
 			if(tipLine ~= nil) then
-				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			else
-				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			end
 		end
 
@@ -16,8 +17,8 @@ local function AddInventoryPostInfo(tooltip, itemLink)
             if(ddData ~= nil) then
                 if(ddData.wAvg ~= nil) then
                     --local dealPercent = (unitPrice/wAvg.wAvg*100)-100
-                    tipLine = "dataDaedra: wAvg="..ddData.wAvg
-                    tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 24, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+                    local tipLine = "dataDaedra: wAvg="..ddData.wAvg
+                    tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
                 end
             end
         end
@@ -92,7 +93,9 @@ function BUI.Tooltips.RefreshControls(self)
 
             local health, maxHealth = GetUnitPower(self.unitTag, POWERTYPE_HEALTH)
             self.healthBar:Update(POWERTYPE_HEALTH, health, maxHealth, FORCE_INIT)
-            --self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
+			if (self.healthBar and self.healthBar.BUI_labelRef) then
+				self.healthBar.BUI_labelRef:SetHidden(not IsUnitOnline(self.unitTag))
+			end
 
             for i = 1, NUM_POWER_POOLS do
                 local powerType, cur, max = GetUnitPowerInfo(self.unitTag, i)

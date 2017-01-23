@@ -42,7 +42,7 @@
             <Controls>
                 <Control name="$(parent)DividerBottom" inherits="BUI_GamepadFooterHorizontalDivider">
                     <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" offsetX="0" />
-                    <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING" offsetY="-10" />
+                    <Anchor point="RIGHT" relativeTo="$(parent)" relativePoint="BOTTOMRIGHT" offsetX="-BUI_GAMEPAD_DEFAULT_HORIZ_PADDING_OTHER" offsetY="-10" />
                 </Control>
                 
                  <Label name="$(parent)GoldLabel" inherits="BUI_GamepadScreenFooterTemplate" text="Gold">

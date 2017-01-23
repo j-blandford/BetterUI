@@ -73,6 +73,26 @@ local function ItemSortFunc(data1, data2)
      return ZO_TableOrderingFunction(data1, data2, "itemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
 
+local function GetMarketPrice(itemLink, stackCount)
+	if(stackCount == nil) then stackCount = 1 end
+	
+	if(BUI.Settings.Modules["GuildStore"].ddIntegration and ddDataDaedra ~= nil) then
+		local dData = ddDataDaedra:GetKeyedItem(itemLink)
+		if(dData ~= nil) then
+			if(dData.wAvg ~= nil) then
+				return dData.wAvg*stackCount
+			end
+		end
+	end
+	if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
+		local mmData = MasterMerchant:itemStats(itemLink, false)
+		if (mmData.avgPrice ~= nil) then
+			return mmData.avgPrice*stackCount
+		end
+	end
+	return 0
+end
+
 local function SetupListing(control, data)
     local itemQualityColour = ZO_ColorDef:FromInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, data.quality)
     local fullItemName = itemQualityColour:Colorize(data.name)..(data.stackCount > 1 and " ("..data.stackCount..")" or "")
@@ -82,12 +102,25 @@ local function SetupListing(control, data)
         local bagId = dS.bagId
         local slotIndex = dS.slotIndex
         local itemData = GetItemLink(bagId, slotIndex)
-
+		local isLocked = dS.isPlayerLocked
+	
+		if isLocked then fullItemName = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. fullItemName end
+		
         local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
         local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
-
+	
+		local currentItemType = GetItemLinkItemType(itemData) --GetItemType(bagId, slotIndex)
+		local isRecipeAndUnknown = false
+		if (currentItemType == ITEMTYPE_RECIPE) then
+			isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
+		end
+	
+		local isUnbound = not IsItemBound(bagId, slotIndex) and not data.stolen and data.quality ~= ITEM_QUALITY_TRASH
+	
+		if isUnbound then fullItemName = fullItemName.." |t16:16:/esoui/art/guild/gamepad/gp_ownership_icon_guildtrader.dds|t" end
         if(hasEnchantment) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
         if(setItem) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
+		if isRecipeAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
     end
     control:GetNamedChild("ItemType"):SetText(string.upper(data.itemCategoryName))
     control:GetNamedChild("Stat"):SetText((data.statValue == 0) and "-" or data.statValue)
@@ -96,8 +129,20 @@ local function SetupListing(control, data)
     control:GetNamedChild("Icon"):AddIcon(data.iconFile)
     control:GetNamedChild("Icon"):SetHidden(false)
     if not data.meetsUsageRequirement then control:GetNamedChild("Icon"):SetColor(1,0,0,1) else control:GetNamedChild("Icon"):SetColor(1,1,1,1) end
-
-    control:GetNamedChild("Value"):SetText(data.stackSellPrice)
+	
+	if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
+		local marketPrice = GetMarketPrice(GetItemLink(data.bagId,data.slotIndex), data.stackCount)
+		if(marketPrice ~= 0) then
+			control:GetNamedChild("Value"):SetColor(1,0.75,0,1)
+			control:GetNamedChild("Value"):SetText(ZO_CurrencyControl_FormatCurrency(math.floor(marketPrice), USE_SHORT_CURRENCY_FORMAT))
+		else
+			control:GetNamedChild("Value"):SetColor(1,1,1,1)
+			control:GetNamedChild("Value"):SetText(data.stackSellPrice)
+		end
+	else
+		control:GetNamedChild("Value"):SetColor(1,1,1,1)
+		control:GetNamedChild("Value"):SetText(ZO_CurrencyControl_FormatCurrency(data.stackSellPrice, USE_SHORT_CURRENCY_FORMAT))
+	end
 end
 
 local function SetupLabelListing(control, data)
@@ -193,6 +238,10 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
             self:selectedDataCallback(self.list:GetSelectedControl(), self.list:GetSelectedData())
         end
         self.list:Activate()
+	
+		if wykkydsToolbar then
+			wykkydsToolbar:SetHidden(true)
+		end
 
         self.control:RegisterForEvent(EVENT_INVENTORY_FULL_UPDATE, UpdateItems_Handler)
         self.control:RegisterForEvent(EVENT_INVENTORY_SINGLE_SLOT_UPDATE, UpdateSingle_Handler)
@@ -204,14 +253,19 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 
         KEYBIND_STRIP:RemoveAllKeyButtonGroups()
         GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+	
+		if wykkydsToolbar then
+			wykkydsToolbar:SetHidden(false)
+		end
 
         self.control:UnregisterForEvent(EVENT_INVENTORY_FULL_UPDATE)
         self.control:UnregisterForEvent(EVENT_INVENTORY_SINGLE_SLOT_UPDATE)
-    end
+	end
 
-    local selectorChild = self.control:GetNamedChild("Container"):GetNamedChild("InputContainer"):GetNamedChild("Selector")
-    self.selector = ZO_CurrencySelector_Gamepad:New(selectorChild)
-    self.selector:SetClampValues(true)
+    local selectorContainer = self.control:GetNamedChild("Container"):GetNamedChild("InputContainer")
+    self.selector = ZO_CurrencySelector_Gamepad:New(selectorContainer:GetNamedChild("Selector"))
+	self.selector:SetClampValues(true)
+	self.selectorCurrency = selectorContainer:GetNamedChild("CurrencyTexture")
 
     self.list:SetOnSelectedDataChangedCallback(SelectionChangedCallback)
 
@@ -314,7 +368,15 @@ function BUI.Banking.Class:DisplaySelector(currencyType)
         self.selector:SetMaxValue(currency_max)
         self.selector:SetClampValues(0, currency_max)
         self.selector.control:GetParent():SetHidden(false)
-
+	
+		local CURRENCY_TYPE_TO_TEXTURE =
+		{
+			[CURRENCY.GOLD] = "EsoUI/Art/currency/gamepad/gp_gold.dds",
+			[CURRENCY.TELVAR] = "EsoUI/Art/currency/gamepad/gp_telvar.dds",
+		}
+	
+		self.selectorCurrency:SetTexture(CURRENCY_TYPE_TO_TEXTURE[currencyType])
+	
         self.selector:Activate()
         self.list:Deactivate()
 
@@ -362,6 +424,10 @@ function BUI.Banking.Class:CreateListTriggerKeybindDescriptors(list)
 end
 
 function BUI.Banking.Class:InitializeKeybind()
+	if not BUI.Settings.Modules["Banking"].m_enabled then
+		return
+	end
+	
 	self.coreKeybinds = {
                 alignment = KEYBIND_STRIP_ALIGN_LEFT,
 		        {
@@ -525,8 +591,8 @@ function BUI.Banking.Class:RefreshList()
 
     -- We have to add 2 rows to the list, one for Withdraw/Deposit GOLD and one for Withdraw/Deposit TEL-VAR
     local wdString = self.currentMode == LIST_WITHDRAW and "WITHDRAW" or "DEPOSIT"
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFD700"..wdString.." GOLD|r", currencyType = CURRENCY.GOLD}, 0, 0, 0, 0)
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|c0066FF"..wdString.." TEL-VAR|r", currencyType = CURRENCY.TELVAR}, 0, 0, 0, 0)
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFBF00"..wdString.." GOLD|r", currencyType = CURRENCY.GOLD}, 0, 0, 0, 0)
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|c0066FF"..wdString.." TEL VAR|r", currencyType = CURRENCY.TELVAR}, 0, 0, 0, 0)
 
 
 	local current_bag = (self.currentMode == LIST_WITHDRAW) and BAG_BANK or BAG_BACKPACK
@@ -607,10 +673,10 @@ end
 
 function BUI.Banking.Init()
     BUI.Banking.Window = BUI.Banking.Class:New("BUI_TestWindow", BUI_TEST_SCENE)
-    BUI.Banking.Window:SetTitle("|c0066FF[Enhanced Bank]|r")
+    BUI.Banking.Window:SetTitle("|c0066FFBank|r")
 
     -- Set the column headings up, maybe put them into a table?
-    BUI.Banking.Window:AddColumn("Name",10)
+    BUI.Banking.Window:AddColumn("Name",20)
     BUI.Banking.Window:AddColumn("Type",515)
     BUI.Banking.Window:AddColumn("Stat",705)
     BUI.Banking.Window:AddColumn("Value",775)
@@ -618,6 +684,10 @@ function BUI.Banking.Init()
     BUI.Banking.Window:RefreshVisible()
 
     SCENE_MANAGER.scenes['gamepad_banking'] = SCENE_MANAGER.scenes['BUI_BANKING']
+	
+	if ((not USE_SHORT_CURRENCY_FORMAT ~= nil) and BUI.Settings.Modules["Inventory"].useShortFormat ~= nil) then
+		USE_SHORT_CURRENCY_FORMAT = BUI.Settings.Modules["Inventory"].useShortFormat
+	end
 
     --tw = BUI.Banking.Window --dev mode
 end
