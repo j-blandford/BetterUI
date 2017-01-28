@@ -1516,15 +1516,15 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
         {
             name = function()
 				if(BUI.Settings.Modules["Inventory"].enableJunk) then
-				if (self.selectedItemUniqueId ~= nil) then
-					local targetData = self.itemList:GetTargetData()
-					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-					if (IsItemJunk(bag, index)) then
-						return GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK)
+					if (self.selectedItemUniqueId ~= nil) then
+						local targetData = self.itemList:GetTargetData()
+						local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+						if (IsItemJunk(bag, index)) then
+							return GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK)
+						end
 					end
-				end
-				
-				return GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
+					
+					return GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
 				end
 				
 				return GetString(SI_ITEM_ACTION_STACK_ALL)
