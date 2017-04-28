@@ -1515,15 +1515,19 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
         --},
         {
             name = function()
-				if (self.selectedItemUniqueId ~= nil) then
-					local targetData = self.itemList:GetTargetData()
-					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-					if (IsItemJunk(bag, index)) then
-						return GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK)
+				if(BUI.Settings.Modules["Inventory"].enableJunk) then
+					if (self.selectedItemUniqueId ~= nil) then
+						local targetData = self.itemList:GetTargetData()
+						local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+						if (IsItemJunk(bag, index)) then
+							return GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK)
+						end
 					end
+					
+					return GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
 				end
 				
-				return GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
+				return GetString(SI_ITEM_ACTION_STACK_ALL)
 			
 				--local selectedData = self.categoryList.selectedData
 				--return (selectedData.filterType == ITEMFILTERTYPE_JUNK) and GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK) or 
@@ -1535,41 +1539,41 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             disabledDuringSceneHiding = true,
 
 			visible = function()
-				if (self.selectedItemUniqueId ~= nil) then
-				--*--if self.selectedItemUniqueId ~= nil then
-					local targetData = self.itemList:GetTargetData()
-					return IsInventorySlotLockedOrJunk(targetData)
-					--*--return ZO_InventorySlot_CanDestroyItem(targetData)
-				else
-                    local targetData = self.itemList:GetTargetData()
-                    if (targetData ~= nil) then
-                        return IsInventorySlotLockedOrJunk(targetData)
-					--*--return true
+				if(BUI.Settings.Modules["Inventory"].enableJunk) then
+					if (self.selectedItemUniqueId ~= nil) then
+					--*--if self.selectedItemUniqueId ~= nil then
+						local targetData = self.itemList:GetTargetData()
+						return IsInventorySlotLockedOrJunk(targetData)
+						--*--return ZO_InventorySlot_CanDestroyItem(targetData)
+					else
+						local targetData = self.itemList:GetTargetData()
+						if (targetData ~= nil) then
+							return IsInventorySlotLockedOrJunk(targetData)
+						--*--return true
+						end
 					end
+					
+					return false
 				end
-				----return (self.selectedItemUniqueId ~= nil)
-                --local targetData = self.itemList:GetTargetData()
-				--if (self.selectedItemUniqueId ~= nil) then 
-				--local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-				--return not IsItemJunk(bag, index)
-                --return self.selectedItemUniqueId ~= nil and ZO_InventorySlot_CanDestroyItem(targetData)
-				--end
-				return false
+				
+				return true
 			end,
 
             callback = function()
-				if (self.selectedItemUniqueId ~= nil) then
-                local targetData = self.itemList:GetTargetData()
-					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-					local isJunk = not IsItemJunk(bag, index)
-					if (not IsItemPlayerLocked(bag, index) or (IsItemPlayerLocked(bag, index) and not isJunk)) then
-						SetItemIsJunk(bag, index, isJunk)
-						PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
-                	--*--if(ZO_InventorySlot_CanDestroyItem(targetData) and ZO_InventorySlot_InitiateDestroyItem(targetData)) then
-                	--*--    self.itemList:Deactivate()
-                	--*--    self.listWaitingOnDestroyRequest = self.itemList
-                	end
-            	end
+				if(BUI.Settings.Modules["Inventory"].enableJunk) then
+					if (self.selectedItemUniqueId ~= nil) then
+					local targetData = self.itemList:GetTargetData()
+						local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+						local isJunk = not IsItemJunk(bag, index)
+						if (not IsItemPlayerLocked(bag, index) or (IsItemPlayerLocked(bag, index) and not isJunk)) then
+							SetItemIsJunk(bag, index, isJunk)
+							PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
+						end
+					end
+				else
+					-- Stack All Items
+					StackBag(BAG_BACKPACK)
+				end
             end
         }
     }
