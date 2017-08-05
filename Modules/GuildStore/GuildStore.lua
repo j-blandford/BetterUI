@@ -11,6 +11,9 @@ local LEVEL_DROP_DOWN_MODE = 4
 local MIN_PRICE_SELECTOR_MODE = 1
 local MAX_PRICE_SELECTOR_MODE = 2
 
+local MIN_UNIT_PRICE_SELECTOR_MODE = 1
+local MAX_UNIT_PRICE_SELECTOR_MODE = 2
+
 local MIN_LEVEL_SLIDER_MODE = 1
 local MAX_LEVEL_SLIDER_MODE = 2
 
@@ -502,6 +505,13 @@ function BUI.GuildStore.BrowseResults:AddEntryToList(itemData)
                 return
             end
         end
+		
+		-- filter by unit price
+		local unitPrice = itemData.purchasePrice/itemData.stackCount
+		if(unitPrice > self.maxUnitPrice or unitPrice < self.minUnitPrice) then 
+			return
+		end
+		
 		if(self.recipeUnknownFilter ~= nil) then
 			local currentItemType = GetItemLinkItemType(itemData.itemLink)
             local isRecipeAndUnknown = false
@@ -689,20 +699,149 @@ function BUI.GuildStore.Browse:SetupNameFilter(control, data, selected, reselect
     self.nameFilterBox = control
     self.nameFilterBox.edit:SetHandler("OnTextChanged", function() self:UpdateNameFilter(self.nameFilterBox.edit:GetText()) end)
 
+	--fix Name Input Editbox cannot be select by gamepad
+	self.keybindStripDescriptor[1].visible = function()
+		local selectedData = self.itemList:GetTargetData()
+
+		if selectedData then
+			return true
+		else
+			return false
+		end
+	end
     self.keybindStripDescriptor[1].callback = function()
         local selectedData = self.itemList:GetSelectedData()
         if selectedData.dropDown then
             self:FocusDropDown(selectedData.dropDown)
         elseif selectedData.priceSelector then
             self.priceSelectorMode = selectedData.priceSelectorMode
-            self:FocusPriceSelector(selectedData.priceSelector)
+            self:FocusPriceSelector(selectedData.priceSelector)		
+        elseif selectedData.unitPriceSelector then
+            self.priceSelectorMode = selectedData.priceSelectorMode
+            self:FocusUnitPriceSelector(selectedData.unitPriceSelector)
         else
             self.nameFilterBox.edit:TakeFocus()
         end
     end
-    
+	
+    self.unitPriceSelectorKeybindStripDescriptor = 
+    {
+        alignment = KEYBIND_STRIP_ALIGN_LEFT,
+        KEYBIND_STRIP:GenerateGamepadBackButtonDescriptor(function() self:UnfocusUnitPriceSelector() end),
+        {
+            name = GetString(SI_GAMEPAD_SELECT_OPTION),
+            keybind = "UI_SHORTCUT_PRIMARY",
+            visible = function()
+                return self.validPrice
+            end,
+            callback = function()
+                self:SetUnitPriceAmount(self.unitPriceSelector:GetValue())
+                self:UnfocusUnitPriceSelector()
+            end,
+        }
+    }
     return false
 end
+
+
+function BUI.GuildStore.Browse:SetupUnitPriceSelector(control, data, selected, reselectingDuringRebuild, enabled, active)
+    control:SetAlpha(ZO_GamepadMenuEntryTemplate_GetAlpha(selected, data.disabled))
+    if data.priceSelectorMode == MIN_UNIT_PRICE_SELECTOR_MODE then 
+        self.minUnitPriceAmount = control:GetNamedChild("PriceAmount")
+        ZO_CurrencyControl_SetSimpleCurrency(self.minUnitPriceAmount, CURT_MONEY, self.minUnitPrice, ZO_GAMEPAD_CURRENCY_OPTIONS_LONG_FORMAT)
+    else
+        self.maxUnitPriceAmount = control:GetNamedChild("PriceAmount")
+        ZO_CurrencyControl_SetSimpleCurrency(self.maxUnitPriceAmount, CURT_MONEY, self.maxUnitPrice, ZO_GAMEPAD_CURRENCY_OPTIONS_LONG_FORMAT)
+    end
+
+    data.unitPriceSelector = control
+    data.unitPriceSelector.header = control:GetNamedChild("Header")
+    ZO_SharedGamepadEntry_OnSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
+end
+
+function BUI.GuildStore.Browse:FocusUnitPriceSelector(selectedPriceAmountControl)
+    if not self.selectedPriceAmountControl then
+        self.unitPriceSelector:SetClampValues(CLAMP_VALUES)
+        self.unitPriceSelector:SetMaxValue(MAX_PLAYER_MONEY)
+
+        if self.priceSelectorMode == MIN_UNIT_PRICE_SELECTOR_MODE then
+            self.unitPriceSelector:SetValue(self.minUnitPrice)
+        else
+            self.unitPriceSelector:SetValue(self.maxUnitPrice)
+        end
+    
+        selectedPriceAmountControl:SetHidden(true)
+        if selectedPriceAmountControl.header then
+            selectedPriceAmountControl.header:SetHidden(true)
+        end
+        self.unitPriceSelectorControl:SetHidden(false)
+        self.unitPriceSelector:Activate()
+        KEYBIND_STRIP:RemoveKeybindButtonGroup(self.keybindStripDescriptor)
+        KEYBIND_STRIP:AddKeybindButtonGroup(self.unitPriceSelectorKeybindStripDescriptor)
+        self.selectedPriceAmountControl = selectedPriceAmountControl
+    end
+end
+
+function BUI.GuildStore.Browse:UnfocusUnitPriceSelector()
+    if self.selectedPriceAmountControl then
+        self.unitPriceSelectorControl:SetHidden(true)
+        self.selectedPriceAmountControl:SetHidden(false)
+        if self.selectedPriceAmountControl.header then
+            self.selectedPriceAmountControl.header:SetHidden(false)
+        end
+        self.unitPriceSelector:Deactivate()
+        KEYBIND_STRIP:RemoveKeybindButtonGroup(self.unitPriceSelectorKeybindStripDescriptor)
+        KEYBIND_STRIP:AddKeybindButtonGroup(self.keybindStripDescriptor)
+        self.selectedPriceAmountControl = false
+    end
+end
+
+
+function BUI.GuildStore.Browse:ValidateUnitPriceSelectorValue(value)
+    if value > 0 then
+        if self.priceSelectorMode == MIN_UNIT_PRICE_SELECTOR_MODE then
+            self.validPrice = (value <= self.maxUnitPrice)
+        else
+            self.validPrice = (value >= self.minUnitPrice)
+        end
+    else
+        self.validPrice = false
+    end
+
+    self.unitPriceSelector:SetTextColor(self.validPrice and ZO_SELECTED_TEXT or ZO_ERROR_COLOR)
+    KEYBIND_STRIP:UpdateKeybindButtonGroup(self.unitPriceSelectorKeybindStripDescriptor)
+end
+
+
+function BUI.GuildStore.Browse:SetUnitPriceAmount(amount)
+    if self.priceSelectorMode == MIN_UNIT_PRICE_SELECTOR_MODE then
+        self:SetMinUnitPriceAmount(amount)
+    else
+        self:SetMaxUnitPriceAmount(amount)
+    end
+end
+
+
+function BUI.GuildStore.Browse:SetMinUnitPriceAmount(priceAmount)
+    self.minUnitPrice = priceAmount
+
+    if self.minUnitPriceAmount then
+        ZO_CurrencyControl_SetSimpleCurrency(self.minUnitPriceAmount, CURT_MONEY, priceAmount, ZO_GAMEPAD_CURRENCY_OPTIONS_LONG_FORMAT)
+    end
+
+    ZO_TradingHouse_SearchCriteriaChanged(SEARCH_CRITERIA_CHANGED)
+end
+
+function BUI.GuildStore.Browse:SetMaxUnitPriceAmount(priceAmount)
+    self.maxUnitPrice = priceAmount
+
+    if self.maxUnitPriceAmount then
+        ZO_CurrencyControl_SetSimpleCurrency(self.maxUnitPriceAmount, CURT_MONEY, priceAmount, ZO_GAMEPAD_CURRENCY_OPTIONS_LONG_FORMAT)
+    end
+
+    ZO_TradingHouse_SearchCriteriaChanged(SEARCH_CRITERIA_CHANGED)
+end
+
 
 ZO_TRADING_HOUSE_YES_OR_NO_ANY =
 {
@@ -756,6 +895,19 @@ function BUI.GuildStore.Browse:SetupUnknownRecipesFilterDropDown(control, data, 
 	data.dropDown = dropdown
 end
 
+function BUI.GuildStore.Browse:AddUnitPriceSelectorEntry(name, mode)
+	local priceData = ZO_GamepadEntryData:New(name)
+	priceData:SetFontScaleOnSelection(false)
+	priceData.priceSelectorMode = mode
+
+	if mode == MIN_UNIT_PRICE_SELECTOR_MODE then
+		priceData:SetHeader("Unit Price Range")
+		GAMEPAD_TRADING_HOUSE_BROWSE.itemList:AddEntryWithHeader("BUI_BrowseFilterUnitPriceSelectorTemplate", priceData)
+	else
+		GAMEPAD_TRADING_HOUSE_BROWSE.itemList:AddEntry("BUI_BrowseFilterUnitPriceSelectorTemplate", priceData)
+	end
+end
+
 function BUI.GuildStore.Browse.PerformDeferredInitialization(self)
     if (self.deferred_init) then return end
 
@@ -781,13 +933,27 @@ function BUI.GuildStore.Browse.PerformDeferredInitialization(self)
 
 	self.lastRecipeUnknownFilter = 1
 	self.lastRecipeUnknownFilterEntryName = nil
-	
-	--self:ConfigureCraftingFilterTypes()
     
     self.itemList:AddDataTemplateWithHeader("ZO_GamepadGuildStoreComboUnknownRecipes", function(...) self:SetupUnknownRecipesFilterDropDown(...) end, ZO_GamepadMenuEntryTemplateParametricListFunction, nil, "ZO_GamepadGuildStoreBrowseHeaderTemplate")
 --    self.itemList:AddDataTemplate("BUI_BrowseFilterCheckboxTemplate", function(...) self:SetupCheckboxFilter(...) end)
 	self.itemList:AddDataTemplate("BUI_BrowseFilterEditboxTemplate", function(...) self:SetupNameFilter(...) end)
-    self.deferred_init = true
+    
+	
+	--Unit Price Filter
+	if self.unitPriceSelectorControl == nil then
+		self.minUnitPrice = 1
+		self.maxUnitPrice = MAX_PLAYER_MONEY
+		self.unitPriceSelectorControl = WINDOW_MANAGER:CreateControlFromVirtual("BUI_BrowseUnitPriceSelectorContainer", self.control, "BUI_BrowseUnitPriceSelectorContainer")
+	end
+    self.unitPriceSelector = ZO_CurrencySelector_Gamepad:New(self.unitPriceSelectorControl:GetNamedChild("Selector"))
+    self.unitPriceSelector:RegisterCallback("OnValueChanged", function() self:ValidateUnitPriceSelectorValue(self.unitPriceSelector:GetValue()) end)
+
+	self.itemList:AddDataTemplateWithHeader("BUI_BrowseFilterUnitPriceSelectorTemplate", function(...) self:SetupUnitPriceSelector(...) end, ZO_GamepadMenuEntryTemplateParametricListFunction, nil, "ZO_GamepadGuildStoreBrowseHeaderTemplate")
+    self.itemList:AddDataTemplate("BUI_BrowseFilterUnitPriceSelectorTemplate", function(...) self:SetupUnitPriceSelector(...) end)
+    self:ResetList()
+
+	
+	self.deferred_init = true
 end
 
 function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
@@ -796,12 +962,7 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
     -- Category
     self:AddDropDownEntry("GuildStoreBrowseCategory", CATEGORY_DROP_DOWN_MODE)
     self:InitializeFilterData(filters)
-
-	--local recipeUnknownFilter = ZO_GamepadEntryData:New("Unknown Recipes")
-    --self.itemList:AddEntry("BUI_BrowseFilterCheckboxTemplate", recipeUnknownFilter)
-    
-    --self:AddDropDownEntry("BUI_BrowseFilterCheckboxTemplate", 5)
-
+ 
     local dropDownData = ZO_GamepadEntryData:New("Unknown Recipes")
     dropDownData.dropDownMode = 5
     dropDownData:SetHeader("Unknown Recipes")
@@ -812,6 +973,8 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
 
     self:AddPriceSelectorEntry("Min. Price", MIN_PRICE_SELECTOR_MODE)
     self:AddPriceSelectorEntry("Max. Price", MAX_PRICE_SELECTOR_MODE)
+    self:AddUnitPriceSelectorEntry("Min. Unit Price", MIN_UNIT_PRICE_SELECTOR_MODE)
+    self:AddUnitPriceSelectorEntry("Max. Unit Price", MAX_UNIT_PRICE_SELECTOR_MODE)
     self:AddDropDownEntry("GuildStoreBrowseLevelType", LEVEL_DROP_DOWN_MODE)
     self:AddLevelSelectorEntry("GuildStoreBrowseMinLevel", MIN_LEVEL_SLIDER_MODE)
     self:AddLevelSelectorEntry("GuildStoreBrowseMaxLevel", MAX_LEVEL_SLIDER_MODE)
@@ -831,21 +994,28 @@ function BUI.GuildStore.BrowseResults.Setup()
     --/zgoo ZO_TradingHouse_Browse_GamepadList.scrollList
 	GAMEPAD_TRADING_HOUSE_BROWSE.SetupUnknownRecipesFilterDropDown = BUI.GuildStore.Browse.SetupUnknownRecipesFilterDropDown
 	GAMEPAD_TRADING_HOUSE_BROWSE.PopulateUnknownRecipesDropDown = BUI.GuildStore.Browse.PopulateUnknownRecipesDropDown
-	--GAMEPAD_TRADING_HOUSE_BROWSE.SetupCheckboxFilter = BUI.GuildStore.Browse.SetupCheckboxFilter
-	--GAMEPAD_TRADING_HOUSE_BROWSE.UpdateCheckboxFilter = BUI.GuildStore.Browse.UpdateCheckboxFilter
+	
     GAMEPAD_TRADING_HOUSE_BROWSE.SetupNameFilter = BUI.GuildStore.Browse.SetupNameFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.UpdateNameFilter = BUI.GuildStore.Browse.UpdateNameFilter
     GAMEPAD_TRADING_HOUSE_BROWSE.ResetList = BUI.GuildStore.Browse.ResetList
-	GAMEPAD_TRADING_HOUSE_BROWSE.ConfigureCraftingFilterTypes = BUI.GuildStore.Browse.ConfigureCraftingFilterTypes
 	
-	--GAMEPAD_TRADING_HOUSE_BROWSE.unknownRecipesDropDown = BUI.GuildStore.Browse.unknownRecipesDropDown
-	--GAMEPAD_TRADING_HOUSE_BROWSE.lastRecipeUnknownFilter = BUI.GuildStore.Browse.lastRecipeUnknownFilter
-	--GAMEPAD_TRADING_HOUSE_BROWSE.lastRecipeUnknownFilterEntryName = BUI.GuildStore.Browse.lastRecipeUnknownFilterEntryName
+	GAMEPAD_TRADING_HOUSE_BROWSE.SetupUnitPriceSelector = BUI.GuildStore.Browse.SetupUnitPriceSelector
+	GAMEPAD_TRADING_HOUSE_BROWSE.FocusUnitPriceSelector = BUI.GuildStore.Browse.FocusUnitPriceSelector
+	GAMEPAD_TRADING_HOUSE_BROWSE.UnfocusUnitPriceSelector = BUI.GuildStore.Browse.UnfocusUnitPriceSelector
+	GAMEPAD_TRADING_HOUSE_BROWSE.SetMaxUnitPriceAmount = BUI.GuildStore.Browse.SetMaxUnitPriceAmount
+	GAMEPAD_TRADING_HOUSE_BROWSE.SetMinUnitPriceAmount = BUI.GuildStore.Browse.SetMinUnitPriceAmount
+	GAMEPAD_TRADING_HOUSE_BROWSE.SetUnitPriceAmount = BUI.GuildStore.Browse.SetUnitPriceAmount
+	GAMEPAD_TRADING_HOUSE_BROWSE.ValidateUnitPriceSelectorValue = BUI.GuildStore.Browse.ValidateUnitPriceSelectorValue
+	GAMEPAD_TRADING_HOUSE_BROWSE.AddUnitPriceSelectorEntry = BUI.GuildStore.Browse.AddUnitPriceSelectorEntry
 	
     BUI.PostHook(GAMEPAD_TRADING_HOUSE_BROWSE, 'PerformDeferredInitialization', function(self)
         BUI.GuildStore.Browse.PerformDeferredInitialization(self)
-        self:ResetList()
     end)
+	
+	BUI.PostHook(GAMEPAD_TRADING_HOUSE_BROWSE, 'ResetFilterValuesToDefaults', function(self)
+		self:SetMinUnitPriceAmount(MIN_POSTING_AMOUNT)
+		self:SetMaxUnitPriceAmount(MAX_PLAYER_MONEY)
+	end)
 
 	-- Lets overwrite some functions so that they work with our new custom TLC
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.PopulateTabList = BUI.GuildStore.BrowseResults.PopulateTabList
@@ -869,9 +1039,14 @@ function BUI.GuildStore.BrowseResults.Setup()
 	        self.dropDown:Deactivate()
 	    end
 	    self:UnfocusPriceSelector()
+	    self:UnfocusUnitPriceSelector()
 		
         GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.recipeUnknownFilter = self.recipeUnknownFilter
         GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.textFilter = string.lower(self.nameFilter)
+		
+		GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.minUnitPrice = self.minUnitPrice
+		GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.maxUnitPrice = self.maxUnitPrice
+		
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(true) -- here's the change
 		BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
 
