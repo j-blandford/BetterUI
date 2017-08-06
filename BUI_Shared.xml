@@ -43,7 +43,7 @@
         <Control name="BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
             <OnInitialized>
                 ZO_SharedGamepadEntry_OnInitialized(self)
-                ZO_SharedGamepadEntry_SetHeightFromLabel(self)
+                ZO_SharedGamepadEntry_SetHeightFromLabels(self)
             </OnInitialized>
         </Control>
 
