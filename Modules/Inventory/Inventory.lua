@@ -610,6 +610,7 @@ function BUI.Inventory.Class:InitializeHeader()
 	 BUI.GenericFooter.Initialize(self)
 	 BUI.GenericFooter.Refresh(self)
 	 --self.header.tabBar:SetDefaultSelectedIndex(1)
+	 
 end
 
 function BUI.Inventory.Class:InitializeInventoryVisualData(itemData)
@@ -1267,6 +1268,7 @@ function BUI.Inventory.Class:RefreshHeader(blockCallback)
 	end
 
     self:RefreshCategoryList()
+	BUI.GenericFooter.Refresh(self)
 end
 
 function BUI.Inventory:RefreshFooter()
