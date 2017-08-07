@@ -157,7 +157,7 @@ end
 
 function BUI.Banking.Class:RefreshFooter()
     self.footer.footer:GetNamedChild("DepositButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_all.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BACKPACK), GetBagSize(BAG_BACKPACK))))
-    self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/icons/mapkey/mapkey_bank.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BANK), GetBagSize(BAG_BANK))))
+    self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/icons/mapkey/mapkey_bank.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BANK) + GetNumBagUsedSlots(BAG_SUBSCRIBER_BANK), GetBagSize(BAG_BANK) + GetBagSize(BAG_SUBSCRIBER_BANK))))
     if(self.currentMode == LIST_WITHDRAW) then
         self.footerFragment.control:GetNamedChild("Data1Value"):SetText(BUI.DisplayNumber(GetBankedCurrencyAmount(CURT_MONEY)))
         self.footerFragment.control:GetNamedChild("Data2Value"):SetText(BUI.DisplayNumber(GetBankedCurrencyAmount(CURT_TELVAR_STONES)))
@@ -283,6 +283,7 @@ end
 local tinyBagCache = {
     [BAG_BACKPACK] = {},
     [BAG_BANK] = {},
+	[BAG_SUBSCRIBER_BANK] = {},
 }
 
 -- Thanks Merlight & circonian, FindFirstEmptySlotInBag don't refresh in realtime.
@@ -296,6 +297,18 @@ local function FindEmptySlotInBag(bagId)
     return nil
 end
 
+local function FindEmptySlotInBank()
+	local emptySlotIndex = FindEmptySlotInBag(BAG_BANK)
+	if emptySlotIndex ~= nil then
+		return BAG_BANK, emptySlotIndex
+	end
+	
+	emptySlotIndex = FindEmptySlotInBag(BAG_SUBSCRIBER_BANK)
+	if emptySlotIndex ~= nil then
+		return BAG_SUBSCRIBER_BANK, emptySlotIndex
+	end
+	return nil
+end
 
 function BUI.Banking.Class:ActivateSpinner()
     self.spinner:SetHidden(false)
@@ -322,27 +335,42 @@ end
 
 
 function BUI.Banking.Class:MoveItem(list, quantity)
-	local bag, index = ZO_Inventory_GetBagAndIndex(list:GetSelectedData())
-    local stackCount = GetSlotStackSize(bag, index)
-
-	local toBag = self.currentMode == LIST_WITHDRAW and BAG_BACKPACK or BAG_BANK
-	local fromBag = self.currentMode == LIST_WITHDRAW and BAG_BANK or BAG_BACKPACK
-
-	-- Check to see if we're calling this function from within the spinner class...
-	if(quantity == nil) then
-		-- We're not, so either (a) move the item, or (b) display the spinner
-	    if stackCount > 1 then
-		    self:UpdateSpinnerConfirmation(true, self.list)
-		    self:SetSpinnerValue(list:GetSelectedData().stackCount, list:GetSelectedData().stackCount)
+	local movingItemBag, index = ZO_Inventory_GetBagAndIndex(list:GetSelectedData())
+    local stackCount = GetSlotStackSize(movingItemBag, index)
+	local inSpinner = false
+	if quantity ~= nil then
+		--in spinner
+		inSpinner = true
+	else 
+		--not in spinner
+		if(stackCount > 1) then
+			-- display the spinner
+			self:UpdateSpinnerConfirmation(true, self.list)
+			self:SetSpinnerValue(list:GetSelectedData().stackCount, list:GetSelectedData().stackCount)
+			return
 		else
-			local nextSlot = FindEmptySlotInBag(toBag)
-	    	CallSecureProtected("RequestMoveItem", fromBag, index, toBag, nextSlot, 1)
+		--since stackcount = 1
+		quantity = 1
 		end
+	end
+	 
+	-- We're in the spinner! Confirm the move here :)
+	local fromBag = movingItemBag
+	local toBag, emptySlotIndex
+	if self.currentMode == LIST_WITHDRAW then
+		--we are withdrawing item from bank/subscriber bank bag
+		toBag = BAG_BACKPACK
+		emptySlotIndex = FindEmptySlotInBag(toBag)
 	else
-		-- We're in the spinner! Confirm the move here :)
-		local nextSlot = FindEmptySlotInBag(toBag)
-    	CallSecureProtected("RequestMoveItem", fromBag, index, toBag, nextSlot, quantity)
-        self:UpdateSpinnerConfirmation(false, self.list)
+		--we are depositing item to bank/subscriber bank bag
+		toBag, emptySlotIndex = FindEmptySlotInBank()
+	end
+	if emptySlotIndex ~= nil then
+		--good to move
+		CallSecureProtected("RequestMoveItem", fromBag, index, toBag, emptySlotIndex, quantity)
+		if inSpinner then
+			self:UpdateSpinnerConfirmation(false, self.list)
+		end
 	end
 end
 
@@ -594,19 +622,28 @@ function BUI.Banking.Class:RefreshList()
     self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFBF00"..wdString.." GOLD|r", currencyType = CURRENCY.GOLD}, 0, 0, 0, 0)
     self.list:AddEntry("BUI_HeaderRow_Template", {label="|c0066FF"..wdString.." TEL VAR|r", currencyType = CURRENCY.TELVAR}, 0, 0, 0, 0)
 
-
-	local current_bag = (self.currentMode == LIST_WITHDRAW) and BAG_BANK or BAG_BACKPACK
-
+	--fix subscriber bank bag issue
+	checking_bags = {}
+	if self.currentMode == LIST_WITHDRAW then
+		checking_bags[1] = BAG_BANK
+		checking_bags[2] = BAG_SUBSCRIBER_BANK
+	else 
+		checking_bags[1] = BAG_BACKPACK
+	end
+	
 	local slots = {}
-    local bagSlots = GetBagSize(current_bag)
-    for slotIndex = 0, bagSlots - 1 do
-        local slotData = SHARED_INVENTORY:GenerateSingleSlotData(current_bag, slotIndex)
-        if slotData then
-                slotData.itemCategoryName = GetBestItemCategoryDescription(slotData)
-                slots[#slots + 1] = slotData
-        end
-    end
-
+    
+	for i, currentBag in ipairs(checking_bags) do 
+		local bagSlots = GetBagSize(currentBag)
+		for slotIndex = 0, bagSlots - 1 do
+			local slotData = SHARED_INVENTORY:GenerateSingleSlotData(currentBag, slotIndex)
+			if slotData then
+				slotData.itemCategoryName = GetBestItemCategoryDescription(slotData)
+				slots[#slots + 1] = slotData
+			end
+		end
+	end
+	 
     table.sort(slots, ItemSortFunc)
 
     for i, itemData in ipairs(slots) do
