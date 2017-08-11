@@ -2,7 +2,7 @@
 ## Description: Makes the gamepad interface usable!
 ## APIVersion: 100019
 ## Author: |c0066FFprasoc|r [EU]
-## Version: 2.42
+## Version: 2.43
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
@@ -48,6 +48,26 @@ Modules\CIM\ParametricScrollListTemplates.lua
 Modules\CIM\Templates\InterfaceLibrary.xml
 Modules\CIM\InterfaceLibrary.lua
 Modules\CIM\Module.lua
+
+; Module: Helper
+Modules\Helper\Images\icon_set_1.dds
+Modules\Helper\Images\icon_set_2.dds
+Modules\Helper\Images\icon_set_3.dds
+Modules\Helper\Images\icon_set_4.dds
+Modules\Helper\Images\icon_set_5.dds
+Modules\Helper\Images\icon_set_6.dds
+Modules\Helper\Images\icon_set_7.dds
+Modules\Helper\Images\icon_set_8.dds
+Modules\Helper\Images\icon_set_9.dds
+Modules\Helper\Images\icon_set_10.dds
+Modules\Helper\Images\icon_quest_green.dds
+Modules\Helper\Images\icon_quest_white.dds
+Modules\Helper\Images\icon_quest_red.dds
+Modules\Helper\Images\icon_research_researchable.dds
+Modules\Helper\Images\icon_research_duplicated.dds
+Modules\Helper\Images\icon_research_known.dds
+Modules\Helper\Images\icon_research_researching.dds
+Modules\Helper\Helper.lua
 
 ; Module: Inventory Enhanced
 Modules\Inventory\Templates\GamepadInventory.xml

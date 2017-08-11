@@ -55,6 +55,11 @@ BUI.Player = {
 
 BUI.Settings = {}
 
+BUI.Helper = {
+	GamePadBuddy = {},
+	IokaniGearChanger = {},
+}
+
 BUI.DefaultSettings = {
 	firstInstall = true,
 	Modules = {
