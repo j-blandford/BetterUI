@@ -319,7 +319,7 @@ end
 function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuringRebuild, enabled, active)
     BUI_SharedGamepadEntryLabelSetup(control.label, data, selected)
 
-    control:GetNamedChild("ItemType"):SetText(string.upper(data.bestGamepadItemCategoryName))
+    control:GetNamedChild("ItemType"):SetText(string.upper(data.bestItemTypeName))
     control:GetNamedChild("Stat"):SetText((data.dataSource.statValue == 0) and "-" or data.dataSource.statValue)
 
     -- Replace the "Value" with the market price of the item (in yellow)
@@ -427,12 +427,9 @@ function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selecte
     end
 
     self.list = BUI_VerticalParametricScrollList:New(self.control)
-    self.list:AddDataTemplate(self.template, templateSetupFunction or VendorEntryTemplateSetup, ZO_GamepadMenuEntryTemplateParametricListFunction)
+    self.list:AddDataTemplate(self.template, templateSetupFunction or VendorEntryTemplateSetup, ZO_GamepadMenuEntryTemplateParametricListFunction)	
+	self.list:AddDataTemplateWithHeader("ZO_GamepadItemSubEntryTemplate", ZO_SharedGamepadEntry_OnSetup, ZO_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality, "ZO_GamepadMenuEntryHeaderTemplate")
 
-	self.list.maxOffset = 0
-    self.list.headerDefaultPadding = 15
-    self.list.headerSelectedPadding = 0
-    self.list.universalPostPadding = 5
 
     -- generate the trigger keybinds so we can add/remove them later when necessary
     self.triggerKeybinds = {}
@@ -551,13 +548,15 @@ function BUI.Inventory.List:RefreshList()
     for i, itemData in ipairs(slots) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
 		self:SetupItemEntry(entry, itemData)
+		d("itemData bestCateName: " .. itemData.bestGamepadItemCategoryName)
+         if itemData.bestGamepadItemCategoryName ~= currentBestCategoryName then
+            currentBestCategoryName = itemData.bestGamepadItemCategoryName
+            entry:SetHeader(currentBestCategoryName)
 
-		--if itemData.bestGamepadItemCategoryName ~= currentBestCategoryName then
-		--	currentBestCategoryName = itemData.bestGamepadItemCategoryName
-		--	entry:SetHeader(currentBestCategoryName)
-		--end
-
-        self.list:AddEntry(self.template, entry)
+            self.list:AddEntryWithHeader(ZO_GamepadItemSubEntryTemplate, entry)
+        else
+            self.list:AddEntry(self.template, entry)
+        end
 
         self.dataBySlotIndex[itemData.slotIndex] = entry
     end

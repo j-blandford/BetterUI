@@ -21,10 +21,6 @@ local function GamepadParametricScrollListPlaySound(movementType)
     PlaySound(ZO_PARAMETRIC_SCROLL_MOVEMENT_SOUNDS[movementType])
 end
 
-local GAMEPAD_DEFAULT_POST_PADDING = 5
-local GAMEPAD_HEADER_SELECTED_PADDING = 0
-local GAMEPAD_HEADER_DEFAULT_PADDING = 15
-
 PARAMETRIC_SCROLL_LIST_VERTICAL = true
 PARAMETRIC_SCROLL_LIST_HORIZONTAL = false
 BUI_VERTICAL_PARAMETRIC_LIST_DEFAULT_FADE_GRADIENT_SIZE = 32
@@ -105,11 +101,6 @@ function BUI_VerticalParametricScrollList:Initialize(control)
     self:SetHeaderPadding(GAMEPAD_HEADER_DEFAULT_PADDING, GAMEPAD_HEADER_SELECTED_PADDING)
     self:SetUniversalPostPadding(GAMEPAD_DEFAULT_POST_PADDING)
     self:SetPlaySoundFunction(GamepadParametricScrollListPlaySound)
-
-    self.maxOffset = 0
-    self.headerDefaultPadding = 15
-    self.headerSelectedPadding = 0
-    self.universalPostPadding = 5
 
     self.alignToScreenCenterExpectedEntryHalfHeight = 30
 end

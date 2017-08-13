@@ -63,6 +63,7 @@ local function BUI_GamepadMenuEntryTemplateParametricListFunction(control, dista
 
 local function SetupItemList(list)
     list:AddDataTemplate("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
+	list:AddDataTemplateWithHeader("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality, "ZO_GamepadMenuEntryHeaderTemplate")
 end
 
 local function SetupCraftBagList(list)
@@ -632,6 +633,34 @@ function BUI.Inventory.Class:RefreshCraftBagList()
 	self.craftBagList:RefreshList(self.categoryList:GetTargetData().filterType)
 end
 
+function BUI.Inventory.Class:GetCustomCategory(itemData)
+	local useCustomCategory = false
+	if AutoCategory then
+		useCustomCategory = true
+		local bagId = itemData.bagId
+		local slotIndex = itemData.slotIndex
+		local matched, categoryName, categoryPriority = AutoCategory:MatchCategoryRules(bagId, slotIndex)		
+		return useCustomCategory, matched, categoryName, categoryPriority
+	end
+	
+	return useCustomCategory, false, "", 0
+end
+
+local CUSTOM_GAMEPAD_ITEM_SORT =
+{
+	sortPriorityName  = { tiebreaker = "bestItemTypeName" },
+	bestItemTypeName = { tiebreaker = "name" },
+    name = { tiebreaker = "requiredLevel" },
+    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
+    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
+    iconFile = { tiebreaker = "uniqueId" },
+    uniqueId = { isId64 = true },
+}
+
+function BUI_GamepadInventory_DefaultItemSortComparator(left, right)
+    return ZO_TableOrderingFunction(left, right, "sortPriorityName", CUSTOM_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
+end
+
 function BUI.Inventory.Class:RefreshItemList()
     self.itemList:Clear()
     if self.categoryList:IsEmpty() then return end
@@ -657,31 +686,45 @@ function BUI.Inventory.Class:RefreshItemList()
         local comparator = GetItemDataFilterComparator(filteredEquipSlot, nonEquipableFilterType)
 
         filteredDataTable = SHARED_INVENTORY:GenerateFullSlotData(comparator, BAG_BACKPACK, BAG_WORN)
-        for _, itemData in pairs(filteredDataTable) do
-            itemData.bestItemCategoryName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
-            if itemData.bagId == BAG_WORN then
-                itemData.isEquippedInCurrentCategory = false
-                itemData.isEquippedInAnotherCategory = false
-                if itemData.slotIndex == filteredEquipSlot then
-                    itemData.isEquippedInCurrentCategory = true
-                else
-                    itemData.isEquippedInAnotherCategory = true
-                end
+		local tempDataTable = {}
+        for i = 1, #filteredDataTable  do
+			local itemData = filteredDataTable[i]
+            --itemData.bestItemCategoryName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+			--use custom categories
+			local customCategory, matched, catName, catPriority = self:GetCustomCategory(itemData)
+			if customCategory and not matched then
+				--don't add to list
+			else
+				itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+				itemData.bestItemCategoryName = catName
+				itemData.sortPriorityName = string.format("%03d%s", 100 - catPriority , catName) 
+				if itemData.bagId == BAG_WORN then
+					itemData.isEquippedInCurrentCategory = false
+					itemData.isEquippedInAnotherCategory = false
+					if itemData.slotIndex == filteredEquipSlot then
+						itemData.isEquippedInCurrentCategory = true
+					else
+						itemData.isEquippedInAnotherCategory = true
+					end
 
-                itemData.isHiddenByWardrobe = WouldEquipmentBeHidden(itemData.slotIndex or EQUIP_SLOT_NONE)
-            else
-                local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
-                itemData.isEquippedInCurrentCategory = slotIndex and true or nil
+					itemData.isHiddenByWardrobe = WouldEquipmentBeHidden(itemData.slotIndex or EQUIP_SLOT_NONE)
+				else
+					local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
+					itemData.isEquippedInCurrentCategory = slotIndex and true or nil
 
 
-            end
-            ZO_InventorySlot_SetType(itemData, SLOT_TYPE_GAMEPAD_INVENTORY_ITEM)
+				end
+				ZO_InventorySlot_SetType(itemData, SLOT_TYPE_GAMEPAD_INVENTORY_ITEM)
+				table.insert(tempDataTable, itemData)
+			end
         end
+		filteredDataTable = tempDataTable
     end
 
-	table.sort(filteredDataTable, ZO_GamepadInventory_DefaultItemSortComparator)
+	table.sort(filteredDataTable, BUI_GamepadInventory_DefaultItemSortComparator)
 
-    local lastBestItemCategoryName
+    local currentBestCategoryName = nil
+
     for i, itemData in ipairs(filteredDataTable) do
         local nextItemData = filteredDataTable[i + 1]
 
@@ -710,19 +753,22 @@ function BUI.Inventory.Class:RefreshItemList()
         data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
         data.isJunk = itemData.isJunk
 
-        if itemData.bestItemCategoryName ~= lastBestItemCategoryName then
-            data:SetHeader(itemData.bestItemCategoryName)
-        end
-
-		data.isJunk = itemData.isJunk
         if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["Inventory"].enableJunk then
-            self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
+		 
+			if data.bestGamepadItemCategoryName ~= currentBestCategoryName then
+				currentBestCategoryName = data.bestGamepadItemCategoryName
+				data:SetHeader(currentBestCategoryName)
+				self.itemList:AddEntryWithHeader("BUI_GamepadItemSubEntryTemplate", data)
+			else
+				self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
+			end
+		  
         end
-
-        lastBestItemCategoryName = itemData.bestItemCategoryName
     end
 
     self.itemList:Commit()
+	
+	
 end
 
 function BUI.Inventory.Class:RemoveKeybinds()
@@ -812,7 +858,7 @@ end
 function BUI.Inventory.Class:InitializeItemList()
     self.itemList = self:AddList("Items", SetupItemList, BUI_VerticalParametricScrollList)
 
-    self.itemList:SetSortFunction(ZO_GamepadInventory_DefaultItemSortComparator)
+    self.itemList:SetSortFunction(BUI_GamepadInventory_DefaultItemSortComparator)
 
     self.itemList:SetOnSelectedDataChangedCallback(function(list, selectedData)
 	    if selectedData ~= nil and self.scene:IsShowing() then
@@ -835,10 +881,9 @@ function BUI.Inventory.Class:InitializeItemList()
 	    end
     end)
 
-    self.itemList.maxOffset = 0
-    self.itemList.headerDefaultPadding = 15
-    self.itemList.headerSelectedPadding = 0
-    self.itemList.universalPostPadding = 5
+    self.itemList.maxOffset = 30
+    self.itemList:SetHeaderPadding(GAMEPAD_HEADER_DEFAULT_PADDING * 0.75, GAMEPAD_HEADER_SELECTED_PADDING * 0.75)
+	self.itemList:SetUniversalPostPadding(GAMEPAD_DEFAULT_POST_PADDING * 0.5)    
 
 end
 

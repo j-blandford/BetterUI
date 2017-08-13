@@ -3,7 +3,7 @@ ZO_CreateStringId("SI_BUI_INV_ITEM_MATERIALS","Materials")
 ZO_CreateStringId("SI_BUI_INV_ITEM_QUICKSLOT","|cFF6600Quickslot|r")
 ZO_CreateStringId("SI_BUI_INV_ITEM_WEAPONS","Weapons")
 ZO_CreateStringId("SI_BUI_INV_ITEM_APPAREL","Apparel")
-ZO_CreateStringId("SI_BUI_INV_ITEM_CONSUMABLE","Quickslot")
+ZO_CreateStringId("SI_BUI_INV_ITEM_CONSUMABLE","Consumable")
 ZO_CreateStringId("SI_BUI_INV_ITEM_MISC","Miscellaneous")
 ZO_CreateStringId("SI_BUI_INV_ITEM_JUNK","Junk")
 
