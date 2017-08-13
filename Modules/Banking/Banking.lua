@@ -191,14 +191,26 @@ local function OnItemSelectedChange(self, list, selectedData)
     end
 end
 
+
+local function SetupItemList(list)
+    list:AddDataTemplate("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
+	list:AddDataTemplateWithHeader("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality, "ZO_GamepadMenuEntryHeaderTemplate")
+end
+
 function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 	BUI.Interface.Window.Initialize(self, tlw_name, scene_name)
 
 	self:InitializeKeybind()
     self:InitializeList()
+	
+	
+    self.list.maxOffset = 30
+    self.list:SetHeaderPadding(GAMEPAD_HEADER_DEFAULT_PADDING * 0.75, GAMEPAD_HEADER_SELECTED_PADDING * 0.75)
+	self.list:SetUniversalPostPadding(GAMEPAD_DEFAULT_POST_PADDING * 0.5)    
 
     -- Setup data templates of the lists
-    self:SetupList(BANKING_ROW_TEMPLATE, SetupListing)
+    --self:SetupList(BANKING_ROW_TEMPLATE, SetupListing)
+	SetupItemList(self.list)
     self:AddTemplate("BUI_HeaderRow_Template",SetupLabelListing)
 
     self.currentMode = LIST_WITHDRAW
@@ -623,8 +635,8 @@ function BUI.Banking.Class:RefreshList()
 
     -- We have to add 2 rows to the list, one for Withdraw/Deposit GOLD and one for Withdraw/Deposit TEL-VAR
     local wdString = self.currentMode == LIST_WITHDRAW and "WITHDRAW" or "DEPOSIT"
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFBF00"..wdString.." GOLD|r", currencyType = CURRENCY.GOLD}, 0, 0, 0, 0)
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|c0066FF"..wdString.." TEL VAR|r", currencyType = CURRENCY.TELVAR}, 0, 0, 0, 0)
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFBF00"..wdString.." GOLD|r", currencyType = CURRENCY.GOLD})
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|c0066FF"..wdString.." TEL VAR|r", currencyType = CURRENCY.TELVAR})
 
 	--fix subscriber bank bag issue
 	checking_bags = {}
@@ -635,6 +647,75 @@ function BUI.Banking.Class:RefreshList()
 		checking_bags[1] = BAG_BACKPACK
 	end
 	
+	
+    local function IsNotStolenItem(itemData)
+        local isNotStolen = not itemData.stolen
+		return isNotStolen
+	end
+
+	--excludes stolen items
+    local filteredDataTable = SHARED_INVENTORY:GenerateFullSlotData(IsNotStolenItem, unpack(checking_bags))
+	local tempDataTable = {}
+	d("Bank : " ..#filteredDataTable .. "Items")
+	for i = 1, #filteredDataTable  do
+		local itemData = filteredDataTable[i]
+		--use custom categories
+		local customCategory, matched, catName, catPriority = BUI.Helper.AutoCategory:GetCustomCategory(itemData)
+		if customCategory and not matched then
+			--don't add to list
+		else
+			itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+			itemData.bestItemCategoryName = catName
+			itemData.sortPriorityName = string.format("%03d%s", 100 - catPriority , catName) 
+	
+			local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
+			itemData.isEquippedInCurrentCategory = slotIndex and true or nil
+
+			table.insert(tempDataTable, itemData)
+		end
+	end
+	filteredDataTable = tempDataTable
+	
+	table.sort(filteredDataTable, BUI_GamepadInventory_DefaultItemSortComparator)
+
+    local currentBestCategoryName = nil
+
+    for i, itemData in ipairs(filteredDataTable) do
+        local nextItemData = filteredDataTable[i + 1]
+
+        local data = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
+		data.InitializeInventoryVisualData = BUI.Inventory.Class.InitializeInventoryVisualData
+        data:InitializeInventoryVisualData(itemData)
+
+        local remaining, duration
+  
+        remaining, duration = GetItemCooldownInfo(itemData.bagId, itemData.slotIndex)
+      
+
+        if remaining > 0 and duration > 0 then
+            data:SetCooldown(remaining, duration)
+        end
+
+		data.bestItemCategoryName = itemData.bestItemCategoryName
+		data.bestGamepadItemCategoryName = itemData.bestItemCategoryName
+        data.isEquippedInCurrentCategory = itemData.isEquippedInCurrentCategory
+        data.isEquippedInAnotherCategory = itemData.isEquippedInAnotherCategory
+        data.isJunk = itemData.isJunk
+
+        if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["Inventory"].enableJunk then
+		 
+			if data.bestGamepadItemCategoryName ~= currentBestCategoryName then
+				currentBestCategoryName = data.bestGamepadItemCategoryName
+				data:SetHeader(currentBestCategoryName)
+				self.list:AddEntryWithHeader("BUI_GamepadItemSubEntryTemplate", data)
+			else
+				self.list:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
+			end
+		end
+    end
+
+    self.list:Commit()
+	--[[
 	local slots = {}
     
 	for i, currentBag in ipairs(checking_bags) do 
@@ -655,6 +736,8 @@ function BUI.Banking.Class:RefreshList()
 	        self:AddEntryToList(itemData)
 	    end
     end
+	
+	]]--
     self:ReturnToSaved()
     self:RefreshFooter()
 end

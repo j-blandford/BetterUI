@@ -58,6 +58,7 @@ BUI.Settings = {}
 BUI.Helper = {
 	GamePadBuddy = {},
 	IokaniGearChanger = {},
+	AutoCategory = {},
 }
 
 BUI.DefaultSettings = {

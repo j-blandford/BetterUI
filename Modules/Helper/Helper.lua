@@ -61,3 +61,30 @@ function BUI.Helper.IokaniGearChanger.GetGearSet(bagId, slotIndex)
 end
 
     
+local CUSTOM_GAMEPAD_ITEM_SORT =
+{
+	sortPriorityName  = { tiebreaker = "bestItemTypeName" },
+	bestItemTypeName = { tiebreaker = "name" },
+    name = { tiebreaker = "requiredLevel" },
+    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
+    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
+    iconFile = { tiebreaker = "uniqueId" },
+    uniqueId = { isId64 = true },
+}
+
+function BUI_GamepadInventory_DefaultItemSortComparator(left, right)
+    return ZO_TableOrderingFunction(left, right, "sortPriorityName", CUSTOM_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
+end
+
+function BUI.Helper.AutoCategory:GetCustomCategory(itemData)
+	local useCustomCategory = false
+	if AutoCategory then
+		useCustomCategory = true
+		local bagId = itemData.bagId
+		local slotIndex = itemData.slotIndex
+		local matched, categoryName, categoryPriority = AutoCategory:MatchCategoryRules(bagId, slotIndex)		
+		return useCustomCategory, matched, categoryName, categoryPriority
+	end
+	
+	return useCustomCategory, false, "", 0
+end

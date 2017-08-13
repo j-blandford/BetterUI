@@ -633,33 +633,6 @@ function BUI.Inventory.Class:RefreshCraftBagList()
 	self.craftBagList:RefreshList(self.categoryList:GetTargetData().filterType)
 end
 
-function BUI.Inventory.Class:GetCustomCategory(itemData)
-	local useCustomCategory = false
-	if AutoCategory then
-		useCustomCategory = true
-		local bagId = itemData.bagId
-		local slotIndex = itemData.slotIndex
-		local matched, categoryName, categoryPriority = AutoCategory:MatchCategoryRules(bagId, slotIndex)		
-		return useCustomCategory, matched, categoryName, categoryPriority
-	end
-	
-	return useCustomCategory, false, "", 0
-end
-
-local CUSTOM_GAMEPAD_ITEM_SORT =
-{
-	sortPriorityName  = { tiebreaker = "bestItemTypeName" },
-	bestItemTypeName = { tiebreaker = "name" },
-    name = { tiebreaker = "requiredLevel" },
-    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
-    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
-    iconFile = { tiebreaker = "uniqueId" },
-    uniqueId = { isId64 = true },
-}
-
-function BUI_GamepadInventory_DefaultItemSortComparator(left, right)
-    return ZO_TableOrderingFunction(left, right, "sortPriorityName", CUSTOM_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
-end
 
 function BUI.Inventory.Class:RefreshItemList()
     self.itemList:Clear()
@@ -689,9 +662,8 @@ function BUI.Inventory.Class:RefreshItemList()
 		local tempDataTable = {}
         for i = 1, #filteredDataTable  do
 			local itemData = filteredDataTable[i]
-            --itemData.bestItemCategoryName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
-			--use custom categories
-			local customCategory, matched, catName, catPriority = self:GetCustomCategory(itemData)
+             --use custom categories
+			local customCategory, matched, catName, catPriority = BUI.Helper.AutoCategory:GetCustomCategory(itemData)
 			if customCategory and not matched then
 				--don't add to list
 			else
