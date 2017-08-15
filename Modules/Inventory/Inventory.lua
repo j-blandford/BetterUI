@@ -1204,19 +1204,28 @@ function BUI.Inventory.Class:OnDeferredInitialize()
     self.control:RegisterForEvent(EVENT_PLAYER_DEAD, RefreshSelectedData)
     self.control:RegisterForEvent(EVENT_PLAYER_REINCARNATED, RefreshSelectedData)
 
-    local function OnInventoryUpdated(bagId)
+     local function OnInventoryUpdated(bagId)
         self:MarkDirty()
         local currentList = self:GetCurrentList()
-        self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
-        if ZO_Dialogs_IsShowing(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG) then
-            self:OnUpdate() --don't wait for next update loop in case item was destroyed and scene/keybinds need immediate update
-        else
-            if currentList == self.categoryList then
-            self:RefreshCategoryList()
+        if self.scene:IsShowing() then
+            -- we only want to update immediately if we are in the gamepad inventory scene
+            if ZO_Dialogs_IsShowing(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG) then
+                self:OnUpdate() --don't wait for next update loop in case item was destroyed and scene/keybinds need immediate update
+            else
+                if currentList == self.categoryList then
+                    self:RefreshCategoryList()
+                elseif currentList == self.itemList then
+                    if self.selectedItemFilterType == ITEMFILTERTYPE_QUICKSLOT then
+                        KEYBIND_STRIP:UpdateKeybindButton(self.quickslotKeybindStripDescriptor)
+                    elseif self.selectedItemFilterType == ITEMFILTERTYPE_ARMOR or self.selectedItemFilterType == ITEMFILTERTYPE_WEAPONS then
+                        KEYBIND_STRIP:UpdateKeybindButton(self.toggleCompareModeKeybindStripDescriptor)
+                    end
+                end
+                RefreshSelectedData() --dialog will refresh selected when it hides, so only do it if it's not showing
+                self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
             end
-            RefreshSelectedData() --dialog will refresh selected when it hides, so only do it if it's not showing
-		end
-	end
+        end
+    end
 
     SHARED_INVENTORY:RegisterCallback("FullInventoryUpdate", OnInventoryUpdated)
     SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", OnInventoryUpdated)

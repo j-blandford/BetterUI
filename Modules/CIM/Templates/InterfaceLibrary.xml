@@ -428,9 +428,9 @@
 
 
                         <Control name="$(parent)List" inherits="BUI_NavQuadrant_1_Anchors BUI_Generic_ScrollListTemplate">
-                            <Anchor point="TOPLEFT" relativeTo="$(parent)HeaderHeader" relativePoint="BOTTOMLEFT" />
-                            <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)FooterFooter" relativePoint="TOPRIGHT" />
-
+							<Anchor point="TOPLEFT" relativeTo="$(parent)HeaderHeader" relativePoint="BOTTOMLEFT" offsetX="32"/> 
+                            <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)FooterFooter" relativePoint="TOPRIGHT" /> 
+							
                             <OnInitialized>
                                 self:GetParent().list = self
                             </OnInitialized>
