@@ -47,15 +47,14 @@ local function TryUseItem(inventorySlot)
     return false
 end
 
-
-
-function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
+function BUI.Inventory.SlotActions:Initialize(alignmentOverride, additionalMouseOverbinds, useKeybindStrip)
     self.alignment = KEYBIND_STRIP_ALIGN_RIGHT
 
     local slotActions = ZO_InventorySlotActions:New(INVENTORY_SLOT_ACTIONS_PREVENT_CONTEXT_MENU)
 	slotActions.AddSlotPrimaryAction = BUI_AddSlotPrimary -- Add a new function which allows us to neatly add our own slots *with context* of the original!!
 
     self.slotActions = slotActions
+    self.useKeybindStrip = useKeybindStrip == nil and true or useKeybindStrip
 
     local primaryCommand =
     {
@@ -122,6 +121,29 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride)
 
     self:AddSubCommand(primaryCommand, PrimaryCommandHasBind, PrimaryCommandActivate)
 
+    if additionalMouseOverbinds then
+        local mouseOverCommand, mouseOverCommandIsVisible
+        for i=1, #additionalMouseOverbinds do
+            mouseOverCommand =
+            {
+                alignment = alignmentOverride,
+                name = function()
+                    return slotActions:GetKeybindActionName(i)
+                end,
+                keybind = additionalMouseOverbinds[i],
+                callback = function() slotActions:DoKeybindAction(i) end,
+                visible =   function()
+                                return slotActions:CheckKeybindActionVisibility(i)
+                            end,
+            }
+
+            mouseOverCommandIsVisible = function()
+                return slotActions:GetKeybindActionName(i) ~= nil
+            end
+
+            self:AddSubCommand(mouseOverCommand, mouseOverCommandIsVisible)
+        end
+    end
 end
 
 function BUI.Inventory.SlotActions:SetInventorySlot(inventorySlot)
