@@ -656,7 +656,6 @@ function BUI.Banking.Class:RefreshList()
 	--excludes stolen items
     local filteredDataTable = SHARED_INVENTORY:GenerateFullSlotData(IsNotStolenItem, unpack(checking_bags))
 	local tempDataTable = {}
-	d("Bank : " ..#filteredDataTable .. "Items")
 	for i = 1, #filteredDataTable  do
 		local itemData = filteredDataTable[i]
 		--use custom categories

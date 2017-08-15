@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "2.30"
+BUI.version = "2.44"
 
 -- Program Global (scope of BUI, though) variable initialization
 BUI.WindowManager = GetWindowManager()
@@ -91,7 +91,7 @@ function Init_ModulePanel(moduleName, moduleDesc)
 		type = "panel",
 		name = "|t24:24:/esoui/art/buttons/gamepad/xbox/nav_xbone_b.dds|t "..BUI.name.." ("..moduleName..")",
 		displayName = "|c0066ffBETTERUI|r :: "..moduleDesc,
-		author = "prasoc",
+		author = "prasoc, RockingDice",
 		version = BUI.version,
 		slashCommand = "/bui",
 		registerForRefresh = true,
