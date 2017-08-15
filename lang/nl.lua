@@ -3,7 +3,7 @@ ZO_CreateStringId("SI_BUI_INV_ITEM_MATERIALS","Materialen")
 ZO_CreateStringId("SI_BUI_INV_ITEM_QUICKSLOT","|cFF6600Verbruikbaar|r")
 ZO_CreateStringId("SI_BUI_INV_ITEM_WEAPONS","Wapens")
 ZO_CreateStringId("SI_BUI_INV_ITEM_APPAREL","Kleding")
-ZO_CreateStringId("SI_BUI_INV_ITEM_CONSUMABLE","Quickslot")
+ZO_CreateStringId("SI_BUI_INV_ITEM_CONSUMABLE","Verbruiksgoederen")
 ZO_CreateStringId("SI_BUI_INV_ITEM_MISC","Diversen")
 ZO_CreateStringId("SI_BUI_INV_ITEM_JUNK","Rommel")
 
