@@ -26,23 +26,16 @@ local function GetFilterComparator(filterType)
     end
 end
 
-
-function BUI.Inventory.CraftList:AddSlotDataToTable(slotsTable, slotIndex)
-    local itemFilterFunction = GetFilterComparator(self.filterType)
-    local categorizationFunction = self.categorizationFunction or GetBestItemCategoryDescription
-
-    local slotData = SHARED_INVENTORY:GenerateSingleSlotData(self.inventoryType, slotIndex)
+function BUI.Inventory.CraftList:AddSlotDataToTable(slotsTable, inventoryType, slotIndex)
+    local itemFilterFunction = self.itemFilterFunction
+    local categorizationFunction = self.categorizationFunction or ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription
+    local slotData = SHARED_INVENTORY:GenerateSingleSlotData(inventoryType, slotIndex)
     if slotData then
-        if itemFilterFunction(slotData) then
+        if (not itemFilterFunction) or itemFilterFunction(slotData) then
             -- itemData is shared in several places and can write their own value of bestItemCategoryName.
             -- We'll use bestGamepadItemCategoryName instead so there are no conflicts.
             slotData.bestGamepadItemCategoryName = categorizationFunction(slotData)
-			slotData.bestItemCategoryName = categorizationFunction(slotData)
-			
-			if self.inventoryType ~= BAG_VIRTUAL then -- virtual items don't have any champion points associated with them
-				slotData.requiredChampionPoints = GetItemLinkRequiredChampionPoints(slotData)
-			end
-			
+
             table.insert(slotsTable, slotData)
         end
     end

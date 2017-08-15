@@ -407,7 +407,6 @@ end
 
 function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selectedDataCallback, entrySetupCallback, categorizationFunction, sortFunction, useTriggers, template, templateSetupFunction)
     self.control = control
-    self.inventoryType = inventoryType
     self.selectedDataCallback = selectedDataCallback
     self.entrySetupCallback = entrySetupCallback
     self.categorizationFunction = categorizationFunction
@@ -417,6 +416,12 @@ function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selecte
     self.useTriggers = (useTriggers ~= false) -- nil => true
     self.template = template or DEFAULT_TEMPLATE
 	
+    if type(inventoryType) == "table" then
+        self.inventoryTypes = inventoryType
+    else
+        self.inventoryTypes = { inventoryType }
+    end
+
 	if (BUI.Settings.Modules["Inventory"].useShortFormat ~= nil) then
 		USE_SHORT_CURRENCY_FORMAT = BUI.Settings.Modules["Inventory"].useShortFormat
 	end
@@ -496,20 +501,15 @@ function BUI.Inventory.List:Initialize(control, inventoryType, slotType, selecte
     SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", OnSingleSlotInventoryUpdate)
 end
 
-function BUI.Inventory.List:AddSlotDataToTable(slotsTable, slotIndex)
+function BUI.Inventory.List:AddSlotDataToTable(slotsTable, inventoryType, slotIndex)
     local itemFilterFunction = self.itemFilterFunction
     local categorizationFunction = self.categorizationFunction or ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription
-
-    local slotData = SHARED_INVENTORY:GenerateSingleSlotData(self.inventoryType, slotIndex)
+    local slotData = SHARED_INVENTORY:GenerateSingleSlotData(inventoryType, slotIndex)
     if slotData then
         if (not itemFilterFunction) or itemFilterFunction(slotData) then
             -- itemData is shared in several places and can write their own value of bestItemCategoryName.
             -- We'll use bestGamepadItemCategoryName instead so there are no conflicts.
             slotData.bestGamepadItemCategoryName = categorizationFunction(slotData)
-
-			if self.inventoryType ~= BAG_VIRTUAL then -- virtual items don't have any champion points associated with them
-				slotData.requiredChampionPoints = GetItemLinkRequiredChampionPoints(slotData)
-			end
 
             table.insert(slotsTable, slotData)
         end
@@ -520,11 +520,12 @@ end
 function BUI.Inventory.List:GenerateSlotTable()
     local slots = {}
 
-    local bagId = self.inventoryType
-    local slotIndex = ZO_GetNextBagSlotIndex(bagId)
-    while slotIndex do
-        self:AddSlotDataToTable(slots, slotIndex)
-        slotIndex = ZO_GetNextBagSlotIndex(bagId, slotIndex)
+    for k, inventoryType in ipairs(self.inventoryTypes) do
+        local slotIndex = ZO_GetNextBagSlotIndex(inventoryType)
+        while slotIndex do
+            self:AddSlotDataToTable(slots, inventoryType, slotIndex)
+            slotIndex = ZO_GetNextBagSlotIndex(inventoryType, slotIndex)
+        end
     end
 
     table.sort(slots, self.sortFunction or ItemSortFunc)

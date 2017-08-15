@@ -837,8 +837,8 @@ function BUI.Inventory.Class:InitializeItemList()
 		    self.currentlySelectedData = selectedData
 
 		    self:SetSelectedInventoryData(selectedData)
-		
-			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
+			self:UpdateItemLeftTooltip(selectedData)
+
 			if self.callLaterLeftToolTip ~= nil then
 				EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
 			end
