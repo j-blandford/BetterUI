@@ -667,9 +667,15 @@ function BUI.Inventory.Class:RefreshItemList()
 			if customCategory and not matched then
 				--don't add to list
 			else
-				itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
-				itemData.bestItemCategoryName = catName
-				itemData.sortPriorityName = string.format("%03d%s", 100 - catPriority , catName) 
+				if customCategory then
+					itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+					itemData.bestItemCategoryName = catName
+					itemData.sortPriorityName = string.format("%03d%s", 100 - catPriority , catName) 
+				else
+					itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+					itemData.bestItemCategoryName = itemData.bestItemTypeName
+					itemData.sortPriorityName = itemData.bestItemCategoryName
+				end
 				if itemData.bagId == BAG_WORN then
 					itemData.isEquippedInCurrentCategory = false
 					itemData.isEquippedInAnotherCategory = false
@@ -726,15 +732,20 @@ function BUI.Inventory.Class:RefreshItemList()
         data.isJunk = itemData.isJunk
 
         if (not data.isJunk and not showJunkCategory) or (data.isJunk and showJunkCategory) or not BUI.Settings.Modules["Inventory"].enableJunk then
-		 
+		
 			if data.bestGamepadItemCategoryName ~= currentBestCategoryName then
 				currentBestCategoryName = data.bestGamepadItemCategoryName
 				data:SetHeader(currentBestCategoryName)
-				self.itemList:AddEntryWithHeader("BUI_GamepadItemSubEntryTemplate", data)
+				if AutoCategory then
+					self.itemList:AddEntryWithHeader("BUI_GamepadItemSubEntryTemplate", data)
+				else
+					self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
+				end
 			else
 				self.itemList:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
 			end
-		  
+		
+	  
         end
     end
 

@@ -194,7 +194,7 @@ end
 
 local function SetupItemList(list)
     list:AddDataTemplate("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
-	list:AddDataTemplateWithHeader("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality, "ZO_GamepadMenuEntryHeaderTemplate")
+    list:AddDataTemplateWithHeader("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality, "ZO_GamepadMenuEntryHeaderTemplate")
 end
 
 function BUI.Banking.Class:Initialize(tlw_name, scene_name)
@@ -664,10 +664,15 @@ function BUI.Banking.Class:RefreshList()
 		if customCategory and not matched then
 			--don't add to list
 		else
-			itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
-			itemData.bestItemCategoryName = catName
-			itemData.sortPriorityName = string.format("%03d%s", 100 - catPriority , catName) 
-	
+			if customCategory then
+				itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+				itemData.bestItemCategoryName = catName
+				itemData.sortPriorityName = string.format("%03d%s", 100 - catPriority , catName) 
+			else
+				itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+				itemData.bestItemCategoryName = itemData.bestItemTypeName
+				itemData.sortPriorityName = itemData.bestItemCategoryName
+			end
 			local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
 			itemData.isEquippedInCurrentCategory = slotIndex and true or nil
 
@@ -707,7 +712,11 @@ function BUI.Banking.Class:RefreshList()
 			if data.bestGamepadItemCategoryName ~= currentBestCategoryName then
 				currentBestCategoryName = data.bestGamepadItemCategoryName
 				data:SetHeader(currentBestCategoryName)
-				self.list:AddEntryWithHeader("BUI_GamepadItemSubEntryTemplate", data)
+				if AutoCategory then
+					self.list:AddEntryWithHeader("BUI_GamepadItemSubEntryTemplate", data)
+				else
+					self.list:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
+				end
 			else
 				self.list:AddEntry("BUI_GamepadItemSubEntryTemplate", data)
 			end
