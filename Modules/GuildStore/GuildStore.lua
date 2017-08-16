@@ -108,6 +108,7 @@ function BUI_GamepadInventoryList:RefreshList()
     self.dataBySlotIndex = {}
     local slots = self:GenerateSlotTable()
     local currentBestCategoryName
+	--d("tt refresh list")
     for i, itemData in ipairs(slots) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
 		if self.template == "BUI_Sell_Row" then entry.text = GetSellLabelText(itemData) end

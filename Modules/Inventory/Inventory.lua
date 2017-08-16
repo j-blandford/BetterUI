@@ -903,75 +903,69 @@ function BUI.Inventory.Class:InitializeItemActions()
     self.itemActions = BUI.Inventory.SlotActions:New(KEYBIND_STRIP_ALIGN_LEFT)
 end
 
-function BUI.Inventory.Class:ActionsDialogSetup(dialog)
-	dialog.entryList:SetOnSelectedDataChangedCallback(  function(list, selectedData)
-		self.itemActions:SetSelectedAction(selectedData and selectedData.action)
-	end)
-
-    local function MarkAsJunk()
-        local target = GAMEPAD_INVENTORY.itemList:GetTargetData()
-        SetItemIsJunk(target.bagId, target.slotIndex, true)
-    end
-    local function UnmarkAsJunk()
-        local target = GAMEPAD_INVENTORY.itemList:GetTargetData()
-        SetItemIsJunk(target.bagId, target.slotIndex, false)
-    end
-
-    local parametricList = dialog.info.parametricList
-    ZO_ClearNumericallyIndexedTable(parametricList)
-
-    self:RefreshItemActions()
-
-    --ZO_ClearTable(parametricList)
-    if(BUI.Settings.Modules["Inventory"].enableJunk) then
-        if(self.categoryList:GetTargetData().showJunk ~= nil) then
-            self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Unmark as Junk", UnmarkAsJunk, "secondary"}
-        else
-            self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Mark as Junk", MarkAsJunk, "secondary"}
-        end
-    end
-
-    --self:RefreshItemActions()
-    local actions = self.itemActions:GetSlotActions()
-    local numActions = actions:GetNumSlotActions()
-
-    for i = 1, numActions do
-        local action = actions:GetSlotAction(i)
-        local actionName = actions:GetRawActionName(action)
-
-        local entryData = ZO_GamepadEntryData:New(actionName)
-        entryData:SetIconTintOnSelection(true)
-        entryData.action = action
-        entryData.setup = ZO_SharedGamepadEntry_OnSetup
-
-        local listItem =
-        {
-            template = "ZO_GamepadItemEntryTemplate",
-            entryData = entryData,
-        }
-		
-		--if actionName ~= "Use" and actionName ~= "Equip" and i ~= 1 then
-        table.insert(parametricList, listItem)
-		--end
-    end
-
-    dialog:setupFunc()
-end
-
 function BUI.Inventory.Class:InitializeActionsDialog()
-    ZO_Dialogs_RegisterCustomDialog(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG,
-    {
-        setup = function(...) self:ActionsDialogSetup(...) end,
-        gamepadInfo =
-        {
-            dialogType = GAMEPAD_DIALOGS.PARAMETRIC,
-        },
-        title =
-        {
-            text = SI_GAMEPAD_INVENTORY_ACTION_LIST_KEYBIND,
-        },
-        parametricList = {}, --we'll generate the entries on setup
-        finishedCallback =  function()
+
+	local function ActionDialogSetup(dialog)
+		if self.scene:IsShowing() then 
+			d("tt inv action setup")
+				dialog.entryList:SetOnSelectedDataChangedCallback(  function(list, selectedData)
+					self.itemActions:SetSelectedAction(selectedData and selectedData.action)
+				end)
+
+				local function MarkAsJunk()
+					local target = GAMEPAD_INVENTORY.itemList:GetTargetData()
+					SetItemIsJunk(target.bagId, target.slotIndex, true)
+				end
+				local function UnmarkAsJunk()
+					local target = GAMEPAD_INVENTORY.itemList:GetTargetData()
+					SetItemIsJunk(target.bagId, target.slotIndex, false)
+				end
+
+				local parametricList = dialog.info.parametricList
+				ZO_ClearNumericallyIndexedTable(parametricList)
+
+				self:RefreshItemActions()
+
+				--ZO_ClearTable(parametricList)
+				if(BUI.Settings.Modules["Inventory"].enableJunk) then
+					if(self.categoryList:GetTargetData().showJunk ~= nil) then
+						self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Unmark as Junk", UnmarkAsJunk, "secondary"}
+					else
+						self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Mark as Junk", MarkAsJunk, "secondary"}
+					end
+				end
+
+				--self:RefreshItemActions()
+				local actions = self.itemActions:GetSlotActions()
+				local numActions = actions:GetNumSlotActions()
+
+				for i = 1, numActions do
+					local action = actions:GetSlotAction(i)
+					local actionName = actions:GetRawActionName(action)
+
+					local entryData = ZO_GamepadEntryData:New(actionName)
+					entryData:SetIconTintOnSelection(true)
+					entryData.action = action
+					entryData.setup = ZO_SharedGamepadEntry_OnSetup
+
+					local listItem =
+					{
+						template = "ZO_GamepadItemEntryTemplate",
+						entryData = entryData,
+					}
+					
+					--if actionName ~= "Use" and actionName ~= "Equip" and i ~= 1 then
+					table.insert(parametricList, listItem)
+					--end
+				end
+
+				dialog:setupFunc()
+	
+		end
+	end
+	local function ActionDialogFinish() 
+		if self.scene:IsShowing() then 
+			d("tt inv action finish")
 			-- make sure to wipe out the keybinds added by actions
 			self:SetActiveKeybinds(self.currentKeybindDescriptor)
 			--restore the selected inventory item
@@ -995,7 +989,105 @@ function BUI.Inventory.Class:InitializeActionsDialog()
 			if self.actionMode == CATEGORY_ITEM_ACTION_MODE then
 				self:RefreshCategoryList()
 			end
+		end
+	end
+	
+	local function ActionDialogButtonConfirm(dialog)
+		if self.scene:IsShowing() then 
+			d(ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction))
+			
+			if (ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction) == GetString(SI_ITEM_ACTION_LINK_TO_CHAT)) then
+				--Also perform bag stack!
+				--StackBag(BAG_BACKPACK)
+				--link in chat
+				local targetData = self.itemList:GetTargetData()
+				local itemLink
+				local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
+				if bag and slot then
+					itemLink = GetItemLink(bag, slot)
+				end
+				if itemLink then
+					ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+				end
+			else
+				self.itemActions:DoSelectedAction()
+			end
+		end
+	end
+	CALLBACK_MANAGER:RegisterCallback("BUI_EVENT_ACTION_DIALOG_SETUP", ActionDialogSetup)
+	CALLBACK_MANAGER:RegisterCallback("BUI_EVENT_ACTION_DIALOG_FINISH", ActionDialogFinish)
+	CALLBACK_MANAGER:RegisterCallback("BUI_EVENT_ACTION_DIALOG_BUTTON_CONFIRM", ActionDialogButtonConfirm)
+	
+end
+
+function BUI.Inventory.HookActionDialog()
+	local function ActionsDialogSetup(dialog, data)
+        dialog.entryList:SetOnSelectedDataChangedCallback(function(list, selectedData)
+                                                                data.itemActions:SetSelectedAction(selectedData and selectedData.action)
+                                                            end)
+        local parametricList = dialog.info.parametricList
+        ZO_ClearNumericallyIndexedTable(parametricList)
+
+        dialog.itemActions = data.itemActions
+        local actions = data.itemActions:GetSlotActions()
+        local numActions = actions:GetNumSlotActions()
+
+        for i = 1, numActions do
+            local action = actions:GetSlotAction(i)
+            local actionName = actions:GetRawActionName(action)
+
+            local entryData = ZO_GamepadEntryData:New(actionName)
+            entryData:SetIconTintOnSelection(true)
+            entryData.action = action
+            entryData.setup = ZO_SharedGamepadEntry_OnSetup
+
+            local listItem =
+            {
+                template = "ZO_GamepadItemEntryTemplate",
+                entryData = entryData,
+            }
+            table.insert(parametricList, listItem)
+        end
+
+        dialog.finishedCallback = data.finishedCallback
+
+        dialog:setupFunc()
+    end
+
+    ZO_Dialogs_RegisterCustomDialog(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG,
+    {
+        setup = function(...) 
+			if (BUI.Settings.Modules["Inventory"].m_enabled and SCENE_MANAGER.scenes['gamepad_inventory_root']:IsShowing() ) or
+			   (BUI.Settings.Modules["Banking"].m_enabled and SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() ) then
+				CALLBACK_MANAGER:FireCallbacks("BUI_EVENT_ACTION_DIALOG_SETUP", ...)
+				return
+			end
+			--original function
+			ActionsDialogSetup(...) 
 		end,
+        gamepadInfo =
+        {
+            dialogType = GAMEPAD_DIALOGS.PARAMETRIC,
+        },
+        title =
+        {
+            text = SI_GAMEPAD_INVENTORY_ACTION_LIST_KEYBIND,
+        },
+        parametricList = {}, --we'll generate the entries on setup
+        finishedCallback =  function(dialog)
+			if (BUI.Settings.Modules["Inventory"].m_enabled and SCENE_MANAGER.scenes['gamepad_inventory_root']:IsShowing() ) or
+			   (BUI.Settings.Modules["Banking"].m_enabled and SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() ) then
+				CALLBACK_MANAGER:FireCallbacks("BUI_EVENT_ACTION_DIALOG_FINISH", dialog)
+				return
+			end
+			--original function
+			dialog.itemActions = nil
+			if dialog.finishedCallback then
+				dialog.finishedCallback()
+			end
+			dialog.finishedCallback = nil
+		end,
+
         buttons =
         {
             {
@@ -1006,28 +1098,18 @@ function BUI.Inventory.Class:InitializeActionsDialog()
                 keybind = "DIALOG_PRIMARY",
                 text = GetString(SI_GAMEPAD_SELECT_OPTION),
                 callback = function(dialog)
-                    --d(ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction))
-                    
-                    if (ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction) == GetString(SI_ITEM_ACTION_LINK_TO_CHAT)) then
-                        --Also perform bag stack!
-                        --StackBag(BAG_BACKPACK)
-                        --link in chat
-                        local targetData = self.itemList:GetTargetData()
-                        local itemLink
-                        local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
-                        if bag and slot then
-                            itemLink = GetItemLink(bag, slot)
-                        end
-                        if itemLink then
-                            ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
-                        end
-                    else
-                    	self.itemActions:DoSelectedAction()
-                    end
+					if (BUI.Settings.Modules["Inventory"].m_enabled and SCENE_MANAGER.scenes['gamepad_inventory_root']:IsShowing() ) or
+					   (BUI.Settings.Modules["Banking"].m_enabled and SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() ) then
+						CALLBACK_MANAGER:FireCallbacks("BUI_EVENT_ACTION_DIALOG_BUTTON_CONFIRM", dialog)
+						return
+					end
+					--original function
+					dialog.itemActions:DoSelectedAction()
                 end,
             },
         },
     })
+
 end
 
 -- override of ZO_Gamepad_ParametricList_Screen:OnStateChanged
@@ -1251,6 +1333,15 @@ function BUI.Inventory.Class:Initialize(control)
     BUI_Gamepad_ParametricList_Screen.Initialize(self, control, ZO_GAMEPAD_HEADER_TABBAR_CREATE, false, GAMEPAD_INVENTORY_ROOT_SCENE)
 
     self:InitializeSplitStackDialog()
+	
+	local function CallbackSplitStackFinished()
+		--refresh list
+		if self.scene:IsShowing() then
+			--d("tt inv splited!")
+			self:ToSavedPosition()
+		end
+	end
+	CALLBACK_MANAGER:RegisterCallback("BUI_EVENT_SPLIT_STACK_DIALOG_FINISHED", CallbackSplitStackFinished)
 
     local function OnCancelDestroyItemRequest()
         if self.listWaitingOnDestroyRequest then
@@ -1284,6 +1375,7 @@ function BUI.Inventory.Class:Initialize(control)
     control:RegisterForEvent(EVENT_VISUAL_LAYER_CHANGED, RefreshVisualLayer)
     control:SetHandler("OnUpdate", OnUpdate)
 end
+
 
 function BUI.Inventory.Class:RefreshHeader(blockCallback)
     local currentList = self:GetCurrentList()
@@ -1468,6 +1560,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             end,
 
             callback = function()
+				self:SaveListPosition()
                 self:ShowActions()
             end,
         },
@@ -1500,6 +1593,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             end,
 
             callback = function()
+				self:SaveListPosition()
                 self:ShowActions()
             end,
         },
@@ -1661,6 +1755,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             end,
 
             callback = function()
+				self:SaveListPosition()
                 self:ShowActions()
             end,
         },
@@ -1794,6 +1889,7 @@ function BUI.Inventory.Class:InitializeSplitStackDialog()
                     local quantity = ZO_GenericGamepadItemSliderDialogTemplate_GetSliderValue(dialog)
                     CallSecureProtected("PickupInventoryItem",dialogData.bagId, dialogData.slotIndex, quantity)
                     BUI_TryPlaceInventoryItemInEmptySlot(dialogData.bagId)
+					CALLBACK_MANAGER:FireCallbacks("BUI_EVENT_SPLIT_STACK_DIALOG_FINISHED")
                 end,
             },
         }

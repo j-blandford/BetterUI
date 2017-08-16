@@ -47,6 +47,38 @@ local function TryUseItem(inventorySlot)
     return false
 end
 
+local function TryBankItem(inventorySlot)
+    if(PLAYER_INVENTORY:IsBanking()) then
+        local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
+        if(bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK) then
+            --Withdraw
+            if(DoesBagHaveSpaceFor(BAG_BACKPACK, bag, index)) then
+                CallSecureProtected("PickupInventoryItem",bag, index)
+                CallSecureProtected("PlaceInTransfer")
+            else
+                ZO_Alert(UI_ALERT_CATEGORY_ERROR, SOUNDS.NEGATIVE_CLICK, SI_INVENTORY_ERROR_INVENTORY_FULL)
+            end
+        else
+            --Deposit
+            if IsItemStolen(bag, index) then
+                ZO_Alert(UI_ALERT_CATEGORY_ERROR, SOUNDS.NEGATIVE_CLICK, SI_STOLEN_ITEM_CANNOT_DEPOSIT_MESSAGE)
+            elseif DoesBagHaveSpaceFor(BAG_BANK, bag, index) or DoesBagHaveSpaceFor(BAG_SUBSCRIBER_BANK, bag, index) then
+                CallSecureProtected("PickupInventoryItem",bag, index)
+                CallSecureProtected("PlaceInTransfer")
+            else
+                if not IsESOPlusSubscriber() then
+                    if GetNumBagUsedSlots(BAG_SUBSCRIBER_BANK) > 0 then
+                        TriggerTutorial(TUTORIAL_TRIGGER_BANK_OVERFULL)
+                    else
+                        TriggerTutorial(TUTORIAL_TRIGGER_BANK_FULL_NO_ESO_PLUS)
+                    end
+                end
+                ZO_Alert(UI_ALERT_CATEGORY_ERROR, SOUNDS.NEGATIVE_CLICK, SI_INVENTORY_ERROR_BANK_FULL)
+            end
+        end
+        return true
+    end
+end
 function BUI.Inventory.SlotActions:Initialize(alignmentOverride, additionalMouseOverbinds, useKeybindStrip)
     self.alignment = KEYBIND_STRIP_ALIGN_RIGHT
 
@@ -102,20 +134,28 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride, additionalMouse
             if primaryAction and primaryAction[INDEX_ACTION_NAME] then
                 self.actionName = primaryAction[INDEX_ACTION_NAME]
 
-                if self.actionName == GetString(SI_ITEM_ACTION_USE) or self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
+                if self.actionName == GetString(SI_ITEM_ACTION_USE) or 
+					self.actionName == GetString(SI_ITEM_ACTION_EQUIP) or 
+					self.actionName == GetString(SI_ITEM_ACTION_BANK_WITHDRAW) or 
+					self.actionName == GetString(SI_ITEM_ACTION_BANK_DEPOSIT) then
                     table.remove(slotActions.m_slotActions, PRIMARY_ACTION_KEY)
                 end
             else
 				self.actionName = slotActions:GetPrimaryActionName()
 			end
-             
-			    -- Now check if the slot that has been found for the current item needs to be replaced with the CSP ones
-                if self.actionName == GetString(SI_ITEM_ACTION_USE) then
-                    slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
-                end
-                if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
-                    slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot, ZO_Dialogs_IsShowingDialog()) end, "primary", nil, {visibleWhenDead = false})
-                end
+			-- Now check if the slot that has been found for the current item needs to be replaced with the CSP ones
+			if self.actionName == GetString(SI_ITEM_ACTION_USE) then
+				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_USE), function(...) TryUseItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+			end
+			if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
+				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot, ZO_Dialogs_IsShowingDialog()) end, "primary", nil, {visibleWhenDead = false})
+			end
+			if self.actionName == GetString(SI_ITEM_ACTION_BANK_WITHDRAW) then
+				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_BANK_WITHDRAW), function(...) TryBankItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+			end
+			if self.actionName == GetString(SI_ITEM_ACTION_BANK_DEPOSIT) then
+				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_BANK_DEPOSIT), function(...) TryBankItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+			end				
         end
     end
 

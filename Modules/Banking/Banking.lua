@@ -189,6 +189,8 @@ local function OnItemSelectedChange(self, list, selectedData)
 
         GAMEPAD_TOOLTIPS:LayoutBagItem(GAMEPAD_LEFT_TOOLTIP, selectedData.bagId, selectedData.slotIndex)
     end
+	
+	self:UpdateActions()
 end
 
 
@@ -202,7 +204,21 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 
 	self:InitializeKeybind()
     self:InitializeList()
+    self.itemActions = BUI.Inventory.SlotActions:New(KEYBIND_STRIP_ALIGN_LEFT)
+	self.itemActions:SetUseKeybindStrip(false) 
+    self:InitializeActionsDialog()
 	
+	local function CallbackSplitStackFinished()
+		--refresh list
+		if SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() then
+			--d("tt bank split")
+			SHARED_INVENTORY:PerformFullUpdateOnBagCache(BAG_BANK)
+			SHARED_INVENTORY:PerformFullUpdateOnBagCache(BAG_SUBSCRIBER_BANK)
+			self:RefreshList()
+			self:ReturnToSaved()
+		end
+	end
+	CALLBACK_MANAGER:RegisterCallback("BUI_EVENT_SPLIT_STACK_DIALOG_FINISHED", CallbackSplitStackFinished)
 	
     self.list.maxOffset = 30
     self.list:SetHeaderPadding(GAMEPAD_HEADER_DEFAULT_PADDING * 0.75, GAMEPAD_HEADER_SELECTED_PADDING * 0.75)
@@ -240,8 +256,9 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 
     local function UpdateSingle_Handler(eventId, bagId, slotId, isNewItem, itemSound)
         self:UpdateSingleItem(bagId, slotId)
+		self:RefreshList()
         self:selectedDataCallback(self.list:GetSelectedControl(), self.list:GetSelectedData())
-    end
+	end
 
     local function UpdateCurrency_Handler()
         self:RefreshFooter()
@@ -294,6 +311,139 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
     self.control:RegisterForEvent(EVENT_TELVAR_STONE_UPDATE, UpdateCurrency_Handler)
     self.control:RegisterForEvent(EVENT_BANKED_TELVAR_STONES_UPDATE, UpdateCurrency_Handler)
 end
+
+-- Calling this function will add keybinds to the strip, likely using the primary key
+-- The primary key will conflict with the category keybind descriptor if added
+function BUI.Banking.Class:RefreshItemActions()
+    local targetData = self:GetList().selectedData
+    --self:SetSelectedInventoryData(targetData) instead:
+    self.itemActions:SetInventorySlot(targetData)
+end
+
+
+function BUI.Banking.Class:ActionsDialogSetup(dialog)
+	dialog.entryList:SetOnSelectedDataChangedCallback(  function(list, selectedData)
+		self.itemActions:SetSelectedAction(selectedData and selectedData.action)
+	end)
+
+    local parametricList = dialog.info.parametricList
+    ZO_ClearNumericallyIndexedTable(parametricList)
+
+    self:RefreshItemActions()
+
+    --self:RefreshItemActions()
+    local actions = self.itemActions:GetSlotActions()
+    local numActions = actions:GetNumSlotActions()
+
+    for i = 1, numActions do
+        local action = actions:GetSlotAction(i)
+        local actionName = actions:GetRawActionName(action)
+
+        local entryData = ZO_GamepadEntryData:New(actionName)
+        entryData:SetIconTintOnSelection(true)
+        entryData.action = action
+        entryData.setup = ZO_SharedGamepadEntry_OnSetup
+
+        local listItem =
+        {
+            template = "ZO_GamepadItemEntryTemplate",
+            entryData = entryData,
+        }
+		
+		--if actionName ~= "Use" and actionName ~= "Equip" and i ~= 1 then
+        table.insert(parametricList, listItem)
+		--end
+    end
+
+    dialog:setupFunc()
+end
+
+function BUI.Banking.Class:InitializeActionsDialog()
+	local function ActionDialogSetup(dialog)
+		if SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() then
+	
+			--d("tt bank action setup")
+			dialog.entryList:SetOnSelectedDataChangedCallback(  function(list, selectedData)
+			self.itemActions:SetSelectedAction(selectedData and selectedData.action)
+			end)
+
+			local parametricList = dialog.info.parametricList
+			ZO_ClearNumericallyIndexedTable(parametricList)
+
+			self:RefreshItemActions()
+
+			local actions = self.itemActions:GetSlotActions()
+			local numActions = actions:GetNumSlotActions()
+
+			for i = 1, numActions do
+				local action = actions:GetSlotAction(i)
+				local actionName = actions:GetRawActionName(action)
+
+				local entryData = ZO_GamepadEntryData:New(actionName)
+				entryData:SetIconTintOnSelection(true)
+				entryData.action = action
+				entryData.setup = ZO_SharedGamepadEntry_OnSetup
+
+				local listItem =
+				{
+					template = "ZO_GamepadItemEntryTemplate",
+					entryData = entryData,
+				}
+				
+				--if actionName ~= "Use" and actionName ~= "Equip" and i ~= 1 then
+				table.insert(parametricList, listItem)
+				--end
+			end
+
+			dialog:setupFunc()
+		end
+	end
+
+	local function ActionDialogFinish() 
+		if SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() then
+			--d("tt bank action finish")
+			-- make sure to wipe out the keybinds added by actions
+			self:AddKeybinds()
+			--restore the selected inventory item
+		
+			self:RefreshItemActions()
+			
+			--refresh so keybinds react to newly selected item
+			--self:RefreshActiveKeybinds()
+
+			self:RefreshList()
+			--if self.actionMode == CATEGORY_ITEM_ACTION_MODE then
+			--	self:RefreshCategoryList()
+			--end
+		end
+	end
+	local function ActionDialogButtonConfirm(dialog)
+		if SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() then
+			--d(ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction))
+			
+			if (ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction) == GetString(SI_ITEM_ACTION_LINK_TO_CHAT)) then
+				--Also perform bag stack!
+				--StackBag(BAG_BACKPACK)
+				--link in chat
+				local targetData = self:GetList().selectedData
+				local itemLink
+				local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
+				if bag and slot then
+					itemLink = GetItemLink(bag, slot)
+				end
+				if itemLink then
+					ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+				end
+			else
+				self.itemActions:DoSelectedAction()
+			end
+		end
+	end
+	CALLBACK_MANAGER:RegisterCallback("BUI_EVENT_ACTION_DIALOG_SETUP", ActionDialogSetup)
+	CALLBACK_MANAGER:RegisterCallback("BUI_EVENT_ACTION_DIALOG_FINISH", ActionDialogFinish)
+	CALLBACK_MANAGER:RegisterCallback("BUI_EVENT_ACTION_DIALOG_BUTTON_CONFIRM", ActionDialogButtonConfirm)
+end
+
 
 -- Thanks to Ayantir for the following method to quickly return the next free slotIndex!
 local tinyBagCache = {
@@ -467,6 +617,48 @@ function BUI.Banking.Class:CreateListTriggerKeybindDescriptors(list)
     return leftTrigger, rightTrigger
 end
 
+function BUI.Banking.Class:UpdateActions()
+    local targetData = self:GetList().selectedData
+    -- since SetInventorySlot also adds/removes keybinds, the order which we call these 2 functions is important
+    -- based on whether we are looking at an item or a faux-item
+    if ZO_GamepadBanking.IsEntryDataCurrencyRelated(targetData) then
+		--d("tt currency")
+        self.itemActions:SetInventorySlot(nil)
+    else
+		--d("tt targetData, slotType:" .. targetData.slotType)
+        self.itemActions:SetInventorySlot(targetData)
+    end
+end
+
+function BUI.Banking.Class:AddKeybinds()
+	KEYBIND_STRIP:RemoveAllKeyButtonGroups()
+	KEYBIND_STRIP:AddKeybindButtonGroup(self.withdrawDepositKeybinds)
+	KEYBIND_STRIP:AddKeybindButtonGroup(self.coreKeybinds)
+	self:UpdateActions()
+end
+
+function BUI.Banking.Class:RemoveKeybinds()
+    KEYBIND_STRIP:RemoveKeybindButtonGroup(self.withdrawDepositKeybinds)
+    KEYBIND_STRIP:RemoveKeybindButton(self.coreKeybinds)
+end
+
+function BUI.Banking.Class:ShowActions()
+    self:RemoveKeybinds()
+
+    local function OnActionsFinishedCallback()
+        self:AddKeybinds()
+    end
+
+    local dialogData = 
+    {
+        targetData = self:GetList().selectedData,
+        finishedCallback = OnActionsFinishedCallback,
+        itemActions = self.itemActions,
+    }
+
+    ZO_Dialogs_ShowPlatformDialog(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG, dialogData)
+end
+
 function BUI.Banking.Class:InitializeKeybind()
 	if not BUI.Settings.Modules["Banking"].m_enabled then
 		return
@@ -485,20 +677,23 @@ function BUI.Banking.Class:InitializeKeybind()
 		            end,
 		            enabled = true,
 		        },
-                {
-            keybind = "UI_SHORTCUT_TERTIARY",
+               {
+            keybind = "UI_SHORTCUT_RIGHT_STICK",
             name = function()
                 local cost = GetNextBankUpgradePrice()
-                if GetCurrentMoney() >= cost then
-                    return zo_strformat(SI_BANK_UPGRADE_TEXT, ZO_CurrencyControl_FormatCurrency(cost), GOLD_ICON_24)
+                if GetCarriedCurrencyAmount(CURT_MONEY) >= cost then
+                    return zo_strformat(SI_BANK_UPGRADE_TEXT, ZO_CurrencyControl_FormatCurrency(cost), ZO_GAMEPAD_GOLD_ICON_FORMAT_24)
                 end
-                return zo_strformat(SI_BANK_UPGRADE_TEXT, ZO_ERROR_COLOR:Colorize(ZO_CurrencyControl_FormatCurrency(cost)), GOLD_ICON_24)
+                return zo_strformat(SI_BANK_UPGRADE_TEXT, ZO_ERROR_COLOR:Colorize(ZO_CurrencyControl_FormatCurrency(cost)), ZO_GAMEPAD_GOLD_ICON_FORMAT_24)
             end,
             visible = function()
                 return IsBankUpgradeAvailable()
             end,
+            enabled = function()
+                return GetCarriedCurrencyAmount(CURT_MONEY) >= GetNextBankUpgradePrice()
+            end,
             callback = function()
-                if GetNextBankUpgradePrice() > GetCurrentMoney() then
+                if GetNextBankUpgradePrice() > GetCarriedCurrencyAmount(CURT_MONEY) then
                     ZO_AlertNoSuppression(UI_ALERT_CATEGORY_ALERT, nil, GetString(SI_BUY_BANK_SPACE_CANNOT_AFFORD))
                 else
                     KEYBIND_STRIP:RemoveKeybindButtonGroup(self.mainKeybindStripDescriptor)
@@ -506,13 +701,26 @@ function BUI.Banking.Class:InitializeKeybind()
                 end
             end
         },
+{
+            name = GetString(SI_GAMEPAD_INVENTORY_ACTION_LIST_KEYBIND),
+            keybind = "UI_SHORTCUT_TERTIARY",
+            order = 1000,
+            visible = function()
+                return self.selectedItemUniqueId ~= nil or self:GetList().selectedData ~= nil
+            end,
+
+            callback = function()
+				self:SaveListPosition()
+                self:ShowActions()
+            end,
+        },
         {
             alignment = KEYBIND_STRIP_ALIGN_LEFT,
             name = GetString(SI_ITEM_ACTION_STACK_ALL),
             keybind = "UI_SHORTCUT_LEFT_STICK",
             order = 1500,
             disabledDuringSceneHiding = true,
-            callback = function()
+            callback = function()				
                 if(self.currentMode == LIST_WITHDRAW) then
                     StackBag(BAG_BANK)
                 else
@@ -631,6 +839,8 @@ function BUI.Banking.Class:ReturnToSaved()
 end
 
 function BUI.Banking.Class:RefreshList()
+	--d("tt refresh bank list")
+	self.list:OnUpdate()
 	self.list:Clear()
 
     -- We have to add 2 rows to the list, one for Withdraw/Deposit GOLD and one for Withdraw/Deposit TEL-VAR
@@ -640,11 +850,14 @@ function BUI.Banking.Class:RefreshList()
 
 	--fix subscriber bank bag issue
 	checking_bags = {}
+	local slotType
 	if self.currentMode == LIST_WITHDRAW then
 		checking_bags[1] = BAG_BANK
 		checking_bags[2] = BAG_SUBSCRIBER_BANK
+		slotType = SLOT_TYPE_BANK_ITEM
 	else 
 		checking_bags[1] = BAG_BACKPACK
+		slotType = SLOT_TYPE_GAMEPAD_INVENTORY_ITEM
 	end
 	
 	
@@ -655,6 +868,7 @@ function BUI.Banking.Class:RefreshList()
 
 	--excludes stolen items
     local filteredDataTable = SHARED_INVENTORY:GenerateFullSlotData(IsNotStolenItem, unpack(checking_bags))
+	--d("tt bank refreshed items: " .. #filteredDataTable)
 	local tempDataTable = {}
 	for i = 1, #filteredDataTable  do
 		local itemData = filteredDataTable[i]
@@ -676,6 +890,7 @@ function BUI.Banking.Class:RefreshList()
 			itemData.isEquippedInCurrentCategory = slotIndex and true or nil
 
 			table.insert(tempDataTable, itemData)
+			ZO_InventorySlot_SetType(itemData, slotType)
 		end
 	end
 	filteredDataTable = tempDataTable
@@ -723,31 +938,10 @@ function BUI.Banking.Class:RefreshList()
     end
 
     self.list:Commit()
-	--[[
-	local slots = {}
-    
-	for i, currentBag in ipairs(checking_bags) do 
-		local bagSlots = GetBagSize(currentBag)
-		for slotIndex = 0, bagSlots - 1 do
-			local slotData = SHARED_INVENTORY:GenerateSingleSlotData(currentBag, slotIndex)
-			if slotData then
-				slotData.itemCategoryName = GetBestItemCategoryDescription(slotData)
-				slots[#slots + 1] = slotData
-			end
-		end
-	end
-	 
-    table.sort(slots, ItemSortFunc)
-
-    for i, itemData in ipairs(slots) do
-    	if not itemData.stolen then -- can't deposit stolen items
-	        self:AddEntryToList(itemData)
-	    end
-    end
-	
-	]]--
     self:ReturnToSaved()
     self:RefreshFooter()
+	
+	self:UpdateActions()
 end
 
 -- Go through and get the item which has been passed to us through the event
