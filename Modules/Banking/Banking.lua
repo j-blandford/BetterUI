@@ -5,8 +5,6 @@ local BANKING_ROW_TEMPLATE = "BUI_GenericEntry_Template"
 local LIST_WITHDRAW = 1
 local LIST_DEPOSIT  = 2
 
-local CURRENCY = {GOLD = 1, TELVAR = 2}
-
 local function GetCategoryTypeFromWeaponType(bagId, slotIndex)
     local weaponType = GetItemWeaponType(bagId, slotIndex)
     if weaponType == WEAPONTYPE_AXE or weaponType == WEAPONTYPE_HAMMER or weaponType == WEAPONTYPE_SWORD or weaponType == WEAPONTYPE_DAGGER then
@@ -55,22 +53,6 @@ local function GetBestItemCategoryDescription(itemData)
 	end
 	
 	return fullDesc
-end
-
-
--- Things to look towards: custom sorting orders
-local DEFAULT_GAMEPAD_ITEM_SORT =
-{
-    itemCategoryName = { tiebreaker = "name" },
-    name = { tiebreaker = "requiredLevel" },
-    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
-    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
-    iconFile = { tiebreaker = "uniqueId" },
-    uniqueId = { isId64 = true },
-}
-
-local function ItemSortFunc(data1, data2)
-     return ZO_TableOrderingFunction(data1, data2, "itemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
 
 local function GetMarketPrice(itemLink, stackCount)
@@ -171,6 +153,12 @@ function BUI.Banking.Class:RefreshFooter()
     end
 end
 
+function BUI.Banking.Class:RefreshCurrencyTooltip()
+	if SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() and self:GetList().selectedData.label ~= nil then 
+        GAMEPAD_TOOLTIPS:LayoutBankCurrencies(GAMEPAD_LEFT_TOOLTIP, ZO_BANKABLE_CURRENCIES)
+	end
+end
+
 local function OnItemSelectedChange(self, list, selectedData)
     -- Check if we are on the "Deposit/withdraw" gold/telvar row
 
@@ -180,7 +168,8 @@ local function OnItemSelectedChange(self, list, selectedData)
         KEYBIND_STRIP:AddKeybindButtonGroup(self.currencyKeybinds)
         KEYBIND_STRIP:UpdateKeybindButtonGroup(self.currencyKeybinds)
 
-        GAMEPAD_TOOLTIPS:ClearTooltip(GAMEPAD_LEFT_TOOLTIP)
+        --GAMEPAD_TOOLTIPS:ClearTooltip(GAMEPAD_LEFT_TOOLTIP)
+		self:RefreshCurrencyTooltip()
     else
         -- We are not, add the "withdraw/deposit" keybinds here
         KEYBIND_STRIP:RemoveKeybindButtonGroup(self.currencyKeybinds)
@@ -262,6 +251,8 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 
     local function UpdateCurrency_Handler()
         self:RefreshFooter()
+		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.coreKeybinds)
+		self:RefreshCurrencyTooltip()
     end
 
     local function OnEffectivelyShown()
@@ -306,10 +297,8 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
     self.control:SetHandler("OnEffectivelyHidden", OnEffectivelyHidden)
 
     -- Always-running event listeners, these don't add much overhead
-    self.control:RegisterForEvent(EVENT_MONEY_UPDATE, UpdateCurrency_Handler)
-    self.control:RegisterForEvent(EVENT_BANKED_MONEY_UPDATE, UpdateCurrency_Handler)
-    self.control:RegisterForEvent(EVENT_TELVAR_STONE_UPDATE, UpdateCurrency_Handler)
-    self.control:RegisterForEvent(EVENT_BANKED_TELVAR_STONES_UPDATE, UpdateCurrency_Handler)
+    self.control:RegisterForEvent(EVENT_CARRIED_CURRENCY_UPDATE, UpdateCurrency_Handler)
+    self.control:RegisterForEvent(EVENT_BANKED_CURRENCY_UPDATE, UpdateCurrency_Handler)
 end
 
 -- Calling this function will add keybinds to the strip, likely using the primary key
@@ -552,9 +541,9 @@ function BUI.Banking.Class:DisplaySelector(currencyType)
     local currency_max
 
     if(self.currentMode == LIST_DEPOSIT) then
-        currency_max = GetCarriedCurrencyAmount((currencyType == CURRENCY.GOLD) and CURT_MONEY or CURT_TELVAR_STONES)
+        currency_max = GetCarriedCurrencyAmount(currencyType)
     else
-        currency_max = GetBankedCurrencyAmount((currencyType == CURRENCY.GOLD) and CURT_MONEY or CURT_TELVAR_STONES)
+        currency_max = GetBankedCurrencyAmount(currencyType)
     end
 
     -- Does the player actually have anything that can be transferred?
@@ -565,8 +554,10 @@ function BUI.Banking.Class:DisplaySelector(currencyType)
 	
 		local CURRENCY_TYPE_TO_TEXTURE =
 		{
-			[CURRENCY.GOLD] = "EsoUI/Art/currency/gamepad/gp_gold.dds",
-			[CURRENCY.TELVAR] = "EsoUI/Art/currency/gamepad/gp_telvar.dds",
+			[CURT_MONEY] = "EsoUI/Art/currency/gamepad/gp_gold.dds",
+			[CURT_TELVAR_STONES] = "EsoUI/Art/currency/gamepad/gp_telvar.dds",
+			[CURT_ALLIANCE_POINTS] = "esoui/art/currency/gamepad/gp_alliancepoints.dds",
+			[CURT_WRIT_VOUCHERS] = "EsoUI/Art/currency/gamepad/gp_writvoucher.dds",
 		}
 	
 		self.selectorCurrency:SetTexture(CURRENCY_TYPE_TO_TEXTURE[currencyType])
@@ -729,7 +720,6 @@ function BUI.Banking.Class:InitializeKeybind()
             end,
         },
 	}
-
     self.withdrawDepositKeybinds = {
             alignment = KEYBIND_STRIP_ALIGN_LEFT,
                 {
@@ -758,21 +748,16 @@ function BUI.Banking.Class:InitializeKeybind()
             end,
             callback = function()
                 local amount = self.selector:GetValue()
+				local currencyType = self:GetList().selectedData.currencyType
                 if(self.currentMode == LIST_WITHDRAW) then
-                    if(self:GetList().selectedData.currencyType == CURRENCY.GOLD) then
-                        WithdrawCurrencyFromBank(CURT_MONEY, amount)
-                    else
-                        WithdrawCurrencyFromBank(CURT_TELVAR_STONES, amount)
-                    end
+                    WithdrawCurrencyFromBank(currencyType, amount)
                 else
-                    if(self:GetList().selectedData.currencyType == CURRENCY.GOLD) then
-                        DepositCurrencyIntoBank(CURT_MONEY, amount)
-                    else
-                        DepositCurrencyIntoBank(CURT_TELVAR_STONES, amount)
-                    end
+                    DepositCurrencyIntoBank(currencyType, amount)
                 end
                 self:HideSelector()
                 self:RefreshFooter()
+				KEYBIND_STRIP:UpdateKeybindButtonGroup(self.coreKeybinds)
+
             end,
         }
     }
@@ -845,8 +830,10 @@ function BUI.Banking.Class:RefreshList()
 
     -- We have to add 2 rows to the list, one for Withdraw/Deposit GOLD and one for Withdraw/Deposit TEL-VAR
     local wdString = self.currentMode == LIST_WITHDRAW and "WITHDRAW" or "DEPOSIT"
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFBF00"..wdString.." GOLD|r", currencyType = CURRENCY.GOLD})
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|c0066FF"..wdString.." TEL VAR|r", currencyType = CURRENCY.TELVAR})
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." GOLD|r", currencyType = CURT_MONEY})
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." TEL VAR|r", currencyType = CURT_TELVAR_STONES})
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." ALLIENCE POINT|r", currencyType = CURT_ALLIANCE_POINTS})
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." WRIT VOUCHER|r", currencyType = CURT_WRIT_VOUCHERS})
 
 	--fix subscriber bank bag issue
 	checking_bags = {}

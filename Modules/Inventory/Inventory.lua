@@ -66,8 +66,8 @@ local function SetupItemList(list)
 	list:AddDataTemplateWithHeader("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality, "ZO_GamepadMenuEntryHeaderTemplate")
 end
 
-local function SetupCraftBagList(list)
-    list:AddDataTemplate("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
+local function SetupCraftBagList(buiList)
+    buiList.list:AddDataTemplate("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
 end
 local function SetupCategoryList(list)
     list:AddDataTemplate("BUI_GamepadItemEntryTemplate", ZO_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction)
@@ -891,11 +891,11 @@ function BUI.Inventory.Class:InitializeCraftBagList()
         BUI_SharedGamepadEntry_OnSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
     end
 
-    self.craftBagList = self:AddList("CraftBag", true, BUI.Inventory.CraftList, BAG_VIRTUAL, SLOT_TYPE_CRAFT_BAG_ITEM, OnSelectedDataCallback, nil, nil, nil, false, "BUI_GamepadItemSubEntryTemplate")
+    self.craftBagList = self:AddList("CraftBag", SetupCraftBagList, BUI.Inventory.CraftList, BAG_VIRTUAL, SLOT_TYPE_CRAFT_BAG_ITEM, OnSelectedDataCallback, nil, nil, nil, false, "BUI_GamepadItemSubEntryTemplate")
     self.craftBagList:SetNoItemText(GetString(SI_GAMEPAD_INVENTORY_CRAFT_BAG_EMPTY))
     self.craftBagList:SetAlignToScreenCenter(true, 30)
 
-	self.craftBagList:SetSortFunction(ZO_GamepadInventory_DefaultItemSortComparator)
+	self.craftBagList:SetSortFunction(BUI_CraftList_DefaultItemSortComparator)
 
 end
 
@@ -907,7 +907,7 @@ function BUI.Inventory.Class:InitializeActionsDialog()
 
 	local function ActionDialogSetup(dialog)
 		if self.scene:IsShowing() then 
-			d("tt inv action setup")
+			--d("tt inv action setup")
 				dialog.entryList:SetOnSelectedDataChangedCallback(  function(list, selectedData)
 					self.itemActions:SetSelectedAction(selectedData and selectedData.action)
 				end)
@@ -965,7 +965,7 @@ function BUI.Inventory.Class:InitializeActionsDialog()
 	end
 	local function ActionDialogFinish() 
 		if self.scene:IsShowing() then 
-			d("tt inv action finish")
+			--d("tt inv action finish")
 			-- make sure to wipe out the keybinds added by actions
 			self:SetActiveKeybinds(self.currentKeybindDescriptor)
 			--restore the selected inventory item
@@ -1310,8 +1310,8 @@ function BUI.Inventory.Class:OnDeferredInitialize()
                 elseif currentList == self.itemList then
                     if self.selectedItemFilterType == ITEMFILTERTYPE_QUICKSLOT then
                         KEYBIND_STRIP:UpdateKeybindButton(self.quickslotKeybindStripDescriptor)
-                    elseif self.selectedItemFilterType == ITEMFILTERTYPE_ARMOR or self.selectedItemFilterType == ITEMFILTERTYPE_WEAPONS then
-                        KEYBIND_STRIP:UpdateKeybindButton(self.toggleCompareModeKeybindStripDescriptor)
+                 --   elseif self.selectedItemFilterType == ITEMFILTERTYPE_ARMOR or self.selectedItemFilterType == ITEMFILTERTYPE_WEAPONS then
+                 --       KEYBIND_STRIP:UpdateKeybindButton(self.toggleCompareModeKeybindStripDescriptor)
                     end
                 end
                 RefreshSelectedData() --dialog will refresh selected when it hides, so only do it if it's not showing

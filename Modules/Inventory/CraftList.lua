@@ -1,8 +1,7 @@
 BUI.Inventory.CraftList = BUI.Inventory.List:Subclass()
-
-local function GetFilterComparator(filterType)
-    return function(itemData)
-        if filterType then
+function GetFilterComparator(filterType)
+	return function(itemData)
+		if filterType then
 			-- we can pass a table of filters into the function, and this case has to be handled separately
 			if type(filterType) == "table" then
 				local filterHit = false
@@ -17,13 +16,28 @@ local function GetFilterComparator(filterType)
 			else
 				return ZO_InventoryUtils_DoesNewItemMatchFilterType(itemData, filterType)	
 			end
-        else
+		else
 			-- for "All"
-            return true
-        end
+			return true
+		end
 
-        return ZO_InventoryUtils_DoesNewItemMatchSupplies(itemData)
-    end
+		return ZO_InventoryUtils_DoesNewItemMatchSupplies(itemData)
+	end
+end
+
+local DEFAULT_GAMEPAD_ITEM_SORT =
+{
+    bestGamepadItemCategoryName = { tiebreaker = "bestItemTypeName" },
+	bestItemTypeName = { tiebreaker = "name"},
+    name = { tiebreaker = "requiredLevel" },
+    requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
+    requiredChampionPoints = { tiebreaker = "iconFile", isNumeric = true },
+    iconFile = { tiebreaker = "uniqueId" },
+    uniqueId = { isId64 = true },
+}
+
+local function BUI_CraftList_DefaultItemSortComparator(left, right)
+    return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
 
 function BUI.Inventory.CraftList:AddSlotDataToTable(slotsTable, inventoryType, slotIndex)
@@ -35,7 +49,10 @@ function BUI.Inventory.CraftList:AddSlotDataToTable(slotsTable, inventoryType, s
             -- itemData is shared in several places and can write their own value of bestItemCategoryName.
             -- We'll use bestGamepadItemCategoryName instead so there are no conflicts.
             slotData.bestGamepadItemCategoryName = categorizationFunction(slotData)
-
+			slotData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(slotData)) 
+			slotData.bestItemCategoryName = slotData.bestGamepadItemCategoryName
+			slotData.itemCategoryName = slotData.bestGamepadItemCategoryName
+	
             table.insert(slotsTable, slotData)
         end
     end
@@ -44,11 +61,11 @@ end
 function BUI.Inventory.CraftList:RefreshList(filterType) 
 	self.list:Clear()
 
-	self.filterType = filterType
+	self.itemFilterFunction = GetFilterComparator(filterType)
 
 	filteredDataTable = self:GenerateSlotTable()
 	
-	table.sort(filteredDataTable, ZO_GamepadInventory_DefaultItemSortComparator)
+	table.sort(filteredDataTable, BUI_CraftList_DefaultItemSortComparator)
 
     local lastBestItemCategoryName
     for i, itemData in ipairs(filteredDataTable) do
@@ -58,6 +75,8 @@ function BUI.Inventory.CraftList:RefreshList(filterType)
         data:InitializeInventoryVisualData(itemData)
 
 		data.bestItemCategoryName = itemData.bestItemCategoryName
+		data.itemCategoryName = itemData.bestItemCategoryName
+		data.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
 		data.bestGamepadItemCategoryName = itemData.bestItemCategoryName
 
         if itemData.bestItemCategoryName ~= lastBestItemCategoryName then

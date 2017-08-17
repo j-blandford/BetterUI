@@ -4,10 +4,9 @@ local TEXTURE_EQUIP_SLOT_ICON = "BetterUI/Modules/CIM/Images/inv_equip_quickslot
 local NEW_ICON_TEXTURE = "EsoUI/Art/Miscellaneous/Gamepad/gp_icon_new.dds"
 
 local USE_SHORT_CURRENCY_FORMAT = true
-
+ 
 local DEFAULT_GAMEPAD_ITEM_SORT =
 {
-	brandNew = { tiebreaker = "bestGamepadItemCategoryName" },
     bestGamepadItemCategoryName = { tiebreaker = "name" },
     name = { tiebreaker = "requiredLevel" },
     requiredLevel = { tiebreaker = "requiredChampionPoints", isNumeric = true },
@@ -114,7 +113,7 @@ end
 
 
 function BUI_Inventory_DefaultItemSortComparator(left, right)
-    return ZO_TableOrderingFunction(left, right, "brandNew", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
+    return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
 
 local function GetMarketPrice(itemLink, stackCount)
@@ -516,22 +515,6 @@ function BUI.Inventory.List:AddSlotDataToTable(slotsTable, inventoryType, slotIn
     end
 end
 
-
-function BUI.Inventory.List:GenerateSlotTable()
-    local slots = {}
-
-    for k, inventoryType in ipairs(self.inventoryTypes) do
-        local slotIndex = ZO_GetNextBagSlotIndex(inventoryType)
-        while slotIndex do
-            self:AddSlotDataToTable(slots, inventoryType, slotIndex)
-            slotIndex = ZO_GetNextBagSlotIndex(inventoryType, slotIndex)
-        end
-    end
-
-    table.sort(slots, self.sortFunction or ItemSortFunc)
-    return slots
-end
-
 -- this function is a VERY basic generic refresh, with no form of sorting or specific interface information
 -- if you want to use BUI.Inventory.List, it will be very useful if you OVERWRITE THIS METHOD!
 function BUI.Inventory.List:RefreshList()
@@ -549,7 +532,6 @@ function BUI.Inventory.List:RefreshList()
     for i, itemData in ipairs(slots) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
 		self:SetupItemEntry(entry, itemData)
-		d("itemData bestCateName: " .. itemData.bestGamepadItemCategoryName)
          if itemData.bestGamepadItemCategoryName ~= currentBestCategoryName then
             currentBestCategoryName = itemData.bestGamepadItemCategoryName
             entry:SetHeader(currentBestCategoryName)
