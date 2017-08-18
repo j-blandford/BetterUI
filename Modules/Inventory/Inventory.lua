@@ -866,7 +866,7 @@ function BUI.Inventory.Class:InitializeItemList()
 
     self.itemList.maxOffset = 30
     self.itemList:SetHeaderPadding(GAMEPAD_HEADER_DEFAULT_PADDING * 0.75, GAMEPAD_HEADER_SELECTED_PADDING * 0.75)
-	self.itemList:SetUniversalPostPadding(GAMEPAD_DEFAULT_POST_PADDING * 0.5)    
+	self.itemList:SetUniversalPostPadding(GAMEPAD_DEFAULT_POST_PADDING * 0.75)    
 
 end
 

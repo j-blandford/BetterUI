@@ -211,7 +211,7 @@ function BUI.Banking.Class:Initialize(tlw_name, scene_name)
 	
     self.list.maxOffset = 30
     self.list:SetHeaderPadding(GAMEPAD_HEADER_DEFAULT_PADDING * 0.75, GAMEPAD_HEADER_SELECTED_PADDING * 0.75)
-	self.list:SetUniversalPostPadding(GAMEPAD_DEFAULT_POST_PADDING * 0.5)    
+	self.list:SetUniversalPostPadding(GAMEPAD_DEFAULT_POST_PADDING * 0.75)    
 
     -- Setup data templates of the lists
     --self:SetupList(BANKING_ROW_TEMPLATE, SetupListing)
