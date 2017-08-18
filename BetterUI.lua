@@ -190,6 +190,7 @@ function BUI.LoadModules()
 		ddebug("Initializing BUI...")
 		BUI.GuildStore.FixMM() -- fix MM is independent of any module
 		BUI.Player.GetResearch()
+		BUI.Inventory.HookDestroyItem()
 		BUI.Inventory.HookActionDialog()
 
 		if(BUI.Settings.Modules["CIM"].m_enabled) then

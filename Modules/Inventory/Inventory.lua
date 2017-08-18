@@ -1020,6 +1020,19 @@ function BUI.Inventory.Class:InitializeActionsDialog()
 	
 end
 
+function BUI.Inventory.HookDestroyItem()
+    -- -- Overwrite the destroy callback because everything called from GAMEPAD_INVENTORY will now be classed as "insecure"
+    ZO_InventorySlot_InitiateDestroyItem = function(inventorySlot)
+        SetCursorItemSoundsEnabled(false)
+        local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
+        CallSecureProtected("PickupInventoryItem",bag, index) -- > Here is the key change!
+        SetCursorItemSoundsEnabled(true)
+	
+        CallSecureProtected("PlaceInWorldLeftClick") -- DESTROY! (also needs to be a secure call)
+        return true
+    end
+end
+
 function BUI.Inventory.HookActionDialog()
 	local function ActionsDialogSetup(dialog, data)
         dialog.entryList:SetOnSelectedDataChangedCallback(function(list, selectedData)
