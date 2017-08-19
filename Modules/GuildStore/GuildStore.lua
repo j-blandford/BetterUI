@@ -123,8 +123,18 @@ end
 -- Pretty much identical to whats in [Enhanced Inventory], just without the stolen icons
 local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selected)
     if label then
-        label:SetFont("$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick")
-
+    	local fontSize = 28
+		if BUI.Settings.Modules["CIM"].biggerSkin then
+			fontSize = 42
+		end
+		if GetCVar("language.2") == "ru" then
+			label:SetFont(string.format("RuEso/fonts/ftn57.otf|%d|soft-shadow-thick", fontSize))
+		else
+			label:SetFont(string.format("$(GAMEPAD_MEDIUM_FONT)|%d|soft-shadow-thick", fontSize))
+		end
+        if data.modifyTextType then
+            label:SetModifyTextType(data.modifyTextType)
+        end
         local labelTxt = data.text
 
         if(BUI.Settings.Modules["CIM"].attributeIcons) then
@@ -219,7 +229,13 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
 
     local notEnoughMoney = data.purchasePrice > GetCarriedCurrencyAmount(CURT_MONEY)
 
-
+	if BUI.Settings.Modules["CIM"].biggerSkin then
+		control:GetNamedChild("Price"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("SellerName"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("UnitPrice"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("BuyingAdvice"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("TimeLeft"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+	end
     control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(data.purchasePrice, USE_SHORT_CURRENCY_FORMAT))
     if(notEnoughMoney) then control:GetNamedChild("Price"):SetColor(1,0,0,1) else control:GetNamedChild("Price"):SetColor(1,1,1,1) end
 
@@ -681,11 +697,6 @@ function BUI.GuildStore.Sell:InitializeList()
                                                     return slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen and not isBound end)
 
     self.itemList:GetParametricList():SetAlignToScreenCenter(true, LISTINGS_ITEM_HEIGHT)
-
-    self.itemList:GetParametricList().maxOffset = 0
-    self.itemList:GetParametricList().headerDefaultPadding = 40
-    self.itemList:GetParametricList().headerSelectedPadding = 0
-    self.itemList:GetParametricList().universalPostPadding = 5
 end
 
 function BUI.GuildStore.Browse:UpdateNameFilter(newValue)

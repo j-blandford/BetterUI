@@ -103,9 +103,14 @@ function BUI_VerticalParametricScrollList:Initialize(control)
     self:SetPlaySoundFunction(GamepadParametricScrollListPlaySound)
 
     self.alignToScreenCenterExpectedEntryHalfHeight = 30
+	self:SetBgHidden(BUI.Settings.Modules["CIM"].biggerSkin)
 end
 
 
+function BUI_VerticalParametricScrollList:SetBgHidden(hidden)
+	local bg = self.control:GetNamedChild("SelectBg")
+	bg:SetHidden(hidden)
+end
 
 
 
@@ -119,6 +124,7 @@ function BUI_VerticalItemParametricScrollList:New(control)
     list:SetUniversalPostPadding(GAMEPAD_DEFAULT_POST_PADDING)
     return list
 end
+
 
 
 

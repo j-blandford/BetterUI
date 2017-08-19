@@ -147,6 +147,17 @@ function BUI.InitModuleOptions()
             width = "full",
             warning="Reloads the UI for the change to propagate"
         },
+        {
+            type = "checkbox",
+            name = "Use bigger font size in item lists.",
+            tooltip = "Changed the font size of item lists bigger.",
+            getFunc = function() return BUI.Settings.Modules["CIM"].biggerSkin end,
+            setFunc = function(value) BUI.Settings.Modules["CIM"].biggerSkin = value
+                                        ReloadUI() end,
+            disabled = function() return not BUI.Settings.Modules["CIM"].m_enabled end,
+            width = "full",
+            warning="Reloads the UI for the change to propagate"
+        },
 
 	}
 

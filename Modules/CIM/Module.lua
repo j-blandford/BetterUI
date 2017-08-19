@@ -7,6 +7,7 @@ function BUI.CIM.InitModule(m_options)
 	m_options["triggerSpeed"] = 10
 	m_options["condenseLtooltip"] = false
 	m_options["enhanceCompat"] = false
+	m_options["biggerSkin"] = false
 	
 	m_options["rhScrollSpeed"] = 50
 

@@ -202,18 +202,6 @@ end
 function BUI.Inventory.Setup()
 	Init("Inventory", "Inventory")
 
-    -- -- Overwrite the destroy callback because everything called from GAMEPAD_INVENTORY will now be classed as "insecure"
-    ZO_InventorySlot_InitiateDestroyItem = function(inventorySlot)
-        SetCursorItemSoundsEnabled(false)
-        local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
-        CallSecureProtected("PickupInventoryItem",bag, index) -- > Here is the key change!
-        SetCursorItemSoundsEnabled(true)
-	
-        CallSecureProtected("PlaceInWorldLeftClick") -- DESTROY! (also needs to be a secure call)
-        return true
-    end
-
-
 	GAMEPAD_INVENTORY = BUI.Inventory.Class:New(BUI_GamepadInventoryTopLevel) -- Bam! Initialise the custom inventory class so it's integrated neatly
 
 	GAMEPAD_INVENTORY_FRAGMENT = ZO_SimpleSceneFragment:New(BUI_GamepadInventoryTopLevel) -- **Replaces** the old inventory with a new one defined in "Templates/GamepadInventory.xml"
