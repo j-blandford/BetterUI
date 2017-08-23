@@ -75,8 +75,8 @@ local function Init(mId, moduleName)
 		},
 		{
             type = "checkbox",
-            name = "Display character attributes on the right tooltip?",
-            tooltip = "Show the character attributes on the right tooltip rather than seeing the current equipped item",
+            name = "Display character attributes on the switching tooltip?",
+            tooltip = "Show the character attributes on the switching tooltip rather than seeing the current equipped item",
             getFunc = function() return BUI.Settings.Modules["Inventory"].displayCharAttributes end,
             setFunc = function(value) BUI.Settings.Modules["Inventory"].displayCharAttributes = value end,
             width = "full",
