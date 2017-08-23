@@ -753,21 +753,6 @@ function BUI.Inventory.Class:RefreshItemList()
 	
 end
 
-function BUI.Inventory.Class:RemoveKeybinds()
-	KEYBIND_STRIP:RemoveKeybindButtonGroup(self.mainKeybindStripDescriptor)
-	KEYBIND_STRIP:RemoveKeybindButtonGroup(self.subKeybindStripDescriptor)
-end
-
-function BUI.Inventory.Class:AddKeybinds()
-	KEYBIND_STRIP:AddKeybindButtonGroup(self.mainKeybindStripDescriptor)
-	KEYBIND_STRIP:AddKeybindButtonGroup(self.subKeybindStripDescriptor)
-end
-
-function BUI.Inventory.Class:RefreshActiveKeybinds()
-	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.mainKeybindStripDescriptor)
-	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.subKeybindStripDescriptor)
-end
-
 function BUI.Inventory.Class:UpdateRightTooltip()
     local selectedItemData = self.currentlySelectedData
 	--local selectedEquipSlot = BUI_GetEquipSlotForEquipType(selectedItemData.dataSource.equipType)
@@ -926,10 +911,9 @@ function BUI.Inventory.Class:InitializeActionsDialog()
 	local function ActionDialogFinish() 
 		if self.scene:IsShowing() then 
 			--d("tt inv action finish")
-			-- make sure to wipe out the keybinds added by actions
-			self:RemoveKeybinds()
-			self:AddKeybinds()
-			
+			-- make sure to wipe out the keybinds added by 
+    		self:SetActiveKeybinds(self.currentKeybindDescriptor)
+		 
 			--restore the selected inventory item
 			if self.actionMode == CATEGORY_ITEM_ACTION_MODE then
 				--if we refresh item actions we will get a keybind conflict
@@ -1126,6 +1110,7 @@ function BUI.Inventory.Class:OnStateChanged(oldState, newState)
 		end
 		
     elseif newState == SCENE_HIDDEN then
+        self:SwitchActiveList(nil)
         BUI.CIM.SetTooltipWidth(BUI_ZO_GAMEPAD_DEFAULT_PANEL_WIDTH)
 
         self.listWaitingOnDestroyRequest = nil
@@ -1283,7 +1268,7 @@ function BUI.Inventory.Class:OnDeferredInitialize()
                 if currentList == self.categoryList then
                     self:RefreshCategoryList()
                 elseif currentList == self.itemList then
-                    KEYBIND_STRIP:UpdateKeybindButton(self.subKeybindStripDescriptor) 
+                    KEYBIND_STRIP:UpdateKeybindButton(self.currentKeybindDescriptor) 
                 end
                 RefreshSelectedData() --dialog will refresh selected when it hides, so only do it if it's not showing
                 self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
@@ -1416,30 +1401,30 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
     elseif listDescriptor ~= INVENTORY_ITEM_LIST and listDescriptor ~= INVENTORY_CATEGORY_LIST then
         listDescriptor = INVENTORY_CRAFT_BAG_LIST
     end
+    if self.scene:IsShowing() then
+    	
+    	if listDescriptor == INVENTORY_ITEM_LIST then
+    		self:SetCurrentList(self.itemList)
+    		self:SetActiveKeybinds(self.mainKeybindStripDescriptor)
 
-	if listDescriptor == INVENTORY_ITEM_LIST then
-		self:RemoveKeybinds()
-		self:AddKeybinds()
-		self:SetCurrentList(self.itemList)
+    		self:RefreshCategoryList()
+    		self:RefreshItemList()
 
-		self:RefreshCategoryList()
-		self:RefreshItemList()
-
-		self:SetSelectedItemUniqueId(self.itemList:GetTargetData())
-		self.actionMode = ITEM_LIST_ACTION_MODE
-		self:RefreshItemActions()
-		
-		if self.callLaterRightToolTip ~= nil then
-			EVENT_MANAGER:UnregisterForUpdate(self.callLaterRightToolTip)
-		end
-		
-		local callLaterId = zo_callLater(function() self:UpdateRightTooltip() end, 100)
-		self.callLaterRightToolTip = "CallLaterFunction"..callLaterId
-		
-		self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
-		
-		self:UpdateItemLeftTooltip(self.itemList.selectedData)
-		
+    		self:SetSelectedItemUniqueId(self.itemList:GetTargetData())
+    		self.actionMode = ITEM_LIST_ACTION_MODE
+    		self:RefreshItemActions()
+    		
+    		if self.callLaterRightToolTip ~= nil then
+    			EVENT_MANAGER:UnregisterForUpdate(self.callLaterRightToolTip)
+    		end
+    		
+    	local callLaterId = zo_callLater(function() self:UpdateRightTooltip() end, 100)
+    	self.callLaterRightToolTip = "CallLaterFunction"..callLaterId
+    	
+    	self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
+    	
+    	self:UpdateItemLeftTooltip(self.itemList.selectedData)
+    	
 		--if self.callLaterLeftToolTip ~= nil then
 		--	EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
 		--end
@@ -1447,11 +1432,9 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 		--local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, 100)
 		--self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
 
-	elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then
-		self:RemoveKeybinds()
-		self:AddKeybinds()
-
-        self:SetCurrentList(self.craftBagList)
+	elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then  
+		self:SetCurrentList(self.craftBagList)
+		self:SetActiveKeybinds(self.mainKeybindStripDescriptor)
 
 		self:RefreshCategoryList()
 		self:RefreshCraftBagList()
@@ -1464,9 +1447,11 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 		self:LayoutCraftBagTooltip(GAMEPAD_RIGHT_TOOLTIP)
 
 		--TriggerTutorial(TUTORIAL_TRIGGER_CRAFT_BAG_OPENED)
-	end
-
+	end 
 	self:RefreshActiveKeybinds()
+else
+	self.actionMode = nil
+end
 end
 
 function BUI.Inventory.Class:ActivateHeader()
@@ -1508,58 +1493,7 @@ end
 
 function BUI.Inventory.Class:InitializeKeybindStrip()
 	self.mainKeybindStripDescriptor = {
-		--Y Button for Actions
-        {
-            name = GetString(SI_GAMEPAD_INVENTORY_ACTION_LIST_KEYBIND),
-            alignment = KEYBIND_STRIP_ALIGN_LEFT,
-            keybind = "UI_SHORTCUT_TERTIARY",
-            order = 1000,
-            visible = function()
-            	if self.actionMode == ITEM_LIST_ACTION_MODE then
-               		return self.selectedItemUniqueId ~= nil or self.itemList:GetTargetData() ~= nil
-            	elseif self.actionMode == CRAFT_BAG_ACTION_MODE then
-            		return self.selectedItemUniqueId ~= nil
-            	end 
-            end,
-
-            callback = function()
-				self:SaveListPosition()
-                self:ShowActions()
-            end,
-        },
-        --L Stick for Stacking Items
-        {
-        	name = GetString(SI_ITEM_ACTION_STACK_ALL),
-        	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
-        	keybind = "UI_SHORTCUT_LEFT_STICK",
-        	order = 1500,
-        	disabledDuringSceneHiding = true,
-        	visible = function()
-        		return self.actionMode == ITEM_LIST_ACTION_MODE
-        	end,
-        	callback = function()
-        		StackBag(BAG_BACKPACK)
-        	end,
-        },
-        --R Stick for Switching Bags
-        {
-            name = function()
-				return zo_strformat(GetString(SI_BUI_INV_ACTION_TO_TEMPLATE), GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_INV or SI_BUI_INV_ACTION_CB))
-			end,
-        	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
-            keybind = "UI_SHORTCUT_RIGHT_STICK",
-            order = 1500,
-            disabledDuringSceneHiding = true,
-            callback = function()
-                self:Switch()
-            end,
-        },
-	}
-
-	ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.mainKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
- 
-  	self.subKeybindStripDescriptor =
-    { 
+		--X Button for Quick Action
 		{
 			alignment = KEYBIND_STRIP_ALIGN_LEFT,
             name = function()
@@ -1619,7 +1553,54 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             	end
             end,
 		},
+		--Y Button for Actions
+        {
+            name = GetString(SI_GAMEPAD_INVENTORY_ACTION_LIST_KEYBIND),
+            alignment = KEYBIND_STRIP_ALIGN_LEFT,
+            keybind = "UI_SHORTCUT_TERTIARY",
+            order = 1000,
+            visible = function()
+            	if self.actionMode == ITEM_LIST_ACTION_MODE then
+               		return self.selectedItemUniqueId ~= nil or self.itemList:GetTargetData() ~= nil
+            	elseif self.actionMode == CRAFT_BAG_ACTION_MODE then
+            		return self.selectedItemUniqueId ~= nil
+            	end 
+            end,
+
+            callback = function()
+				self:SaveListPosition()
+                self:ShowActions()
+            end,
+        },
+        --R Stick for Switching Bags
+        {
+            name = function()
+				return zo_strformat(GetString(SI_BUI_INV_ACTION_TO_TEMPLATE), GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_INV or SI_BUI_INV_ACTION_CB))
+			end,
+        	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+            keybind = "UI_SHORTCUT_RIGHT_STICK",
+            disabledDuringSceneHiding = true,
+            callback = function()
+                self:Switch()
+            end,
+        },
+        --L Stick for Stacking Items
+        {
+        	name = GetString(SI_ITEM_ACTION_STACK_ALL),
+        	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+        	keybind = "UI_SHORTCUT_LEFT_STICK",
+        	disabledDuringSceneHiding = true,
+        	visible = function()
+        		return self.actionMode == ITEM_LIST_ACTION_MODE
+        	end,
+        	callback = function()
+        		StackBag(BAG_BACKPACK)
+        	end,
+        },
 	}
+
+	ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.mainKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
+  
 end
 
 local function BUI_TryPlaceInventoryItemInEmptySlot(targetBag)
