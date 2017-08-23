@@ -228,7 +228,6 @@ function BUI.Inventory.Class:InitializeCategoryList()
         end
 
         self.currentlySelectedData = targetData
-        KEYBIND_STRIP:UpdateKeybindButtonGroup(self.categoryListKeybindStripDescriptor)
     end
 
     self.categoryList:SetOnTargetDataChangedCallback(OnTargetCategoryChanged)
@@ -755,57 +754,18 @@ function BUI.Inventory.Class:RefreshItemList()
 end
 
 function BUI.Inventory.Class:RemoveKeybinds()
-    if self.currentKeybindDescriptor then
-        KEYBIND_STRIP:RemoveKeybindButtonGroup(self.currentKeybindDescriptor)
-    end
-
-	if self.currentSecondaryKeybind then
-		KEYBIND_STRIP:RemoveKeybindButtonGroup(self.currentSecondaryKeybind)
-	end
-
-	KEYBIND_STRIP:RemoveKeybindButtonGroup(self.itemFilterKeybindStripDescriptor)
+	KEYBIND_STRIP:RemoveKeybindButtonGroup(self.mainKeybindStripDescriptor)
+	KEYBIND_STRIP:RemoveKeybindButtonGroup(self.subKeybindStripDescriptor)
 end
 
 function BUI.Inventory.Class:AddKeybinds()
-    if self.currentKeybindDescriptor then
-        KEYBIND_STRIP:AddKeybindButtonGroup(self.currentKeybindDescriptor)
-    end
-
-	if self.currentSecondaryKeybind then
-		KEYBIND_STRIP:AddKeybindButtonGroup(self.currentSecondaryKeybind)
-	end
-end
-
-function BUI.Inventory.Class:SetActiveKeybinds(keybindDescriptor)
-    self:ClearSelectedInventoryData() --clear all the bindings from the action list
-
-    self:RemoveKeybinds()
-
-    self.currentKeybindDescriptor = keybindDescriptor
-
-	if(keybindDescriptor == self.itemFilterKeybindStripDescriptor) then
-		if self.selectedItemFilterType == ITEMFILTERTYPE_QUICKSLOT then
-			self.currentSecondaryKeybind = self.quickslotKeybindStripDescriptor
-		--elseif self.selectedItemFilterType == ITEMFILTERTYPE_CONSUMABLE then
-		--	self.currentSecondaryKeybind = self.quickslotKeybindStripDescriptor
-		else
-			self.currentSecondaryKeybind = self.switchEquipKeybindDescriptor
-		end
-
-	end
-    --self:AddKeybinds()
-    if(keybindDescriptor ~= nil) then self:AddKeybinds() end
+	KEYBIND_STRIP:AddKeybindButtonGroup(self.mainKeybindStripDescriptor)
+	KEYBIND_STRIP:AddKeybindButtonGroup(self.subKeybindStripDescriptor)
 end
 
 function BUI.Inventory.Class:RefreshActiveKeybinds()
-    if self.currentKeybindDescriptor then
-        KEYBIND_STRIP:UpdateKeybindButtonGroup(self.currentKeybindDescriptor)
-    end
-
-	if self.currentSecondaryKeybind then
-		KEYBIND_STRIP:UpdateKeybindButtonGroup(self.currentSecondaryKeybind)
-	end
-
+	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.mainKeybindStripDescriptor)
+	KEYBIND_STRIP:UpdateKeybindButtonGroup(self.subKeybindStripDescriptor)
 end
 
 function BUI.Inventory.Class:UpdateRightTooltip()
@@ -967,7 +927,9 @@ function BUI.Inventory.Class:InitializeActionsDialog()
 		if self.scene:IsShowing() then 
 			--d("tt inv action finish")
 			-- make sure to wipe out the keybinds added by actions
-			self:SetActiveKeybinds(self.currentKeybindDescriptor)
+			self:RemoveKeybinds()
+			self:AddKeybinds()
+			
 			--restore the selected inventory item
 			if self.actionMode == CATEGORY_ITEM_ACTION_MODE then
 				--if we refresh item actions we will get a keybind conflict
@@ -1321,11 +1283,7 @@ function BUI.Inventory.Class:OnDeferredInitialize()
                 if currentList == self.categoryList then
                     self:RefreshCategoryList()
                 elseif currentList == self.itemList then
-                    if self.selectedItemFilterType == ITEMFILTERTYPE_QUICKSLOT then
-                        KEYBIND_STRIP:UpdateKeybindButton(self.quickslotKeybindStripDescriptor)
-                 --   elseif self.selectedItemFilterType == ITEMFILTERTYPE_ARMOR or self.selectedItemFilterType == ITEMFILTERTYPE_WEAPONS then
-                 --       KEYBIND_STRIP:UpdateKeybindButton(self.toggleCompareModeKeybindStripDescriptor)
-                    end
+                    KEYBIND_STRIP:UpdateKeybindButton(self.subKeybindStripDescriptor) 
                 end
                 RefreshSelectedData() --dialog will refresh selected when it hides, so only do it if it's not showing
                 self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
@@ -1441,15 +1399,10 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 	self.currentListType = listDescriptor
 
 	if self.previousListType == INVENTORY_ITEM_LIST or self.previousListType == INVENTORY_CATEGORY_LIST then
-	 	KEYBIND_STRIP:RemoveKeybindButton(self.quickslotKeybindStripDescriptor)
-	 	KEYBIND_STRIP:RemoveKeybindButton(self.switchEquipKeybindDescriptor)
-
 		self.listWaitingOnDestroyRequest = nil
 		self:TryClearNewStatusOnHidden()
 		ZO_SavePlayerConsoleProfile()
     else
-        KEYBIND_STRIP:RemoveKeybindButton(self.craftBagKeybindStripDescriptor)
-
         self.listWaitingOnDestroyRequest = nil
         self:TryClearNewStatusOnHidden()
         ZO_SavePlayerConsoleProfile()
@@ -1465,8 +1418,8 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
     end
 
 	if listDescriptor == INVENTORY_ITEM_LIST then
-		self:SetActiveKeybinds(self.itemFilterKeybindStripDescriptor)
-
+		self:RemoveKeybinds()
+		self:AddKeybinds()
 		self:SetCurrentList(self.itemList)
 
 		self:RefreshCategoryList()
@@ -1495,7 +1448,8 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 		--self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
 
 	elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then
-		self:SetActiveKeybinds(self.craftBagKeybindStripDescriptor)
+		self:RemoveKeybinds()
+		self:AddKeybinds()
 
         self:SetCurrentList(self.craftBagList)
 
@@ -1553,23 +1507,19 @@ local function IsInventorySlotLockedOrJunk(targetData)
 end
 
 function BUI.Inventory.Class:InitializeKeybindStrip()
-    self.categoryListKeybindStripDescriptor =
-    {
-        alignment = KEYBIND_STRIP_ALIGN_LEFT,
+	self.mainKeybindStripDescriptor = {
+		--Y Button for Actions
         {
-            name = GetString(SI_GAMEPAD_SELECT_OPTION),
-            keybind = "UI_SHORTCUT_PRIMARY",
-            order = -500,
-            callback = function() self:Select() end,
-            visible = function() return not self.categoryList:IsEmpty() end,
-        },
-        {
-            name = GetString(SI_GAMEPAD_INVENTORY_EQUIPPED_MORE_ACTIONS),
+            name = GetString(SI_GAMEPAD_INVENTORY_ACTION_LIST_KEYBIND),
+            alignment = KEYBIND_STRIP_ALIGN_LEFT,
             keybind = "UI_SHORTCUT_TERTIARY",
             order = 1000,
             visible = function()
-                return self.selectedItemUniqueId ~= nil or self.itemList:GetTargetData() ~= nil
-                --return self.selectedItemUniqueId ~= nil
+            	if self.actionMode == ITEM_LIST_ACTION_MODE then
+               		return self.selectedItemUniqueId ~= nil or self.itemList:GetTargetData() ~= nil
+            	elseif self.actionMode == CRAFT_BAG_ACTION_MODE then
+            		return self.selectedItemUniqueId ~= nil
+            	end 
             end,
 
             callback = function()
@@ -1577,275 +1527,99 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
                 self:ShowActions()
             end,
         },
+        --L Stick for Stacking Items
         {
-
+        	name = GetString(SI_ITEM_ACTION_STACK_ALL),
+        	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+        	keybind = "UI_SHORTCUT_LEFT_STICK",
+        	order = 1500,
+        	disabledDuringSceneHiding = true,
+        	visible = function()
+        		return self.actionMode == ITEM_LIST_ACTION_MODE
+        	end,
+        	callback = function()
+        		StackBag(BAG_BACKPACK)
+        	end,
+        },
+        --R Stick for Switching Bags
+        {
             name = function()
-					return zo_strformat(GetString(SI_BUI_INV_ACTION_TO_TEMPLATE), GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_INV or SI_BUI_INV_ACTION_CB))
-				end,
-            keybind = "UI_SHORTCUT_LEFT_STICK",
+				return zo_strformat(GetString(SI_BUI_INV_ACTION_TO_TEMPLATE), GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_INV or SI_BUI_INV_ACTION_CB))
+			end,
+        	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+            keybind = "UI_SHORTCUT_RIGHT_STICK",
             order = 1500,
             disabledDuringSceneHiding = true,
             callback = function()
-                --StackBag(BAG_BACKPACK)
                 self:Switch()
             end,
         },
-    }
+	}
 
-    ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.categoryListKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
-
-    self.itemFilterKeybindStripDescriptor =
-    {
-        alignment = KEYBIND_STRIP_ALIGN_LEFT,
-        {
-            name = GetString(SI_GAMEPAD_INVENTORY_ACTION_LIST_KEYBIND),
-            keybind = "UI_SHORTCUT_TERTIARY",
-            order = 1000,
-            visible = function()
-                return self.selectedItemUniqueId ~= nil or self.itemList:GetTargetData() ~= nil
-            end,
-
-            callback = function()
-				self:SaveListPosition()
-                self:ShowActions()
-            end,
-        },
+	ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.mainKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
+ 
+  	self.subKeybindStripDescriptor =
+    { 
 		{
-			alignment = KEYBIND_STRIP_ALIGN_RIGHT,
+			alignment = KEYBIND_STRIP_ALIGN_LEFT,
             name = function()
-				local selectedData = self.categoryList.selectedData
-				return (selectedData.filterType == ITEMFILTERTYPE_QUICKSLOT) and GetString(SI_BUI_INV_ACTION_QUICKSLOT_ASSIGN) or
-									 GetString(SI_BUI_INV_SWITCH_EQUIPSLOT) end,
-            keybind = "UI_SHORTCUT_SECONDARY",
-            visible = function()
-				return self.selectedItemUniqueId ~= nil or self.itemList:GetTargetData() ~= nil
-            end,
-            callback = function()
-				local selectedData = self.categoryList.selectedData
-				if selectedData.filterType == ITEMFILTERTYPE_QUICKSLOT then
-					self:ShowQuickslot()
-				else
-	                self.equipToMainSlot = not self.equipToMainSlot
-	                BUI.GenericHeader.SetEquipText(self.header, self.equipToMainSlot)
-					self:RefreshHeader()
-				end
-            end,
-		},
-		----	name = GetString(SI_ITEM_ACTION_STACK_ALL),
-        ----    keybind = "UI_SHORTCUT_LEFT_STICK",
-        ----    order = 1500,
-        ----    disabledDuringSceneHiding = true,
-        ----    callback = function()
-        ----        StackBag(BAG_BACKPACK)
-        ----    end,
-        ----},
-		--{
-        --    name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
-        --    keybind = "UI_SHORTCUT_LEFT_STICK",
-        --    order = 1500,
-        --    disabledDuringSceneHiding = true,
-        --    callback = function()
-        --        --Also perform bag stack!
-		--		StackBag(BAG_BACKPACK)
-		--		--link in chat
-		--		local targetData = self.itemList:GetTargetData()
-		--		local itemLink
-		--		local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
-		--		if bag and slot then
-		--			itemLink = GetItemLink(bag, slot)
-		--		end
-		--		if itemLink then
-		--			ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
-		--		end
-		--	end,
-        --},
-        {
-            name = function()
-				if (self.selectedItemUniqueId ~= nil) then
-					local targetData = self.itemList:GetTargetData()
-					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-					if (IsItemJunk(bag, index)) then
-						return GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK)
-					end
-				end
-				
-				return GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
-			
-				--local selectedData = self.categoryList.selectedData
-				--return (selectedData.filterType == ITEMFILTERTYPE_JUNK) and GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK) or 
-				--		GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
-			end,
-            --name = GetString(SI_ITEM_ACTION_DESTROY),
-            keybind = "UI_SHORTCUT_RIGHT_STICK",
-            order = 2000,
-            disabledDuringSceneHiding = true,
-
-			visible = function()
-				if (self.selectedItemUniqueId ~= nil) then
-				--*--if self.selectedItemUniqueId ~= nil then
-					local targetData = self.itemList:GetTargetData()
-					return IsInventorySlotLockedOrJunk(targetData)
-					--*--return ZO_InventorySlot_CanDestroyItem(targetData)
-				else
-                    local targetData = self.itemList:GetTargetData()
-                    if (targetData ~= nil) then
-                        return IsInventorySlotLockedOrJunk(targetData)
-					--*--return true
-					end
-				end
-				----return (self.selectedItemUniqueId ~= nil)
-                --local targetData = self.itemList:GetTargetData()
-				--if (self.selectedItemUniqueId ~= nil) then 
-				--local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-				--return not IsItemJunk(bag, index)
-                --return self.selectedItemUniqueId ~= nil and ZO_InventorySlot_CanDestroyItem(targetData)
-				--end
-				return false
-			end,
-
-            callback = function()
-				if (self.selectedItemUniqueId ~= nil) then
-                local targetData = self.itemList:GetTargetData()
-					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-					local isJunk = not IsItemJunk(bag, index)
-					if (not IsItemPlayerLocked(bag, index) or (IsItemPlayerLocked(bag, index) and not isJunk)) then
-						SetItemIsJunk(bag, index, isJunk)
-						PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
-                	--*--if(ZO_InventorySlot_CanDestroyItem(targetData) and ZO_InventorySlot_InitiateDestroyItem(targetData)) then
-                	--*--    self.itemList:Deactivate()
-                	--*--    self.listWaitingOnDestroyRequest = self.itemList
-                	end
+            	if self.actionMode == ITEM_LIST_ACTION_MODE then
+            		--bag mode
+            		local isQuickslot = ZO_InventoryUtils_DoesNewItemMatchFilterType(self.itemList.selectedData, ITEMFILTERTYPE_QUICKSLOT)
+            		local filterType = GetItemFilterTypeInfo(self.itemList.selectedData.bagId, self.itemList.selectedData.slotIndex)
+            		if isQuickslot then
+            			--assign
+            			return GetString(SI_BUI_INV_ACTION_QUICKSLOT_ASSIGN)
+            		elseif filterType == ITEMFILTERTYPE_WEAPONS or filterType == ITEMFILTERTYPE_ARMOR then
+            			--switch compare
+            			return "Switch Info" --GetString(SI_BUI_INV_SWITCH_EQUIPSLOT)
+            		end 
+            	elseif self.actionMode == CRAFT_BAG_ACTION_MODE then
+            		--craftbag mode
+            		return GetString(SI_ITEM_ACTION_LINK_TO_CHAT)
+            	else
+            		return ""
             	end
-            end
-        }
-    }
-
-    ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.itemFilterKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
-
-	self.switchEquipKeybindDescriptor = {
-            alignment = KEYBIND_STRIP_ALIGN_RIGHT,
-            name = GetString(SI_BUI_INV_SWITCH_EQUIPSLOT),
+            end,
             keybind = "UI_SHORTCUT_SECONDARY",
             visible = function()
-                return true
+            	if self.actionMode == ITEM_LIST_ACTION_MODE then
+            		local isQuickslot = ZO_InventoryUtils_DoesNewItemMatchFilterType(self.itemList.selectedData, ITEMFILTERTYPE_QUICKSLOT)
+            		local filterType = GetItemFilterTypeInfo(self.itemList.selectedData.bagId, self.itemList.selectedData.slotIndex)
+            		
+            		if not isQuickslot and filterType ~= ITEMFILTERTYPE_WEAPONS and filterType ~= ITEMFILTERTYPE_ARMOR then
+            			return false
+            		end
+            		return true
+            	end
             end,
             callback = function()
-                self.equipToMainSlot = not self.equipToMainSlot
-                BUI.GenericHeader.SetEquipText(self.header, self.equipToMainSlot)
-				self:RefreshHeader()
+            	if self.actionMode == ITEM_LIST_ACTION_MODE then
+            		--bag mode
+            		local isQuickslot = ZO_InventoryUtils_DoesNewItemMatchFilterType(self.itemList.selectedData, ITEMFILTERTYPE_QUICKSLOT)
+            		local filterType = GetItemFilterTypeInfo(self.itemList.selectedData.bagId, self.itemList.selectedData.slotIndex)
+            		if isQuickslot then
+            			--assign
+            			self:ShowQuickslot()
+            		elseif filterType == ITEMFILTERTYPE_WEAPONS or filterType == ITEMFILTERTYPE_ARMOR then
+            			--switch compare
+            			--self:SwitchInfo()
+            		end 
+            	elseif self.actionMode == CRAFT_BAG_ACTION_MODE then
+            		--craftbag mode
+            		local targetData = self.craftBagList:GetTargetData()
+					local itemLink
+					local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
+					if bag and slot then
+						itemLink = GetItemLink(bag, slot)
+					end
+					if itemLink then
+						ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+					end
+            	end
             end,
-	        {
-	            name = function()
-					return zo_strformat(GetString(SI_BUI_INV_ACTION_TO_TEMPLATE), GetString(self:GetCurrentList() == self.craftBagList and SI_BUI_INV_ACTION_INV or SI_BUI_INV_ACTION_CB))
-				end,
-	            keybind = "UI_SHORTCUT_LEFT_STICK",
-	            order = 1500,
-	            disabledDuringSceneHiding = true,
-	            callback = function()
-	                self:Switch()
-	            end,
-	        },
-    }
-
-    self.quickslotKeybindStripDescriptor =
-    {
-        alignment = KEYBIND_STRIP_ALIGN_LEFT,
-        name = GetString(SI_GAMEPAD_ITEM_ACTION_QUICKSLOT_ASSIGN),
-        keybind = "UI_SHORTCUT_SECONDARY",
-        order = -500,
-        callback = function() self:ShowQuickslot() end,
-    }
-
-    self.craftBagKeybindStripDescriptor =
-    {
-        alignment = KEYBIND_STRIP_ALIGN_LEFT,
-        {
-            name = GetString(SI_GAMEPAD_INVENTORY_ACTION_LIST_KEYBIND),
-            keybind = "UI_SHORTCUT_TERTIARY",
-            order = 1000,
-            visible = function()
-                return self.selectedItemUniqueId ~= nil
-            end,
-
-            callback = function()
-				self:SaveListPosition()
-                self:ShowActions()
-            end,
-        },
-		{
-			name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
-			keybind = "UI_SHORTCUT_RIGHT_STICK",
-			order = 1500,
-			disabledDuringSceneHiding = true,
-			callback = function()
-				--Also perform bag stack!
-				--StackBag(BAG_BACKPACK)
-				--link in chat
-				local targetData = self.craftBagList:GetTargetData()
-				local itemLink
-				local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
-				if bag and slot then
-					itemLink = GetItemLink(bag, slot)
-				end
-				if itemLink then
-					ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
-				end
-			end,
 		},
-		--        {
-        --    name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
-        --    keybind = "UI_SHORTCUT_LEFT_STICK",
-        --    order = 1500,
-        --    disabledDuringSceneHiding = true,
-        --    callback = function()
-        --        ----Also perform bag stack!
-		--		--StackBag(BAG_BACKPACK)
-		--		--mark as junk
-		--		local targetData = self.craftBagList:GetTargetData()
-		--		local itemLink
-		--		local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
-		--		if bag and slot then
-		--			itemLink = GetItemLink(bag, slot)
-		--		end
-		--		if itemLink then
-		--			ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
-		--		end
-        --    end,
-        --},
-        --{
-        --    name = GetString(SI_ITEM_ACTION_MARK_AS_JUNK),
-        --    keybind = "UI_SHORTCUT_RIGHT_STICK",
-        --    order = 2000,
-        --    disabledDuringSceneHiding = true,
-        --
-        --    visible = function()
-        --        local targetData = self.itemList:GetTargetData()
-		--		if (self.selectedItemUniqueId ~= nil) then 
-		--		local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-		--		return not IsItemJunk(bag, index)
-        --        --return self.selectedItemUniqueId ~= nil and ZO_InventorySlot_CanDestroyItem(targetData)
-		--		end
-		--		return false
-        --    end,
-        --
-        --    callback = function()
-        --        local targetData = self.itemList:GetTargetData()
-		--		local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-		--		if(not IsItemJunk(bag, index)) then
-		--		 local isJunk = true --IsItemJunk(bag, index) 
-        --            SetItemIsJunk(bag, index, isJunk)
-        --            PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
-        --        end
-		--		--if(not IsSlotLocked(index) and IsItemJunk(bag, index)) then
-		--		--local isJunk = false --IsItemJunk(bag, index)
-		--		--SetItemIsJunk(bag, index, isJunk)
-		--		--PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
-        --        --end 
-        --    end
-        --}
-    }
-
-    ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.craftBagKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
+	}
 end
 
 local function BUI_TryPlaceInventoryItemInEmptySlot(targetBag)
