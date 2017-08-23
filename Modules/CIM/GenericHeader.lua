@@ -88,7 +88,22 @@ end
 
 function BUI.GenericHeader.SetEquipText(control, isEquipMain)
     local equipControl = control:GetNamedChild("TitleContainer"):GetNamedChild("EquipText")
-    equipControl:SetText(zo_strformat(GetString(SI_BUI_INV_EQUIP_TEXT), GetString(isEquipMain and SI_BUI_INV_EQUIPSLOT_MAIN or SI_BUI_INV_EQUIPSLOT_BACKUP)))
+    if isEquipMain then
+        equipControl:SetText(zo_strformat(GetString(SI_BUI_INV_EQUIP_TEXT_HIGHLIGHT), GetString(SI_BUI_INV_EQUIPSLOT_MAIN)))
+    else
+        equipControl:SetText(zo_strformat(GetString(SI_BUI_INV_EQUIP_TEXT_NORMAL), GetString(SI_BUI_INV_EQUIPSLOT_MAIN)))
+    end
+    equipControl:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)
+end
+
+function BUI.GenericHeader.SetBackupEquipText(control, isEquipMain)
+    local equipControl = control:GetNamedChild("TitleContainer"):GetNamedChild("BackupEquipText")
+    if isEquipMain then
+        equipControl:SetText(zo_strformat(GetString(SI_BUI_INV_EQUIP_TEXT_NORMAL), GetString(SI_BUI_INV_EQUIPSLOT_BACKUP)))
+    else
+        equipControl:SetText(zo_strformat(GetString(SI_BUI_INV_EQUIP_TEXT_HIGHLIGHT), GetString(SI_BUI_INV_EQUIPSLOT_BACKUP)))
+    end
+
     equipControl:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)
 end
 
@@ -108,6 +123,18 @@ function BUI.GenericHeader.SetEquippedIcons(control, equipMain, equipOff, equipP
 	if(equipMain ~= "") then equipMainControl:SetTexture(equipMain) else equipMainControl:SetTexture(DEFAULT_INVSLOT_ICON) end
 	if(equipOff ~= "") then equipOffControl:SetTexture(equipOff) else equipOffControl:SetTexture(DEFAULT_INVSLOT_ICON)  end
 	if(equipPoison ~= "") then equipPoisonControl:SetTexture(equipPoison) else equipPoisonControl:SetTexture(DEFAULT_INVSLOT_ICON)  end
+end
+
+function BUI.GenericHeader.SetBackupEquippedIcons(control, equipMain, equipOff, equipPoison)
+    local equipMainControl = control:GetNamedChild("TitleContainer"):GetNamedChild("BackupMainHandIcon")
+    local equipOffControl = control:GetNamedChild("TitleContainer"):GetNamedChild("BackupOffHandIcon")
+    local equipPoisonControl = control:GetNamedChild("TitleContainer"):GetNamedChild("BackupPoisonIcon")
+    
+    local DEFAULT_INVSLOT_ICON = "/esoui/art/inventory/inventory_slot.dds"
+
+    if(equipMain ~= "") then equipMainControl:SetTexture(equipMain) else equipMainControl:SetTexture(DEFAULT_INVSLOT_ICON) end
+    if(equipOff ~= "") then equipOffControl:SetTexture(equipOff) else equipOffControl:SetTexture(DEFAULT_INVSLOT_ICON)  end
+    if(equipPoison ~= "") then equipPoisonControl:SetTexture(equipPoison) else equipPoisonControl:SetTexture(DEFAULT_INVSLOT_ICON)  end
 end
 
 function BUI.GenericHeader.RefreshData()

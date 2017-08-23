@@ -102,4 +102,5 @@ end
 ZO_Store_OnInitialize_Gamepad = function(...) end
 
 -- Imagery, you dont need to localise these strings
-ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT","|cFF6600<<1>>|r")
+ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT_HIGHLIGHT","|cFF6600<<1>>|r")
+ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT_NORMAL","|cCCCCCC<<1>>|r")

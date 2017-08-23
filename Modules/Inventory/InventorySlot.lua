@@ -79,6 +79,7 @@ local function TryBankItem(inventorySlot)
         return true
     end
 end
+
 function BUI.Inventory.SlotActions:Initialize(alignmentOverride, additionalMouseOverbinds, useKeybindStrip)
     self.alignment = KEYBIND_STRIP_ALIGN_RIGHT
 
@@ -150,6 +151,9 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride, additionalMouse
 			if self.actionName == GetString(SI_ITEM_ACTION_EQUIP) then
 				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_EQUIP), function(...) GAMEPAD_INVENTORY:TryEquipItem(inventorySlot, ZO_Dialogs_IsShowingDialog()) end, "primary", nil, {visibleWhenDead = false})
 			end
+            if self.actionName == GetString(SI_ITEM_ACTION_UNEQUIP) then
+                slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_UNEQUIP), function(...) GAMEPAD_INVENTORY:TryUnequipItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
+            end
 			if self.actionName == GetString(SI_ITEM_ACTION_BANK_WITHDRAW) then
 				slotActions:AddSlotPrimaryAction(GetString(SI_ITEM_ACTION_BANK_WITHDRAW), function(...) TryBankItem(inventorySlot) end, "primary", nil, {visibleWhenDead = false})
 			end

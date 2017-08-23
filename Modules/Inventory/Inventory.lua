@@ -254,6 +254,24 @@ function BUI.Inventory.Class:IsItemListEmpty(filteredEquipSlot, nonEquipableFilt
 end
 
 
+local function CanUnequipItem(inventorySlot)
+    local bag, slot = ZO_Inventory_GetBagAndIndex(inventorySlot)
+    --d("unequip check : " .. bag .. " " .. slot)
+    if bag == BAG_WORN then
+        local _, stackCount = GetItemInfo(bag, slot)
+        --d("stack count: " .. stackCount)
+        return stackCount > 0
+    end
+    return false
+end
+
+function BUI.Inventory.Class:TryUnequipItem(inventorySlot)
+	--d("unequip: ")
+	if CanUnequipItem(inventorySlot) then
+	    local equipSlot = ZO_Inventory_GetSlotIndex(inventorySlot)
+    	UnequipItem(equipSlot)
+    end
+end
 
 function BUI.Inventory.Class:TryEquipItem(inventorySlot, isCallingFromActionDialog)
     local equipType = inventorySlot.dataSource.equipType
@@ -268,38 +286,20 @@ function BUI.Inventory.Class:TryEquipItem(inventorySlot, isCallingFromActionDial
 	
 	-- Check if the current item is an armour (or two handed, where it doesn't need a dialog menu), if so, then just equip into it's slot
     local armorType = GetItemArmorType(inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex)
-    if armorType ~= ARMORTYPE_NONE or equipType == EQUIP_TYPE_TWO_HAND or equipType == EQUIP_TYPE_NECK then
-        if equipType == EQUIP_TYPE_TWO_HAND then
-			equipItemCallback = function()
-            CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_MAIN_HAND or EQUIP_SLOT_BACKUP_MAIN, 1)
-			end
-			
-			isBindCheckItem = true
-		else
-			equipItemCallback = function()
-            CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
-			end
-			
-			isBindCheckItem = true
-        end
-    elseif equipType == EQUIP_TYPE_COSTUME then
-        CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_COSTUME, 1)
-    elseif equipType == EQUIP_TYPE_POISON then
-		-- Poisons
-		CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_POISON or EQUIP_SLOT_BACKUP_POISON, 1)
-	elseif equipType == EQUIP_TYPE_OFF_HAND then
-		-- Shields
+    if armorType ~= ARMORTYPE_NONE or equipType == EQUIP_TYPE_NECK then
 		equipItemCallback = function()
-		CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, self.equipToMainSlot and EQUIP_SLOT_OFF_HAND or EQUIP_SLOT_BACKUP_OFF, 1)
+        CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, BUI_GetEquipSlotForEquipType(equipType), 1)
 		end
 		
 		isBindCheckItem = true
+    elseif equipType == EQUIP_TYPE_COSTUME then
+        CallSecureProtected("RequestMoveItem",inventorySlot.dataSource.bagId, inventorySlot.dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_COSTUME, 1)
 	else
-        -- Else, it's a weapon, so show a dialog so the user can pick either slot!
+        -- Else, it's a weapon or poison or ring, so show a dialog so the user can pick either slot!
 		equipItemCallback = function()
 			local function showEquipSingleSlotItemDialog()
 				-- should check if ZO_Dialogs_IsShowingDialog
-				ZO_Dialogs_ShowDialog(BUI_EQUIP_SLOT_DIALOG, {inventorySlot, self.equipToMainSlot}, {mainTextParams={GetString(SI_BUI_INV_EQUIPSLOT_MAIN)}}, true)
+				ZO_Dialogs_ShowDialog(BUI_EQUIP_SLOT_DIALOG, {inventorySlot, self.isPrimaryWeapon}, {mainTextParams={GetString(SI_BUI_INV_EQUIPSLOT_MAIN)}}, true)
 			end
 			
 			if isCallingFromActionDialog ~= nil and isCallingFromActionDialog then
@@ -602,14 +602,15 @@ function BUI.Inventory.Class:InitializeHeader()
         data4Text = UpdateCapacityString,
     }
 
-     BUI.GenericHeader.Initialize(self.header, ZO_GAMEPAD_HEADER_TABBAR_CREATE)
-     BUI.GenericHeader.SetEquipText(self.header, self.equipToMainSlot)
+	BUI.GenericHeader.Initialize(self.header, ZO_GAMEPAD_HEADER_TABBAR_CREATE)
+	BUI.GenericHeader.SetEquipText(self.header, self.isPrimaryWeapon)
+	BUI.GenericHeader.SetBackupEquipText(self.header, self.isPrimaryWeapon)
 
-     BUI.GenericHeader.Refresh(self.header, self.categoryHeaderData, ZO_GAMEPAD_HEADER_TABBAR_CREATE)
+	BUI.GenericHeader.Refresh(self.header, self.categoryHeaderData, ZO_GAMEPAD_HEADER_TABBAR_CREATE)
 
-	 BUI.GenericFooter.Initialize(self)
-	 BUI.GenericFooter.Refresh(self)
-	 --self.header.tabBar:SetDefaultSelectedIndex(1)
+	BUI.GenericFooter.Initialize(self)
+	BUI.GenericFooter.Refresh(self)
+	--self.header.tabBar:SetDefaultSelectedIndex(1)
 	 
 end
 
@@ -752,6 +753,22 @@ function BUI.Inventory.Class:RefreshItemList()
 	
 	
 end
+
+
+function BUI.Inventory.Class:LayoutCraftBagTooltip()
+    local title
+    local description
+    if HasCraftBagAccess() then
+        title = GetString(SI_ESO_PLUS_STATUS_UNLOCKED)
+        description = GetString(SI_CRAFT_BAG_STATUS_ESO_PLUS_UNLOCKED_DESCRIPTION)
+    else
+        title =  GetString(SI_ESO_PLUS_STATUS_LOCKED)
+        description = GetString(SI_CRAFT_BAG_STATUS_LOCKED_DESCRIPTION)
+    end
+
+    GAMEPAD_TOOLTIPS:LayoutTitleAndMultiSectionDescriptionTooltip(GAMEPAD_LEFT_TOOLTIP, title, description)
+end
+
 
 function BUI.Inventory.Class:SwitchInfo()
 	self.switchInfo = not self.switchInfo
@@ -1173,8 +1190,7 @@ end
 
 function BUI.Inventory.Class:InitializeEquipSlotDialog()
     local dialog = ZO_GenericGamepadDialog_GetControl(GAMEPAD_DIALOGS.BASIC)
-    local confirmString = zo_strupper(GetString(SI_DESTROY_ITEM_CONFIRMATION))
-
+     
     local function ReleaseDialog(data, mainSlot)
         local equipType = data[1].dataSource.equipType
 	
@@ -1183,13 +1199,20 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
 		local bindType = GetItemLinkBindType(equipItemLink)
 	
 		local equipItemCallback = function()
-			if(equipType ~= EQUIP_TYPE_RING) then
+			if equipType == EQUIP_TYPE_ONE_HAND then
 				if(mainSlot) then
 					CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_MAIN_HAND or EQUIP_SLOT_BACKUP_MAIN, 1)
 				else
 					CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_OFF_HAND or EQUIP_SLOT_BACKUP_OFF, 1)
 				end
-			else
+			elseif equipType == EQUIP_TYPE_MAIN_HAND or 
+			       equipType == EQUIP_TYPE_TWO_HAND then
+				CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_MAIN_HAND or EQUIP_SLOT_BACKUP_MAIN, 1)
+			elseif equipType == EQUIP_TYPE_OFF_HAND then
+				CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_OFF_HAND or EQUIP_SLOT_BACKUP_OFF, 1)
+			elseif equipType == EQUIP_TYPE_TWO_POISON then
+				CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_POISON or EQUIP_SLOT_BACKUP_POISON, 1)
+			elseif equipType == EQUIP_TYPE_RING then
 				if(mainSlot) then
 					CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, EQUIP_SLOT_RING1, 1)
 				else
@@ -1205,6 +1228,9 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
 		else
 			equipItemCallback()
 		end
+    end
+    local function GetDialogSwitchButtonText(isPrimary)
+        return "Switch Weapons"
     end
     ZO_Dialogs_RegisterCustomDialog(BUI_EQUIP_SLOT_DIALOG,
     {
@@ -1229,16 +1255,84 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
         {
             {
                 keybind = "DIALOG_PRIMARY",
-                text = GetString(SI_BUI_INV_EQUIP_PROMPT_MAIN),
+                text = function(dialog)
+                	local equipType = dialog.data[1].dataSource.equipType
+                	if equipType == EQUIP_TYPE_ONE_HAND then
+                		--choose Main/Off hand, Primary/Secondary weapon
+                		return GetString(SI_BUI_INV_EQUIP_PROMPT_MAIN)
+                	elseif equipType == EQUIP_TYPE_MAIN_HAND or
+                		equipType == EQUIP_TYPE_OFF_HAND or
+                		equipType == EQUIP_TYPE_TWO_HAND or
+                		equipType == EQUIP_TYPE_POISON then
+                		--choose Primary/Secondary weapon
+                		return "Equip"
+                	elseif equipType == EQUIP_TYPE_RING then
+                		--choose which rint slot
+                		return "First Slot"
+                	end 
+                	return ""
+                end,
                 callback = function()
                     ReleaseDialog(dialog.data, true)
                 end,
             },
             {
-                keybind = "DIALOG_NEGATIVE",
-                text = GetString(SI_BUI_INV_EQUIP_PROMPT_BACKUP),
-                callback = function()
+                keybind = "DIALOG_SECONDARY",
+				text = function(dialog)
+                	local equipType = dialog.data[1].dataSource.equipType
+					if equipType == EQUIP_TYPE_ONE_HAND then
+						--choose Main/Off hand, Primary/Secondary weapon
+						return GetString(SI_BUI_INV_EQUIP_PROMPT_BACKUP)
+					elseif equipType == EQUIP_TYPE_MAIN_HAND or
+						equipType == EQUIP_TYPE_OFF_HAND or
+						equipType == EQUIP_TYPE_TWO_HAND or
+						equipType == EQUIP_TYPE_POISON then
+						--choose Primary/Secondary weapon
+						return ""
+					elseif equipType == EQUIP_TYPE_RING then
+						--choose which rint slot
+						return "Second Slot" 
+					end 
+	                return ""
+	            end,
+	            visible = function(dialog)
+                	local equipType = dialog.data[1].dataSource.equipType
+					if equipType == EQUIP_TYPE_ONE_HAND or
+						equipType == EQUIP_TYPE_RING then
+							return true
+					end
+					return false
+	            end,
+                callback = function(dialog)
                     ReleaseDialog(dialog.data, false)
+                end,
+            },
+            {
+                keybind = "DIALOG_TERTIARY",
+                text = function(dialog)
+                	return GetDialogSwitchButtonText(dialog.data[2])
+               	end,
+	            visible = function(dialog)
+	            	return dialog.data.equipType ~= EQUIP_TYPE_RING				
+	            end,
+                callback = function(dialog)
+                	--switch weapon
+                	dialog.data[2] = not dialog.data[2]
+
+                	--update inventory window's header
+                	GAMEPAD_INVENTORY.isPrimaryWeapon = dialog.data[2]
+                	--d("abc", dialog.data[2])
+                	GAMEPAD_INVENTORY:RefreshHeader()
+
+                	--update dialog
+                	ZO_GenericGamepadDialog_RefreshKeybinds(dialog)
+                end,
+            },
+            {
+                keybind = "DIALOG_NEGATIVE",
+                text = SI_DIALOG_CANCEL,
+                callback = function()
+					ZO_Dialogs_ReleaseDialogOnButtonPress(BUI_EQUIP_SLOT_DIALOG)
                 end,
             },
         }
@@ -1259,7 +1353,7 @@ function BUI.Inventory.Class:OnDeferredInitialize()
 	self.categoryCraftPositions = {}
     self.populatedCategoryPos = false
 	self.populatedCraftPos = false
-    self.equipToMainSlot = true
+    self.isPrimaryWeapon = true
 
     self:InitializeCategoryList()
     self:InitializeHeader()
@@ -1388,11 +1482,11 @@ function BUI.Inventory.Class:RefreshHeader(blockCallback)
 
     BUI.GenericHeader.Refresh(self.header, headerData, blockCallback)
 
-	if(self.equipToMainSlot) then
-		BUI.GenericHeader.SetEquippedIcons(self.header, GetEquippedItemInfo(EQUIP_SLOT_MAIN_HAND), GetEquippedItemInfo(EQUIP_SLOT_OFF_HAND), GetEquippedItemInfo(EQUIP_SLOT_POISON))
-	else
-		BUI.GenericHeader.SetEquippedIcons(self.header, GetEquippedItemInfo(EQUIP_SLOT_BACKUP_MAIN), GetEquippedItemInfo(EQUIP_SLOT_BACKUP_OFF), GetEquippedItemInfo(EQUIP_SLOT_BACKUP_POISON))
-	end
+	
+	BUI.GenericHeader.SetEquipText(self.header, self.isPrimaryWeapon)
+	BUI.GenericHeader.SetBackupEquipText(self.header, self.isPrimaryWeapon)
+	BUI.GenericHeader.SetEquippedIcons(self.header, GetEquippedItemInfo(EQUIP_SLOT_MAIN_HAND), GetEquippedItemInfo(EQUIP_SLOT_OFF_HAND), GetEquippedItemInfo(EQUIP_SLOT_POISON))
+	BUI.GenericHeader.SetBackupEquippedIcons(self.header, GetEquippedItemInfo(EQUIP_SLOT_BACKUP_MAIN), GetEquippedItemInfo(EQUIP_SLOT_BACKUP_OFF), GetEquippedItemInfo(EQUIP_SLOT_BACKUP_POISON))
 
     self:RefreshCategoryList()
 	BUI.GenericFooter.Refresh(self)
@@ -1486,7 +1580,7 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
 			self:RefreshItemActions()
 			self:RefreshHeader()
 			self:ActivateHeader()
-			self:LayoutCraftBagTooltip(GAMEPAD_RIGHT_TOOLTIP)
+			self:LayoutCraftBagTooltip(GAMEPAD_LEFT_TOOLTIP)
 
 			--TriggerTutorial(TUTORIAL_TRIGGER_CRAFT_BAG_OPENED)
 		end 
@@ -1614,6 +1708,19 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
                 self:ShowActions()
             end,
         },
+        --L Stick for Stacking Items
+        {
+        	name = GetString(SI_ITEM_ACTION_STACK_ALL),
+        	alignment = KEYBIND_STRIP_ALIGN_LEFT,
+        	keybind = "UI_SHORTCUT_LEFT_STICK",
+        	disabledDuringSceneHiding = true,
+        	visible = function()
+        		return self.actionMode == ITEM_LIST_ACTION_MODE
+        	end,
+        	callback = function()
+        		StackBag(BAG_BACKPACK)
+        	end,
+        },
         --R Stick for Switching Bags
         {
             name = function()
@@ -1625,19 +1732,6 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             callback = function()
                 self:Switch()
             end,
-        },
-        --L Stick for Stacking Items
-        {
-        	name = GetString(SI_ITEM_ACTION_STACK_ALL),
-        	alignment = KEYBIND_STRIP_ALIGN_RIGHT,
-        	keybind = "UI_SHORTCUT_LEFT_STICK",
-        	disabledDuringSceneHiding = true,
-        	visible = function()
-        		return self.actionMode == ITEM_LIST_ACTION_MODE
-        	end,
-        	callback = function()
-        		StackBag(BAG_BACKPACK)
-        	end,
         },
 	}
 
