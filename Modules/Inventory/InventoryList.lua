@@ -229,7 +229,7 @@ function BUI_IconSetup(statusIndicator, equippedIcon, data)
     if data.isEquippedInCurrentCategory or data.isEquippedInAnotherCategory then
         local slotIndex = data.dataSource.slotIndex
         local equipType = data.dataSource.equipType
-        if slotIndex == EQUIP_SLOT_BACKUP_MAIN or slotIndex == EQUIP_SLOT_BACKUP_OFF or slotIndex == EQUIP_SLOT_RING2 or slotIndex == EQUIP_SLOT_TRINKET2 then
+        if slotIndex == EQUIP_SLOT_BACKUP_MAIN or slotIndex == EQUIP_SLOT_BACKUP_OFF or slotIndex == EQUIP_SLOT_RING2 or slotIndex == EQUIP_SLOT_TRINKET2 or slotIndex == EQUIP_SLOT_BACKUP_POISON then
             equippedIcon:SetTexture(TEXTURE_EQUIP_BACKUP_ICON)
         else
             equippedIcon:SetTexture(TEXTURE_EQUIP_ICON)

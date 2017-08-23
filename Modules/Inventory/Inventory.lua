@@ -1210,7 +1210,7 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
 				CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_MAIN_HAND or EQUIP_SLOT_BACKUP_MAIN, 1)
 			elseif equipType == EQUIP_TYPE_OFF_HAND then
 				CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_OFF_HAND or EQUIP_SLOT_BACKUP_OFF, 1)
-			elseif equipType == EQUIP_TYPE_TWO_POISON then
+			elseif equipType == EQUIP_TYPE_POISON then
 				CallSecureProtected("RequestMoveItem",data[1].dataSource.bagId, data[1].dataSource.slotIndex, BAG_WORN, data[2] and EQUIP_SLOT_POISON or EQUIP_SLOT_BACKUP_POISON, 1)
 			elseif equipType == EQUIP_TYPE_RING then
 				if(mainSlot) then
@@ -1313,7 +1313,8 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
                 	return GetDialogSwitchButtonText(dialog.data[2])
                	end,
 	            visible = function(dialog)
-	            	return dialog.data.equipType ~= EQUIP_TYPE_RING				
+                	local equipType = dialog.data[1].dataSource.equipType
+	            	return equipType ~= EQUIP_TYPE_RING				
 	            end,
                 callback = function(dialog)
                 	--switch weapon
@@ -1330,6 +1331,7 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
             },
             {
                 keybind = "DIALOG_NEGATIVE",
+				alignment = KEYBIND_STRIP_ALIGN_RIGHT,
                 text = SI_DIALOG_CANCEL,
                 callback = function()
 					ZO_Dialogs_ReleaseDialogOnButtonPress(BUI_EQUIP_SLOT_DIALOG)

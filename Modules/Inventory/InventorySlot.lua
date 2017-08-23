@@ -137,6 +137,7 @@ function BUI.Inventory.SlotActions:Initialize(alignmentOverride, additionalMouse
 
                 if self.actionName == GetString(SI_ITEM_ACTION_USE) or 
 					self.actionName == GetString(SI_ITEM_ACTION_EQUIP) or 
+                    self.actionName == GetString(SI_ITEM_ACTION_UNEQUIP) or 
 					self.actionName == GetString(SI_ITEM_ACTION_BANK_WITHDRAW) or 
 					self.actionName == GetString(SI_ITEM_ACTION_BANK_DEPOSIT) then
                     table.remove(slotActions.m_slotActions, PRIMARY_ACTION_KEY)
