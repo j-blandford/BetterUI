@@ -753,6 +753,47 @@ function BUI.Inventory.Class:RefreshItemList()
 	
 end
 
+function BUI.Inventory.Class:SwitchInfo()
+	self.switchInfo = not self.switchInfo
+	if self.actionMode == ITEM_LIST_ACTION_MODE then
+		self:UpdateItemLeftTooltip(self.itemList.selectedData)
+	end
+end
+
+
+function BUI.Inventory.Class:UpdateItemLeftTooltip(selectedData)
+    if selectedData then
+        GAMEPAD_TOOLTIPS:ResetScrollTooltipToTop(GAMEPAD_RIGHT_TOOLTIP)
+        if ZO_InventoryUtils_DoesNewItemMatchFilterType(selectedData, ITEMFILTERTYPE_QUEST) then
+            if selectedData.toolIndex then
+                GAMEPAD_TOOLTIPS:LayoutQuestItem(GAMEPAD_LEFT_TOOLTIP, GetQuestToolQuestItemId(selectedData.questIndex, selectedData.toolIndex))
+            else
+                GAMEPAD_TOOLTIPS:LayoutQuestItem(GAMEPAD_LEFT_TOOLTIP, GetQuestConditionQuestItemId(selectedData.questIndex, selectedData.stepIndex, selectedData.conditionIndex))
+            end
+        else
+        	local showRightTooltip = false
+        	if ZO_InventoryUtils_DoesNewItemMatchFilterType(selectedData, ITEMFILTERTYPE_WEAPONS) or
+        		ZO_InventoryUtils_DoesNewItemMatchFilterType(selectedData, ITEMFILTERTYPE_ARMOR) then
+        		if self.switchInfo then
+        			showRightTooltip = true        			
+        		end
+		    end
+
+		    if not showRightTooltip then
+    			GAMEPAD_TOOLTIPS:LayoutBagItem(GAMEPAD_LEFT_TOOLTIP, selectedData.bagId, selectedData.slotIndex)
+    		else
+    			self:UpdateRightTooltip()
+    		end 
+        end
+        if selectedData.isEquippedInCurrentCategory or selectedData.isEquippedInAnotherCategory or selectedData.equipSlot then
+            local slotIndex = selectedData.bagId == BAG_WORN and selectedData.slotIndex or nil --equipped quickslottables slotIndex is not the same as slot index's in BAG_WORN
+            self:UpdateTooltipEquippedIndicatorText(GAMEPAD_LEFT_TOOLTIP, slotIndex)
+        else
+            GAMEPAD_TOOLTIPS:ClearStatusLabel(GAMEPAD_LEFT_TOOLTIP)
+        end
+    end
+end
+
 function BUI.Inventory.Class:UpdateRightTooltip()
     local selectedItemData = self.currentlySelectedData
 	--local selectedEquipSlot = BUI_GetEquipSlotForEquipType(selectedItemData.dataSource.equipType)
@@ -769,15 +810,15 @@ function BUI.Inventory.Class:UpdateRightTooltip()
     local equipSlotHasItem = select(2, GetEquippedItemInfo(selectedEquipSlot))
 
     if selectedItemData and (not equipSlotHasItem or BUI.Settings.Modules["Inventory"].displayCharAttributes) then
-        GAMEPAD_TOOLTIPS:LayoutItemStatComparison(GAMEPAD_RIGHT_TOOLTIP, selectedItemData.bagId, selectedItemData.slotIndex, selectedEquipSlot)
-        GAMEPAD_TOOLTIPS:SetStatusLabelText(GAMEPAD_RIGHT_TOOLTIP, GetString(SI_GAMEPAD_INVENTORY_ITEM_COMPARE_TOOLTIP_TITLE))
-    elseif GAMEPAD_TOOLTIPS:LayoutBagItem(GAMEPAD_RIGHT_TOOLTIP, BAG_WORN, selectedEquipSlot) then
-        self:UpdateTooltipEquippedIndicatorText(GAMEPAD_RIGHT_TOOLTIP, selectedEquipSlot)
+        GAMEPAD_TOOLTIPS:LayoutItemStatComparison(GAMEPAD_LEFT_TOOLTIP, selectedItemData.bagId, selectedItemData.slotIndex, selectedEquipSlot)
+        GAMEPAD_TOOLTIPS:SetStatusLabelText(GAMEPAD_LEFT_TOOLTIP, GetString(SI_GAMEPAD_INVENTORY_ITEM_COMPARE_TOOLTIP_TITLE))
+    elseif GAMEPAD_TOOLTIPS:LayoutBagItem(GAMEPAD_LEFT_TOOLTIP, BAG_WORN, selectedEquipSlot) then
+        self:UpdateTooltipEquippedIndicatorText(GAMEPAD_LEFT_TOOLTIP, selectedEquipSlot)
     end
 
 	if selectedItemData ~= nil and selectedItemData.dataSource ~= nil and selectedData ~= nil then
 		if selectedData.dataSource and selectedItemData.dataSource.equipType == 0 then
-			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_RIGHT_TOOLTIP)
+			GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
 		end
 	end
 end
@@ -804,7 +845,7 @@ function BUI.Inventory.Class:InitializeItemList()
 			
 		    self:PrepareNextClearNewStatus(selectedData)
 		    --self.itemList:RefreshVisible()
-		    self:UpdateRightTooltip()
+		    --self:UpdateRightTooltip()
 		    self:RefreshActiveKeybinds()
 	    end
     end)
@@ -1210,6 +1251,7 @@ function BUI.Inventory.Class:OnDeferredInitialize()
         useStatComparisonTooltip = true,
     }
     self.savedVars = ZO_SavedVars:NewAccountWide("ZO_Ingame_SavedVariables", 2, "GamepadInventory", SAVED_VAR_DEFAULTS)
+    self.switchInfo = false
 
     self:SetListsUseTriggerKeybinds(true)
 
@@ -1402,7 +1444,7 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
         listDescriptor = INVENTORY_CRAFT_BAG_LIST
     end
     if self.scene:IsShowing() then
-    	
+
     	if listDescriptor == INVENTORY_ITEM_LIST then
     		self:SetCurrentList(self.itemList)
     		self:SetActiveKeybinds(self.mainKeybindStripDescriptor)
@@ -1413,45 +1455,45 @@ function BUI.Inventory.Class:SwitchActiveList(listDescriptor)
     		self:SetSelectedItemUniqueId(self.itemList:GetTargetData())
     		self.actionMode = ITEM_LIST_ACTION_MODE
     		self:RefreshItemActions()
-    		
-    		if self.callLaterRightToolTip ~= nil then
-    			EVENT_MANAGER:UnregisterForUpdate(self.callLaterRightToolTip)
-    		end
-    		
-    	local callLaterId = zo_callLater(function() self:UpdateRightTooltip() end, 100)
-    	self.callLaterRightToolTip = "CallLaterFunction"..callLaterId
-    	
-    	self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
-    	
-    	self:UpdateItemLeftTooltip(self.itemList.selectedData)
-    	
-		--if self.callLaterLeftToolTip ~= nil then
-		--	EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
-		--end
-		--
-		--local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, 100)
-		--self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
 
-	elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then  
-		self:SetCurrentList(self.craftBagList)
-		self:SetActiveKeybinds(self.mainKeybindStripDescriptor)
+    		-- if self.callLaterRightToolTip ~= nil then
+    		-- 	EVENT_MANAGER:UnregisterForUpdate(self.callLaterRightToolTip)
+    		-- end
 
-		self:RefreshCategoryList()
-		self:RefreshCraftBagList()
+	    	-- local callLaterId = zo_callLater(function() self:UpdateRightTooltip() end, 100)
+	    	-- self.callLaterRightToolTip = "CallLaterFunction"..callLaterId
 
-		self:SetSelectedItemUniqueId(self.craftBagList:GetTargetData())
-		self.actionMode = CRAFT_BAG_ACTION_MODE
-		self:RefreshItemActions()
-		self:RefreshHeader()
-		self:ActivateHeader()
-		self:LayoutCraftBagTooltip(GAMEPAD_RIGHT_TOOLTIP)
+	    	self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
 
-		--TriggerTutorial(TUTORIAL_TRIGGER_CRAFT_BAG_OPENED)
-	end 
-	self:RefreshActiveKeybinds()
-else
-	self.actionMode = nil
-end
+	    	self:UpdateItemLeftTooltip(self.itemList.selectedData)
+
+			--if self.callLaterLeftToolTip ~= nil then
+			--	EVENT_MANAGER:UnregisterForUpdate(self.callLaterLeftToolTip)
+			--end
+			--
+			--local callLaterId = zo_callLater(function() self:UpdateItemLeftTooltip(self.itemList.selectedData) end, 100)
+			--self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
+
+		elseif listDescriptor == INVENTORY_CRAFT_BAG_LIST then  
+			self:SetCurrentList(self.craftBagList)
+			self:SetActiveKeybinds(self.mainKeybindStripDescriptor)
+
+			self:RefreshCategoryList()
+			self:RefreshCraftBagList()
+
+			self:SetSelectedItemUniqueId(self.craftBagList:GetTargetData())
+			self.actionMode = CRAFT_BAG_ACTION_MODE
+			self:RefreshItemActions()
+			self:RefreshHeader()
+			self:ActivateHeader()
+			self:LayoutCraftBagTooltip(GAMEPAD_RIGHT_TOOLTIP)
+
+			--TriggerTutorial(TUTORIAL_TRIGGER_CRAFT_BAG_OPENED)
+		end 
+		self:RefreshActiveKeybinds()
+	else
+		self.actionMode = nil
+	end
 end
 
 function BUI.Inventory.Class:ActivateHeader()
@@ -1537,7 +1579,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             			self:ShowQuickslot()
             		elseif filterType == ITEMFILTERTYPE_WEAPONS or filterType == ITEMFILTERTYPE_ARMOR then
             			--switch compare
-            			--self:SwitchInfo()
+            			self:SwitchInfo()
             		end 
             	elseif self.actionMode == CRAFT_BAG_ACTION_MODE then
             		--craftbag mode
