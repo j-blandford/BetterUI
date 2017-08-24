@@ -68,6 +68,7 @@ end
 
 local function SetupCraftBagList(buiList)
     buiList.list:AddDataTemplate("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
+	buiList.list:AddDataTemplateWithHeader("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality, "ZO_GamepadMenuEntryHeaderTemplate")
 end
 local function SetupCategoryList(list)
     list:AddDataTemplate("BUI_GamepadItemEntryTemplate", ZO_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction)

@@ -89,8 +89,8 @@
 
 
         <Texture name="BUI_MenuEntryIconTemplate" tier="MEDIUM" inherits="ZO_MultiIcon" excludeFromResizeToFitExtents="true" level="1" pixelRoundingEnabled="true" virtual="true">
-            <Dimensions x="24" y="24" />
-            <Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="LEFT" offsetX="-20" />
+            <Dimensions x="32" y="32" />
+            <Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="LEFT" offsetX="-24" />
         </Texture>
 
         <!-- SPINNER -->
@@ -199,7 +199,6 @@
                         <Anchor point="TOPLEFT" offsetX="28"/>
                 </Label>
                 <Texture name="$(parent)Icon" inherits="BUI_MenuEntryIconTemplate" edgeColor="00000000">
-                    <Dimensions x="28" y="28" />
                 </Texture>
                 <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="485"/>
@@ -428,7 +427,7 @@
 
 
                         <Control name="$(parent)List" inherits="BUI_NavQuadrant_1_Anchors BUI_Generic_ScrollListTemplate">
-							<Anchor point="TOPLEFT" relativeTo="$(parent)HeaderHeader" relativePoint="BOTTOMLEFT" offsetX="32"/> 
+							<Anchor point="TOPLEFT" relativeTo="$(parent)HeaderHeader" relativePoint="BOTTOMLEFT" offsetX="0"/> 
                             <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)FooterFooter" relativePoint="TOPRIGHT" /> 
 							
                             <OnInitialized>

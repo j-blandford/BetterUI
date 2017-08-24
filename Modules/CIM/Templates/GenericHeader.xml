@@ -161,19 +161,23 @@
                 <Control name="$(parent)ColumnBar" inherits="BUI_GamepadHeaderTitleAnchors">
                     <Controls>
                          <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="87" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
                          <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Type">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="515" />
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="637" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
                          <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Stat">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="700" />
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="897" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                         <Label name="$(parent)Column6Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Trait">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="1067" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
                          <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Value">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="770" />
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="1187" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
                     </Controls>

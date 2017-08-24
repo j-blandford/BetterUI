@@ -989,10 +989,11 @@ function BUI.Banking.Init()
     BUI.Banking.Window:SetTitle("|c0066FFBank|r")
 
     -- Set the column headings up, maybe put them into a table?
-    BUI.Banking.Window:AddColumn("Name",20)
-    BUI.Banking.Window:AddColumn("Type",515)
-    BUI.Banking.Window:AddColumn("Stat",705)
-    BUI.Banking.Window:AddColumn("Value",775)
+    BUI.Banking.Window:AddColumn("Name",87)
+    BUI.Banking.Window:AddColumn("Type",637)
+    BUI.Banking.Window:AddColumn("Stat",897)
+    BUI.Banking.Window:AddColumn("Stat",1067)
+    BUI.Banking.Window:AddColumn("Value",1187)
 
     BUI.Banking.Window:RefreshVisible()
 

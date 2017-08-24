@@ -62,7 +62,7 @@
                 <Control name="$(parent)Container" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
                     <Controls>
                         <Control name="$(grandparent)List" inherits="BUI_VerticalParametricScrollListTemplate">
-                            <Anchor point="TOPLEFT" relativeTo="$(parent)Container" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_INDENT"/>
+                            <Anchor point="TOPLEFT" relativeTo="$(parent)Container" offsetX="0"/>
                         </Control>
                     </Controls>
                 </Control>
@@ -231,8 +231,8 @@
                         <Control name="$(grandparent)Footer" inherits="BUI_PagedListFooterBar BUI_GamepadGenericScreenFooter" />
 
                         <Control name="$(grandparent)List" override="true">
-                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="-28" offsetY="90"/>
-                            <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="15" />
+                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="0" offsetY="90"/>
+                            <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="0" />
                         </Control>
                     </Controls>
                 </Control>

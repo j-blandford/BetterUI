@@ -133,6 +133,9 @@ local function GetMarketPrice(itemLink, stackCount)
             return mmData.avgPrice*stackCount
         end
     end
+    if BUI.Settings.Modules["GuildStore"].ttcIntegration and TamrielTradeCentre ~= nil then
+        --TODO:ttc
+    end
     return 0
 end
 
@@ -242,9 +245,9 @@ function BUI_IconSetup(statusIndicator, equippedIcon, data)
         equippedIcon:SetHidden(true)
     end
 	
-	if BUI.Settings.Modules["CIM"].biggerSkin then
-		equippedIcon:SetDimensions(44, 42)
-	end
+	-- if BUI.Settings.Modules["CIM"].biggerSkin then
+	-- 	equippedIcon:SetDimensions(44, 42)
+	-- end
 end
 
 function BUI_SharedGamepadEntryIconSetup(icon, stackCountLabel, data, selected)
@@ -328,10 +331,13 @@ function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuri
 
 	if BUI.Settings.Modules["CIM"].biggerSkin then
 		control:GetNamedChild("ItemType"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+        control:GetNamedChild("Trait"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
 		control:GetNamedChild("Stat"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
 		control:GetNamedChild("Value"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
 	end
     control:GetNamedChild("ItemType"):SetText(string.upper(data.bestItemTypeName))
+    local traitType = GetItemTrait(data.bagId, data.slotIndex)
+    control:GetNamedChild("Trait"):SetText(traitType == ITEM_TRAIT_TYPE_NONE and "-" or string.upper(GetString("SI_ITEMTRAITTYPE", traitType)))
     control:GetNamedChild("Stat"):SetText((data.dataSource.statValue == 0) and "-" or data.dataSource.statValue)
 
     -- Replace the "Value" with the market price of the item (in yellow)
@@ -360,7 +366,13 @@ function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuri
     BUI_IconSetup(control:GetNamedChild("StatusIndicator"), control:GetNamedChild("EquippedMain"), data)
 
 	if BUI.Settings.Modules["CIM"].biggerSkin then
-		control:GetNamedChild("Icon"):SetDimensions(42, 42)
+        local iconControl = control:GetNamedChild("Icon")
+		iconControl:SetDimensions(64, 64)
+        iconControl:ClearAnchors()
+        iconControl:SetAnchor(CENTER, control:GetNamedChild("Label"), LEFT, -48, 0)         
+
+        local equipIconControl = control:GetNamedChild("EquippedMain")
+        equipIconControl:SetDimensions(36, 30)
 	end
 end
 

@@ -111,6 +111,7 @@ function BUI_GamepadInventoryList:RefreshList()
 	--d("tt refresh list")
     for i, itemData in ipairs(slots) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
+        entry:SetFontScaleOnSelection(false)
 		if self.template == "BUI_Sell_Row" then entry.text = GetSellLabelText(itemData) end
         self:SetupItemEntry(entry, itemData)
         self.list:AddEntry(self.template, entry)
@@ -235,6 +236,11 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
 		control:GetNamedChild("UnitPrice"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
 		control:GetNamedChild("BuyingAdvice"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
 		control:GetNamedChild("TimeLeft"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+
+        local iconControl = control:GetNamedChild("Icon")
+		iconControl:SetDimensions(64, 64)
+        iconControl:ClearAnchors()
+        iconControl:SetAnchor(CENTER, control:GetNamedChild("Label"), LEFT, -48, 0)         
 	end
     control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(data.purchasePrice, USE_SHORT_CURRENCY_FORMAT))
     if(notEnoughMoney) then control:GetNamedChild("Price"):SetColor(1,0,0,1) else control:GetNamedChild("Price"):SetColor(1,1,1,1) end
@@ -545,6 +551,7 @@ function BUI.GuildStore.BrowseResults:AddEntryToList(itemData)
 		self.listResultCount = self.listResultCount + 1
 	
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
+        entry:SetFontScaleOnSelection(false)
         entry:InitializeTradingHouseVisualData(itemData)
         self:GetList():AddEntry("BUI_BrowseResults_Row",
                                 entry,
@@ -585,6 +592,7 @@ function BUI.GuildStore.Listings:BuildList()
             itemData.price = itemData.purchasePrice
             itemData.time = itemData.timeRemaining
             local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
+            entry:SetFontScaleOnSelection(false)
             entry:InitializeTradingHouseVisualData(itemData)
             self:GetList():AddEntry("BUI_Listings_Row",
                                     entry,
