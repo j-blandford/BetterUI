@@ -238,9 +238,9 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
 		control:GetNamedChild("TimeLeft"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
 
         local iconControl = control:GetNamedChild("Icon")
-		iconControl:SetDimensions(64, 64)
+		iconControl:SetDimensions(48, 48)
         iconControl:ClearAnchors()
-        iconControl:SetAnchor(CENTER, control:GetNamedChild("Label"), LEFT, -48, 0)         
+        iconControl:SetAnchor(CENTER, control:GetNamedChild("Label"), LEFT, -32, 0)         
 	end
     control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(data.purchasePrice, USE_SHORT_CURRENCY_FORMAT))
     if(notEnoughMoney) then control:GetNamedChild("Price"):SetColor(1,0,0,1) else control:GetNamedChild("Price"):SetColor(1,1,1,1) end

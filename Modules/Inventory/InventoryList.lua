@@ -367,9 +367,9 @@ function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuri
 
 	if BUI.Settings.Modules["CIM"].biggerSkin then
         local iconControl = control:GetNamedChild("Icon")
-		iconControl:SetDimensions(64, 64)
+		iconControl:SetDimensions(48, 48)
         iconControl:ClearAnchors()
-        iconControl:SetAnchor(CENTER, control:GetNamedChild("Label"), LEFT, -48, 0)         
+        iconControl:SetAnchor(CENTER, control:GetNamedChild("Label"), LEFT, -32, 0)         
 
         local equipIconControl = control:GetNamedChild("EquippedMain")
         equipIconControl:SetDimensions(36, 30)
