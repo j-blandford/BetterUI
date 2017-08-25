@@ -991,7 +991,7 @@ function BUI.Banking.Init()
     -- Set the column headings up, maybe put them into a table?
     BUI.Banking.Window:AddColumn("Name",87)
     BUI.Banking.Window:AddColumn("Type",637)
-    BUI.Banking.Window:AddColumn("Stat",897)
+    BUI.Banking.Window:AddColumn("Trait",897)
     BUI.Banking.Window:AddColumn("Stat",1067)
     BUI.Banking.Window:AddColumn("Value",1187)
 

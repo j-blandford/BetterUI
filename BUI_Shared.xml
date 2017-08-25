@@ -12,7 +12,7 @@
         <Texture name="BUI_GamepadMenuEntryStatusIndicationTemplate" inherits="ZO_MultiIcon" excludeFromResizeToFitExtents="true" hidden="true" virtual="true">
             <Dimensions x="24" y="24" />
            <!--  <Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="LEFT" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_ICON_X_OFFSET" /> -->
-           <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="LEFT" offsetX="48" />
+           <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="LEFT" offsetX="-10" />
         </Texture>
 
 
@@ -74,7 +74,7 @@
 
                 <Texture name="$(parent)EquippedMain" textureFile="BetterUI/Templates/Images/inv_equip.dds" excludeFromResizeToFitExtents="true" pixelRoundingEnabled="false">
                     <Dimensions x="28" y="24" />
-                    <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="LEFT" offsetX="-5" />
+                    <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="LEFT" offsetX="-25" />
                 </Texture>
 
                 <Texture name="$(parent)StatusIndicator" inherits="BUI_GamepadMenuEntryStatusIndicationTemplate"/>

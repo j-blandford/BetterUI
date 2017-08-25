@@ -1231,6 +1231,35 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
     local function GetDialogSwitchButtonText(isPrimary)
         return "Switch Weapons"
     end
+
+    local function GetDialogMainText(dialog) 
+		local equipType = dialog.data[1].dataSource.equipType
+		local itemName = GetItemName(dialog.data[1].dataSource.bagId, dialog.data[1].dataSource.slotIndex)
+		local itemLink = GetItemLink(dialog.data[1].dataSource.bagId, dialog.data[1].dataSource.slotIndex)
+		local itemQuality = GetItemLinkQuality(itemLink)
+		local itemColor = GetItemQualityColor(itemQuality)
+		itemName = itemColor:Colorize(itemName)
+	        local str = ""
+		local weaponChoice = "Main"
+		if not dialog.data[2] then
+			weaponChoice = "Backup"
+		end
+		if equipType == EQUIP_TYPE_ONE_HAND then
+			--choose Main/Off hand, Primary/Secondary weapon
+			str = zo_strformat("Do you want to equip <<t:1>>\ninto main hand or off hand in |cFF6600<<2>>|r weapon bar?", itemName, weaponChoice ) 
+		elseif equipType == EQUIP_TYPE_MAIN_HAND or
+			equipType == EQUIP_TYPE_OFF_HAND or
+			equipType == EQUIP_TYPE_TWO_HAND or
+			equipType == EQUIP_TYPE_POISON then
+			--choose Primary/Secondary weapon
+			str = zo_strformat("Do you want to equip <<t:1>> in |cFF6600<<2>>|r weapon bar?", itemName, weaponChoice ) 
+		elseif equipType == EQUIP_TYPE_RING then
+			--choose which rint slot          
+			str = zo_strformat("Do you want to equip <<t:1>> in first or second ring slot?", itemName) 
+		end 
+		return str
+	end
+
     ZO_Dialogs_RegisterCustomDialog(BUI_EQUIP_SLOT_DIALOG,
     {
         blockDialogReleaseOnPress = true,
@@ -1247,29 +1276,30 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
         },
         mainText =
         {
-            text = GetString(SI_BUI_INV_EQUIPSLOT_PROMPT),
+            text = function(dialog) 
+            	return GetDialogMainText(dialog)
+            end,
         },
-
         buttons =
         {
             {
                 keybind = "DIALOG_PRIMARY",
                 text = function(dialog)
                 	local equipType = dialog.data[1].dataSource.equipType
-                	if equipType == EQUIP_TYPE_ONE_HAND then
-                		--choose Main/Off hand, Primary/Secondary weapon
-                		return GetString(SI_BUI_INV_EQUIP_PROMPT_MAIN)
-                	elseif equipType == EQUIP_TYPE_MAIN_HAND or
-                		equipType == EQUIP_TYPE_OFF_HAND or
-                		equipType == EQUIP_TYPE_TWO_HAND or
-                		equipType == EQUIP_TYPE_POISON then
-                		--choose Primary/Secondary weapon
-                		return "Equip"
-                	elseif equipType == EQUIP_TYPE_RING then
-                		--choose which rint slot
-                		return "First Slot"
-                	end 
-                	return ""
+			    	if equipType == EQUIP_TYPE_ONE_HAND then
+			    		--choose Main/Off hand, Primary/Secondary weapon
+			    		return GetString(SI_BUI_INV_EQUIP_PROMPT_MAIN)
+			    	elseif equipType == EQUIP_TYPE_MAIN_HAND or
+			    		equipType == EQUIP_TYPE_OFF_HAND or
+			    		equipType == EQUIP_TYPE_TWO_HAND or
+			    		equipType == EQUIP_TYPE_POISON then
+			    		--choose Primary/Secondary weapon
+			    		return "Equip"
+			    	elseif equipType == EQUIP_TYPE_RING then
+			    		--choose which rint slot
+			    		return "First Slot"
+			    	end 
+			    	return ""
                 end,
                 callback = function()
                     ReleaseDialog(dialog.data, true)
@@ -1325,6 +1355,7 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
                 	GAMEPAD_INVENTORY:RefreshHeader()
 
                 	--update dialog
+                    ZO_GenericGamepadDialog_RefreshText(dialog, dialog.headerData.titleText, GetDialogMainText(dialog), warningText)
                 	ZO_GenericGamepadDialog_RefreshKeybinds(dialog)
                 end,
             },
@@ -1338,6 +1369,33 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
             },
         }
     })
+end
+
+function BUI.Inventory.Class:OnUpdate(currentFrameTimeSeconds)
+	--if no currentFrameTimeSeconds a manual update was called from outside the update loop.
+	if not currentFrameTimeSeconds or (self.nextUpdateTimeSeconds and (currentFrameTimeSeconds >= self.nextUpdateTimeSeconds)) then
+	    self.nextUpdateTimeSeconds = nil
+
+	    if self.actionMode == ITEM_LIST_ACTION_MODE then
+	        self:RefreshItemList()
+	        -- it's possible we removed the last item from this list
+	        -- so we want to switch back to the category list
+	        if self.itemList:IsEmpty() then
+	            self:SwitchActiveList(INVENTORY_CATEGORY_LIST)
+	        else
+	            -- don't refresh item actions if we are switching back to the category view
+	            -- otherwise we get keybindstrip errors (Item actions will try to add an "A" keybind
+	            -- and we already have an "A" keybind)
+	            --self:UpdateRightTooltip()
+	            self:RefreshItemActions()
+	        end
+	    elseif self.actionMode == CRAFT_BAG_ACTION_MODE then
+	        self:RefreshCraftBagList()
+	        self:RefreshItemActions()
+	    else -- CATEGORY_ITEM_ACTION_MODE
+	        self:UpdateCategoryLeftTooltip(self.categoryList:GetTargetData())
+	    end
+	end
 end
 
 function BUI.Inventory.Class:OnDeferredInitialize()
