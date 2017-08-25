@@ -31,7 +31,6 @@ BetterUI.CONST.lua
 BUI_Shared.xml
 
 ; Module: Common Interface Module
-Modules\CIM\Images\inv_select_grad.dds
 Modules\CIM\Images\inv_equip.dds
 Modules\CIM\Images\inv_equip_backup.dds
 Modules\CIM\Images\inv_equip_quickslot.dds

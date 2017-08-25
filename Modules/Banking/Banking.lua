@@ -133,6 +133,9 @@ end
 
 local function SetupLabelListing(control, data)
     control:GetNamedChild("Label"):SetText(data.label)
+    if BUI.Settings.Modules["CIM"].biggerSkin then
+        control:GetNamedChild("Label"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+    end
 end
 
 BUI.Banking.Class = BUI.Interface.Window:Subclass()

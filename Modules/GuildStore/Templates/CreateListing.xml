@@ -12,19 +12,23 @@
                                     <Anchor point="CENTER" offsetY="40" />   
                                 </Label>
                                  <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="95" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Type">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="520" />
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="642" />
+                                        <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                                 </Label>
+                                 <Label name="$(parent)Column6Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Trait">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="902" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                  <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Est. Value">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="665" />
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="1072" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                                  <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Value">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="775" />
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="1197" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                             </Controls>
@@ -46,8 +50,8 @@
                         <Control name="$(grandparent)Footer" inherits="BUI_ListingsFooterBar BUI_GamepadGenericScreenFooter"  hidden="true"/>
                         
                         <Control name="$(grandparent)List" override="true">
-                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="10" offsetY="90"/>
-                            <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="15" />
+                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="35" offsetY="80"/>
+                            <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="40" />
                         </Control>
                     </Controls>
                 </Control>

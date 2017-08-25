@@ -629,6 +629,18 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
     BUI_SharedGamepadEntryLabelSetup(control.label, control:GetNamedChild("NumStack"), data, selected)
     BUI_SharedGamepadEntryIconSetup(control.icon, control.stackCountLabel, data, selected)
 
+	if BUI.Settings.Modules["CIM"].biggerSkin then
+		control:GetNamedChild("ItemType"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("BuyingAdvice"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("Trait"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("Price"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		
+        local iconControl = control:GetNamedChild("Icon")
+		iconControl:SetDimensions(48, 48)
+        iconControl:ClearAnchors()
+        iconControl:SetAnchor(CENTER, control:GetNamedChild("Label"), LEFT, -32, 0)         
+	end
+
     if control.highlight then
         if selected and data.highlight then
             control.highlight:SetTexture(data.highlight)
@@ -659,6 +671,8 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
     end
 
     control:GetNamedChild("ItemType"):SetText(string.upper(data.dataSource.bestGamepadItemCategoryName))
+    local traitType = GetItemTrait(data.dataSource.bagId, data.dataSource.slotIndex)
+    control:GetNamedChild("Trait"):SetText(traitType == ITEM_TRAIT_TYPE_NONE and "-" or string.upper(GetString("SI_ITEMTRAITTYPE", traitType)))
 
     local buyingAdviceControl = control:GetNamedChild("BuyingAdvice")
 
