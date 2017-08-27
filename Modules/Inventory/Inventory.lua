@@ -1799,9 +1799,28 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 end
 
 local function BUI_TryPlaceInventoryItemInEmptySlot(targetBag)
-    local emptySlotIndex = FindFirstEmptySlotInBag(targetBag)
-    if emptySlotIndex ~= nil then
-        CallSecureProtected("PlaceInInventory",targetBag, emptySlotIndex)
+	local emptySlotIndex, bagId
+	if targetBag == BAG_BANK or targetBag == BAG_SUBSCRIBER_BANK then
+		--should find both in bank and subscriber bank
+		emptySlotIndex = FindFirstEmptySlotInBag(BAG_BANK)
+		if emptySlotIndex ~= nil then
+			bagId = BAG_BANK
+		else
+			emptySlotIndex = FindFirstEmptySlotInBag(BAG_SUBSCRIBER_BANK)
+			if emptySlotIndex ~= nil then
+				bagId = BAG_SUBSCRIBER_BANK
+			end
+		end
+	else
+		--just find the bag 
+    	emptySlotIndex = FindFirstEmptySlotInBag(targetBag)
+    	if emptySlotIndex ~= nil then
+    		bagId = targetBag
+    	end
+    end
+
+    if bagId ~= nil then
+        CallSecureProtected("PlaceInInventory", bagId, emptySlotIndex)
     else
         local errorStringId = (targetBag == BAG_BACKPACK) and SI_INVENTORY_ERROR_INVENTORY_FULL or SI_INVENTORY_ERROR_BANK_FULL
         ZO_Alert(UI_ALERT_CATEGORY_ERROR, SOUNDS.NEGATIVE_CLICK, errorStringId)
@@ -1850,7 +1869,7 @@ function BUI.Inventory.Class:InitializeSplitStackDialog()
                 callback = function(dialog)
                     local dialogData = dialog.data
                     local quantity = ZO_GenericGamepadItemSliderDialogTemplate_GetSliderValue(dialog)
-                    CallSecureProtected("PickupInventoryItem",dialogData.bagId, dialogData.slotIndex, quantity)
+                    CallSecureProtected("PickupInventoryItem",dialogData.bagId, dialogData.slotIndex, quantity)                    
                     BUI_TryPlaceInventoryItemInEmptySlot(dialogData.bagId)
 					CALLBACK_MANAGER:FireCallbacks("BUI_EVENT_SPLIT_STACK_DIALOG_FINISHED")
                 end,

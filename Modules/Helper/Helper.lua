@@ -32,7 +32,7 @@ function BUI.Helper.GamePadBuddy.GetItemStatusIndicator(bagId, slotIndex)
 end
 
 function BUI.Helper.IokaniGearChanger.GetGearSet(bagId, slotIndex)
-	if GearChangerByIakoni then
+	if GearChangerByIakoni and GearChangerByIakoni.savedVariables then
 		local itemType = GetItemType(bagId, slotIndex)
 		if itemType == ITEMTYPE_ARMOR or itemType == ITEMTYPE_WEAPON then
 			local result = ""

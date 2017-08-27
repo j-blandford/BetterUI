@@ -146,7 +146,7 @@ end
 
 function BUI.Banking.Class:RefreshFooter()
     self.footer.footer:GetNamedChild("DepositButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_all.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BACKPACK), GetBagSize(BAG_BACKPACK))))
-    self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/icons/mapkey/mapkey_bank.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BANK) + GetNumBagUsedSlots(BAG_SUBSCRIBER_BANK), GetBagSize(BAG_BANK) + GetBagSize(BAG_SUBSCRIBER_BANK))))
+    self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/icons/mapkey/mapkey_bank.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BANK) + GetNumBagUsedSlots(BAG_SUBSCRIBER_BANK), GetBagUseableSize(BAG_BANK) + GetBagUseableSize(BAG_SUBSCRIBER_BANK))))
     if(self.currentMode == LIST_WITHDRAW) then
         self.footerFragment.control:GetNamedChild("Data1Value"):SetText(BUI.DisplayNumber(GetBankedCurrencyAmount(CURT_MONEY)))
         self.footerFragment.control:GetNamedChild("Data2Value"):SetText(BUI.DisplayNumber(GetBankedCurrencyAmount(CURT_TELVAR_STONES)))
@@ -446,13 +446,17 @@ local tinyBagCache = {
 
 -- Thanks Merlight & circonian, FindFirstEmptySlotInBag don't refresh in realtime.
 local function FindEmptySlotInBag(bagId)
-    for slotIndex = 0, (GetBagSize(bagId) - 1) do
-        if not SHARED_INVENTORY.bagCache[bagId][slotIndex] and not tinyBagCache[bagId][slotIndex] then
-            tinyBagCache[bagId][slotIndex] = true
-            return slotIndex
+    if false then
+        for slotIndex = 0, (GetBagSize(bagId) - 1) do
+            if not SHARED_INVENTORY.bagCache[bagId][slotIndex] and not tinyBagCache[bagId][slotIndex] then
+                tinyBagCache[bagId][slotIndex] = true
+                return slotIndex
+            end
         end
+        return nil
+    else
+        return FindFirstEmptySlotInBag(bagId)
     end
-    return nil
 end
 
 local function FindEmptySlotInBank()
@@ -529,6 +533,9 @@ function BUI.Banking.Class:MoveItem(list, quantity)
 		if inSpinner then
 			self:UpdateSpinnerConfirmation(false, self.list)
 		end
+    else
+        local errorStringId = (toBag == BAG_BACKPACK) and SI_INVENTORY_ERROR_INVENTORY_FULL or SI_INVENTORY_ERROR_BANK_FULL
+        ZO_Alert(UI_ALERT_CATEGORY_ERROR, SOUNDS.NEGATIVE_CLICK, errorStringId)
 	end
 end
 
