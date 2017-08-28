@@ -78,7 +78,7 @@ end
 
 function BUI.Helper.AutoCategory:GetCustomCategory(itemData)
 	local useCustomCategory = false
-	if AutoCategory then
+	if AutoCategory and AutoCategory.curSavedVars then
 		useCustomCategory = true
 		local bagId = itemData.bagId
 		local slotIndex = itemData.slotIndex

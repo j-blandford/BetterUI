@@ -166,7 +166,7 @@ function BUI.Inventory.Class:ToSavedPosition()
 		if lastPosition ~= nil and self._currentList.dataList ~= nil then
 			lastPosition = (#self._currentList.dataList > lastPosition) and lastPosition or #self._currentList.dataList
 
-			if lastPosition ~= nil then
+			if lastPosition ~= nil and #self._currentList.dataList > 0 then
 				self._currentList:SetSelectedIndexWithoutAnimation(lastPosition, true, false)
 				
 				GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
@@ -663,8 +663,10 @@ function BUI.Inventory.Class:RefreshItemList()
 			local itemData = filteredDataTable[i]
              --use custom categories
 			local customCategory, matched, catName, catPriority = BUI.Helper.AutoCategory:GetCustomCategory(itemData)
-			if customCategory and not matched then
-				--don't add to list
+			if customCategory and not matched then 
+				itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+				itemData.bestItemCategoryName = AC_UNGROUPED_NAME
+				itemData.sortPriorityName = string.format("%03d%s", 999 , catName) 
 			else
 				if customCategory then
 					itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
@@ -674,26 +676,26 @@ function BUI.Inventory.Class:RefreshItemList()
 					itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
 					itemData.bestItemCategoryName = itemData.bestItemTypeName
 					itemData.sortPriorityName = itemData.bestItemCategoryName
-				end
-				if itemData.bagId == BAG_WORN then
-					itemData.isEquippedInCurrentCategory = false
-					itemData.isEquippedInAnotherCategory = false
-					if itemData.slotIndex == filteredEquipSlot then
-						itemData.isEquippedInCurrentCategory = true
-					else
-						itemData.isEquippedInAnotherCategory = true
-					end
-
-					itemData.isHiddenByWardrobe = WouldEquipmentBeHidden(itemData.slotIndex or EQUIP_SLOT_NONE)
-				else
-					local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
-					itemData.isEquippedInCurrentCategory = slotIndex and true or nil
-
-
-				end
-				ZO_InventorySlot_SetType(itemData, SLOT_TYPE_GAMEPAD_INVENTORY_ITEM)
-				table.insert(tempDataTable, itemData)
+				end 
 			end
+			if itemData.bagId == BAG_WORN then
+				itemData.isEquippedInCurrentCategory = false
+				itemData.isEquippedInAnotherCategory = false
+				if itemData.slotIndex == filteredEquipSlot then
+					itemData.isEquippedInCurrentCategory = true
+				else
+					itemData.isEquippedInAnotherCategory = true
+				end
+
+				itemData.isHiddenByWardrobe = WouldEquipmentBeHidden(itemData.slotIndex or EQUIP_SLOT_NONE)
+			else
+				local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
+				itemData.isEquippedInCurrentCategory = slotIndex and true or nil
+
+
+			end
+			ZO_InventorySlot_SetType(itemData, SLOT_TYPE_GAMEPAD_INVENTORY_ITEM)
+			table.insert(tempDataTable, itemData)
         end
 		filteredDataTable = tempDataTable
     end

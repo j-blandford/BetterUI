@@ -872,7 +872,9 @@ function BUI.Banking.Class:RefreshList()
 		--use custom categories
 		local customCategory, matched, catName, catPriority = BUI.Helper.AutoCategory:GetCustomCategory(itemData)
 		if customCategory and not matched then
-			--don't add to list
+            itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+            itemData.bestItemCategoryName = AC_UNGROUPED_NAME
+            itemData.sortPriorityName = string.format("%03d%s", 999 , catName) 
 		else
 			if customCategory then
 				itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
@@ -883,12 +885,12 @@ function BUI.Banking.Class:RefreshList()
 				itemData.bestItemCategoryName = itemData.bestItemTypeName
 				itemData.sortPriorityName = itemData.bestItemCategoryName
 			end
-			local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
-			itemData.isEquippedInCurrentCategory = slotIndex and true or nil
-
-			table.insert(tempDataTable, itemData)
-			ZO_InventorySlot_SetType(itemData, slotType)
 		end
+        local slotIndex = GetItemCurrentActionBarSlot(itemData.bagId, itemData.slotIndex)
+        itemData.isEquippedInCurrentCategory = slotIndex and true or nil
+
+        table.insert(tempDataTable, itemData)
+        ZO_InventorySlot_SetType(itemData, slotType)
 	end
 	filteredDataTable = tempDataTable
 	
