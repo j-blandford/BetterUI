@@ -999,7 +999,7 @@ function BUI.Inventory.Class:InitializeActionsDialog()
 	
 	local function ActionDialogButtonConfirm(dialog)
 		if self.scene:IsShowing() then 
-			d(ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction))
+			--d(ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction))
 			
 			if (ZO_InventorySlotActions:GetRawActionName(self.itemActions.selectedAction) == GetString(SI_ITEM_ACTION_LINK_TO_CHAT)) then
 				--Also perform bag stack!
