@@ -79,23 +79,19 @@ local function SetupListing(control, data)
     local itemQualityColour = ZO_ColorDef:FromInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, data.quality)
     local fullItemName = itemQualityColour:Colorize(data.name)..(data.stackCount > 1 and " ("..data.stackCount..")" or "")
 
+    local itemLink = GetItemLink(dS.bagId, dS.slotIndex)
+    local currentItemType = GetItemLinkItemType(itemLink) --GetItemType(bagId, slotIndex) 
     if(BUI.Settings.Modules["CIM"].attributeIcons) then
         local dS = data
         local bagId = dS.bagId
         local slotIndex = dS.slotIndex
-        local itemData = GetItemLink(bagId, slotIndex)
 		local isLocked = dS.isPlayerLocked
 	
 		if isLocked then fullItemName = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. fullItemName end
 		
-        local setItem, _, _, _, _ = GetItemLinkSetInfo(itemData, false)
-        local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemData)
+        local setItem, _, _, _, _ = GetItemLinkSetInfo(itemLink, false)
+        local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemLink)
 	
-		local currentItemType = GetItemLinkItemType(itemData) --GetItemType(bagId, slotIndex)
-		local isRecipeAndUnknown = false
-		if (currentItemType == ITEMTYPE_RECIPE) then
-			isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
-		end
 	
 		local isUnbound = not IsItemBound(bagId, slotIndex) and not data.stolen and data.quality ~= ITEM_QUALITY_TRASH
 	
@@ -103,13 +99,19 @@ local function SetupListing(control, data)
         if(hasEnchantment and BUI.Settings.Modules["Banking"].showIconEnchantment) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
         if(setItem and BUI.Settings.Modules["Banking"].showIconSetGear) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
 		   
-		if isRecipeAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
+		if currentItemType == ITEMTYPE_RECIPE and not IsItemLinkRecipeKnown(itemLink) then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
 		if BUI.Settings.Modules["Banking"].showIconGamePadBuddyStatusIcon then fullItemName = fullItemName .. BUI.Helper.GamePadBuddy.GetItemStatusIndicator(bagId, slotIndex)  end
 		if BUI.Settings.Modules["Banking"].showIconIakoniGearChanger then fullItemName = fullItemName .. BUI.Helper.IokaniGearChanger.GetGearSet(bagId, slotIndex)  end
          
     end
     control:GetNamedChild("ItemType"):SetText(string.upper(data.itemCategoryName))
-    control:GetNamedChild("Stat"):SetText((data.statValue == 0) and "-" or data.statValue)
+    if currentItemType == ITEMTYPE_RECIPE then
+        control:GetNamedChild("Stat"):SetText(IsItemLinkRecipeKnown(itemLink) and "Known" or "Unknown")
+    elseif IsItemLinkBook(itemLink) then
+        control:GetNamedChild("Stat"):SetText(IsItemLinkBookKnown(itemLink) and "Known" or "Unknown")
+    else
+        control:GetNamedChild("Stat"):SetText((data.statValue == 0) and "-" or data.statValue)
+    end
     control:GetNamedChild("Icon"):ClearIcons()
     control:GetNamedChild("Label"):SetText(fullItemName)
     control:GetNamedChild("Icon"):AddIcon(data.iconFile)

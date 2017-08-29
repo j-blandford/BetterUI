@@ -338,7 +338,15 @@ function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuri
     control:GetNamedChild("ItemType"):SetText(string.upper(data.bestItemTypeName))
     local traitType = GetItemTrait(data.bagId, data.slotIndex)
     control:GetNamedChild("Trait"):SetText(traitType == ITEM_TRAIT_TYPE_NONE and "-" or string.upper(GetString("SI_ITEMTRAITTYPE", traitType)))
-    control:GetNamedChild("Stat"):SetText((data.dataSource.statValue == 0) and "-" or data.dataSource.statValue)
+    local itemLink = GetItemLink(data.bagId, data.slotIndex)
+    local itemType = GetItemLinkItemType(itemLink) --GetItemType(bagId, slotIndex) 
+    if itemType == ITEMTYPE_RECIPE then
+        control:GetNamedChild("Stat"):SetText(IsItemLinkRecipeKnown(itemLink) and "Known" or "Unknown")
+    elseif IsItemLinkBook(itemLink) then
+        control:GetNamedChild("Stat"):SetText(IsItemLinkBookKnown(itemLink) and "Known" or "Unknown")
+    else
+        control:GetNamedChild("Stat"):SetText((data.dataSource.statValue == 0) and "-" or data.dataSource.statValue)
+    end
 
     -- Replace the "Value" with the market price of the item (in yellow)
     if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
