@@ -104,8 +104,6 @@ Modules\GuildStore\Module.lua
 Modules\Banking\Images\nav_vert.dds
 Modules\Banking\Images\centre_selector.dds
 Modules\Banking\Images\selectbg.dds
-Modules\Banking\Templates\WithdrawDeposit.xml
-Modules\Banking\WithdrawDeposit.lua
 
 Modules\Banking\Banking.lua
 Modules\Banking\Module.lua
