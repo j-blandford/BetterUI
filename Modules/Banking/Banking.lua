@@ -86,8 +86,12 @@ local function SetupListing(control, data)
         local bagId = dS.bagId
         local slotIndex = dS.slotIndex
 		local isLocked = dS.isPlayerLocked
+        local isBoPTradeable = dS.isBoPTradeable
+        local labelTxt = ""
 	
-		if isLocked then fullItemName = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" .. fullItemName end
+		if isLocked then labelTxt = labelTxt.. "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" end
+        if isBoPTradeable then labelTxt = labelTxt.."|t24:24:"..ZO_TRADE_BOP_ICON.."|t" end
+        fullItemName = labelTxt .. fullItemName
 		
         local setItem, _, _, _, _ = GetItemLinkSetInfo(itemLink, false)
         local hasEnchantment, _, _ = GetItemLinkEnchantInfo(itemLink)

@@ -160,10 +160,12 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
         local bagId = dS.bagId
         local slotIndex = dS.slotIndex
         local isLocked = dS.isPlayerLocked
+        local isBoPTradeable = dS.isBoPTradeable
 
         local labelTxt = ""
 
-        if isLocked then labelTxt = "|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" end
+        if isLocked then labelTxt = labelTxt.."|t24:24:"..ZO_GAMEPAD_LOCKED_ICON_32.."|t" end
+        if isBoPTradeable then labelTxt = labelTxt.."|t24:24:"..ZO_TRADE_BOP_ICON.."|t" end
 
         labelTxt = labelTxt .. data.text
 
