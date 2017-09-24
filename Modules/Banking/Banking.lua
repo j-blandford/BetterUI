@@ -171,6 +171,9 @@ end
 local function OnItemSelectedChange(self, list, selectedData)
     -- Check if we are on the "Deposit/withdraw" gold/telvar row
 
+	if not SCENE_MANAGER.scenes['gamepad_banking']:IsShowing() then
+		return
+	end
     if(selectedData.label ~= nil) then
         -- Yes! We are, so add the "withdraw/deposit gold/telvar" keybinds here
         KEYBIND_STRIP:RemoveKeybindButtonGroup(self.withdrawDepositKeybinds)
