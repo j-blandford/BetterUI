@@ -276,9 +276,6 @@ function BUI.Inventory.Setup()
     end
 	
 	if not SaveEquip ~= nil or not SaveEquip then
-		ZO_CreateStringId("SI_SAVE_EQUIP_CONFIRM_TITLE", "Equip Item")
-		ZO_CreateStringId("SI_SAVE_EQUIP_CONFIRM_EQUIP_BOE", "Equipping <<t:1>> will bind it to you. Continue?")
-		ZO_CreateStringId("SI_SAVE_EQUIP_EQUIP", "Equip")
 	
 		ZO_Dialogs_RegisterCustomDialog("CONFIRM_EQUIP_BOE", {
 			gamepadInfo =

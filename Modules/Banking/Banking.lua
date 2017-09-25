@@ -677,7 +677,7 @@ function BUI.Banking.Class:InitializeKeybind()
 	self.coreKeybinds = {
                 alignment = KEYBIND_STRIP_ALIGN_LEFT,
 		        {
-		            name = "Toggle List",
+		            name = GetString(SI_BUI_BANKING_TOGGLE_LIST),
 		            keybind = "UI_SHORTCUT_SECONDARY",
 		            callback = function()
 		                self:ToggleList(self.currentMode == LIST_DEPOSIT)
@@ -760,7 +760,7 @@ function BUI.Banking.Class:InitializeKeybind()
     {
         alignment = KEYBIND_STRIP_ALIGN_LEFT,
         {
-            name = "CONFIRM AMOUNT",
+            name = GetString(SI_BUI_CONFIRM_AMOUNT),
             keybind = "UI_SHORTCUT_PRIMARY",
             visible = function()
                 return true
@@ -810,7 +810,7 @@ function BUI.Banking.Class:InitializeKeybind()
 	self.spinnerKeybindStripDescriptor = {
         alignment = KEYBIND_STRIP_ALIGN_LEFT,
         {
-            name = "Confirm",
+            name = GetString(SI_BUI_CONFIRM),
             keybind = "UI_SHORTCUT_PRIMARY",
             callback = function()
             	self:SaveListPosition()
@@ -848,11 +848,12 @@ function BUI.Banking.Class:RefreshList()
 	self.list:Clear()
 
     -- We have to add 2 rows to the list, one for Withdraw/Deposit GOLD and one for Withdraw/Deposit TEL-VAR
-    local wdString = self.currentMode == LIST_WITHDRAW and "WITHDRAW" or "DEPOSIT"
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." GOLD|r", currencyType = CURT_MONEY})
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." TEL VAR|r", currencyType = CURT_TELVAR_STONES})
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." ALLIENCE POINT|r", currencyType = CURT_ALLIANCE_POINTS})
-    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." WRIT VOUCHER|r", currencyType = CURT_WRIT_VOUCHERS})
+    local wdString = self.currentMode == LIST_WITHDRAW and GetString(SI_BUI_BANKING_WITHDRAW) or GetString(SI_BUI_BANKING_DEPOSIT)
+	wdString = zo_strformat("<<Z:1>>", wdString)
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." " .. GetString(SI_BUI_CURRENCY_GOLD) ..  "|r", currencyType = CURT_MONEY})
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." " .. GetString(SI_BUI_CURRENCY_TEL_VAR) ..  "|r", currencyType = CURT_TELVAR_STONES})
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." " .. GetString(SI_BUI_CURRENCY_ALLIANCE_POINT) ..  "|r", currencyType = CURT_ALLIANCE_POINTS})
+    self.list:AddEntry("BUI_HeaderRow_Template", {label="|cFFFFFF"..wdString.." " .. GetString(SI_BUI_CURRENCY_WRIT_VOUCHER) ..  "|r", currencyType = CURT_WRIT_VOUCHERS})
 
 	--fix subscriber bank bag issue
 	checking_bags = {}
@@ -1010,11 +1011,11 @@ function BUI.Banking.Init()
     BUI.Banking.Window:SetTitle("|c0066FFBank|r")
 
     -- Set the column headings up, maybe put them into a table?
-    BUI.Banking.Window:AddColumn("Name",87)
-    BUI.Banking.Window:AddColumn("Type",637)
-    BUI.Banking.Window:AddColumn("Trait",897)
-    BUI.Banking.Window:AddColumn("Stat",1067)
-    BUI.Banking.Window:AddColumn("Value",1187)
+    BUI.Banking.Window:AddColumn(GetString(SI_BUI_BANKING_COLUMN_NAME),87)
+    BUI.Banking.Window:AddColumn(GetString(SI_BUI_BANKING_COLUMN_TYPE),637)
+    BUI.Banking.Window:AddColumn(GetString(SI_BUI_BANKING_COLUMN_TRAIT),897)
+    BUI.Banking.Window:AddColumn(GetString(SI_BUI_BANKING_COLUMN_STAT),1067)
+    BUI.Banking.Window:AddColumn(GetString(SI_BUI_BANKING_COLUMN_VALUE),1187)
 
     BUI.Banking.Window:RefreshVisible()
 

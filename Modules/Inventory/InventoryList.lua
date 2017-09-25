@@ -147,11 +147,8 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
 		if BUI.Settings.Modules["CIM"].biggerSkin then
 			fontSize = 42
 		end
-		if GetCVar("language.2") == "ru" then
-			label:SetFont(string.format("RuEso/fonts/ftn57.otf|%d|soft-shadow-thick", fontSize))
-		else
-			label:SetFont(string.format("$(GAMEPAD_MEDIUM_FONT)|%d|soft-shadow-thick", fontSize))
-		end
+		label:SetFont(string.format("$(GAMEPAD_MEDIUM_FONT)|%d|soft-shadow-thick", fontSize))
+
         if data.modifyTextType then
             label:SetModifyTextType(data.modifyTextType)
         end

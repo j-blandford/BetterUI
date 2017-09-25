@@ -1231,7 +1231,7 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
 		end
     end
     local function GetDialogSwitchButtonText(isPrimary)
-        return "Switch Weapons"
+        return GetString(SI_BUI_INV_SWITCH_EQUIPSLOT)
     end
 
     local function GetDialogMainText(dialog) 
@@ -1242,22 +1242,22 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
 		local itemColor = GetItemQualityColor(itemQuality)
 		itemName = itemColor:Colorize(itemName)
 	        local str = ""
-		local weaponChoice = "Main"
+		local weaponChoice = GetString(SI_BUI_INV_EQUIPSLOT_MAIN)
 		if not dialog.data[2] then
-			weaponChoice = "Backup"
+			weaponChoice = GetString(SI_BUI_INV_EQUIPSLOT_BACKUP)
 		end
 		if equipType == EQUIP_TYPE_ONE_HAND then
 			--choose Main/Off hand, Primary/Secondary weapon
-			str = zo_strformat("Do you want to equip <<t:1>>\ninto main hand or off hand in |cFF6600<<2>>|r weapon bar?", itemName, weaponChoice ) 
+			str = zo_strformat(GetString(SI_BUI_INV_EQUIP_ONE_HAND_WEAPON), itemName, weaponChoice ) 
 		elseif equipType == EQUIP_TYPE_MAIN_HAND or
 			equipType == EQUIP_TYPE_OFF_HAND or
 			equipType == EQUIP_TYPE_TWO_HAND or
 			equipType == EQUIP_TYPE_POISON then
 			--choose Primary/Secondary weapon
-			str = zo_strformat("Do you want to equip <<t:1>> in |cFF6600<<2>>|r weapon bar?", itemName, weaponChoice ) 
+			str = zo_strformat(GetString(SI_BUI_INV_EQUIP_OTHER_WEAPON), itemName, weaponChoice ) 
 		elseif equipType == EQUIP_TYPE_RING then
 			--choose which rint slot          
-			str = zo_strformat("Do you want to equip <<t:1>> in first or second ring slot?", itemName) 
+			str = zo_strformat(GetString(SI_BUI_INV_EQUIP_RING), itemName) 
 		end 
 		return str
 	end
@@ -1296,10 +1296,10 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
 			    		equipType == EQUIP_TYPE_TWO_HAND or
 			    		equipType == EQUIP_TYPE_POISON then
 			    		--choose Primary/Secondary weapon
-			    		return "Equip"
+			    		return GetString(SI_BUI_INV_EQUIP)
 			    	elseif equipType == EQUIP_TYPE_RING then
-			    		--choose which rint slot
-			    		return "First Slot"
+			    		--choose which ring slot
+			    		return GetString(SI_BUI_INV_FIRST_SLOT)
 			    	end 
 			    	return ""
                 end,
@@ -1322,7 +1322,7 @@ function BUI.Inventory.Class:InitializeEquipSlotDialog()
 						return ""
 					elseif equipType == EQUIP_TYPE_RING then
 						--choose which rint slot
-						return "Second Slot" 
+						return GetString(SI_BUI_INV_SECOND_SLOT)
 					end 
 	                return ""
 	            end,
@@ -1703,7 +1703,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             			return GetString(SI_BUI_INV_ACTION_QUICKSLOT_ASSIGN)
             		elseif filterType == ITEMFILTERTYPE_WEAPONS or filterType == ITEMFILTERTYPE_ARMOR then
             			--switch compare
-            			return "Switch Info" --GetString(SI_BUI_INV_SWITCH_EQUIPSLOT)
+            			return GetString(SI_BUI_INV_SWITCH_INFO)
             		end 
             	elseif self.actionMode == CRAFT_BAG_ACTION_MODE then
             		--craftbag mode
