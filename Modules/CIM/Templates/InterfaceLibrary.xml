@@ -55,15 +55,15 @@
             <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" offsetX="0" />
         </Control>
 
-        <Label name="BUI_GenericColumn_TextTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE"/>
+        <Label name="BUI_GenericColumn_TextTemplate" font="ZoFontGamepad27" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE"/>
 
         <Label name="BUI_MenuEntryLabelTemplate" font="ZoFontGamepad34" verticalAlignment="CENTER" wrapMode="ELLIPSIS" virtual="true">
             <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING"/>
             <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
         </Label>
 
-        <Label name="BUI_FooterTemplate" font="$(GAMEPAD_MEDIUM_FONT)|44|soft-shadow-thick" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
-        <Label name="BUI_FooterSmallTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
+        <Label name="BUI_FooterTemplate" font="ZoFontGamepad45" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
+        <Label name="BUI_FooterSmallTemplate" font="ZoFontGamepad27" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
 
 
         <Texture name="BUI_MenuEntryIconTemplate" tier="MEDIUM" inherits="ZO_MultiIcon" excludeFromResizeToFitExtents="true" level="1" pixelRoundingEnabled="true" virtual="true">
@@ -160,7 +160,7 @@
                 <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
 
                 <Controls>
-                    <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick">
+                    <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="ZoFontGamepad27">
                             <Anchor point="TOPLEFT" offsetX="15"/>
                     </Label>
                 </Controls>
@@ -173,18 +173,18 @@
             <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
 
             <Controls>
-                <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick">
+                <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="ZoFontGamepad27">
                         <Anchor point="TOPLEFT" offsetX="28"/>
                 </Label>
                 <Texture name="$(parent)Icon" inherits="BUI_MenuEntryIconTemplate" edgeColor="00000000">
                 </Texture>
-                <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="485"/>
                 </Label>
-                <Label name="$(parent)Stat" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                <Label name="$(parent)Stat" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="679"/>
                 </Label>
-                <Label name="$(parent)Value" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                <Label name="$(parent)Value" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="744"/>
                 </Label>
             </Controls>
@@ -298,7 +298,7 @@
                                 BUI.Banking.Window:ToggleList(true)
                             </OnClicked>
                             <Controls>
-                                <Label name="$(parent)Label" text="WITHDRAW" horizontalAlignment="LEFT" inherits="BUI_FooterTemplate">
+                                <Label name="$(parent)Label" text="SI_BUI_BANKING_WITHDRAW" horizontalAlignment="LEFT" inherits="BUI_FooterTemplate">
                                     <Anchor point="LEFT" offsetX="70" offsetY="-10"/>
                                 </Label>
                                 <Label name="$(parent)SpaceLabel" text="|t24:24:/esoui/art/icons/mapkey/mapkey_bank.dds|t 10/180" horizontalAlignment="RIGHT" inherits="BUI_FooterSmallTemplate">
@@ -325,7 +325,7 @@
                                 BUI.Banking.Window:ToggleList(false)
                             </OnClicked>
                             <Controls>
-                                <Label name="$(parent)Label" text="DEPOSIT" horizontalAlignment="RIGHT" inherits="BUI_FooterTemplate" color="444444">
+                                <Label name="$(parent)Label" text="SI_BUI_BANKING_DEPOSIT" horizontalAlignment="RIGHT" inherits="BUI_FooterTemplate" color="444444">
                                     <Anchor point="RIGHT" offsetX="-100" offsetY="-10"/>
                                 </Label>
                                 <Label name="$(parent)SpaceLabel" text="|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_all.dds|t 70/112" horizontalAlignment="RIGHT" inherits="BUI_FooterSmallTemplate">
@@ -346,19 +346,19 @@
 
         <TopLevelControl name="BUI_BankingFooterBar" level="120" tier="2" layer="1" hidden="true">
             <Controls>
-	            <Label name="$(parent)Data1Value" level="0" tier="2" layer="2" text="100,000" font="$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="FFBF00">
+	            <Label name="$(parent)Data1Value" level="0" tier="2" layer="2" text="100,000" font="ZoFontGamepad36" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="FFBF00">
 		            <Dimensions y="36" />
 		            <Anchor point="BOTTOMRIGHT" relativeTo="GuiRoot" relativePoint="BOTTOMRIGHT" offsetX="-300" offsetY="-61" />
 	            </Label>
-                <Label name="$(parent)Data1Header" level="0" tier="2" layer="2" text="|t32:32:esoui/art/currency/currency_gold_32.dds|t" font="$(GAMEPAD_MEDIUM_FONT)|32|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
+                <Label name="$(parent)Data1Header" level="0" tier="2" layer="2" text="|t32:32:esoui/art/currency/currency_gold_32.dds|t" font="ZoFontGamepad34" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
                     <Dimensions y="32" />
 	                <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data1Value" relativePoint="BOTTOMRIGHT" offsetX="" offsetY="-2" />
                 </Label>
-                <Label name="$(parent)Data2Value" level="0" tier="2" layer="2" text="100,000" font="$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="0066FF">
+                <Label name="$(parent)Data2Value" level="0" tier="2" layer="2" text="100,000" font="ZoFontGamepad36" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE" color="0066FF">
                     <Dimensions y="36" />
                     <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data1Header" relativePoint="BOTTOMRIGHT" offsetX="25" />
                 </Label>
-	            <Label name="$(parent)Data2Header" level="0" tier="2" layer="2" text="|t32:32:esoui/art/currency/currency_telvar_32.dds|t" font="$(GAMEPAD_MEDIUM_FONT)|32|soft-shadow-thick" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
+	            <Label name="$(parent)Data2Header" level="0" tier="2" layer="2" text="|t32:32:esoui/art/currency/currency_telvar_32.dds|t" font="ZoFontGamepad34" wrapMode="ELLIPSIS" modifyTextType="UPPERCASE">
 		            <Dimensions y="32" />
 		            <Anchor point="BOTTOMLEFT" relativeTo="$(parent)Data2Value" relativePoint="BOTTOMRIGHT" offsetX="10" offsetY="-2" />
 	            </Label>

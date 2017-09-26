@@ -933,9 +933,9 @@ function BUI.Inventory.Class:InitializeActionsDialog()
 				--ZO_ClearTable(parametricList)
 				if(BUI.Settings.Modules["Inventory"].enableJunk) then
 					if(self.categoryList:GetTargetData().showJunk ~= nil) then
-						self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Unmark as Junk", UnmarkAsJunk, "secondary"}
+						self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {GetString(SI_BUI_ACTION_UNMARK_AS_JUNK), UnmarkAsJunk, "secondary"}
 					else
-						self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Mark as Junk", MarkAsJunk, "secondary"}
+						self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {GetString(SI_BUI_ACTION_MARK_AS_JUNK), MarkAsJunk, "secondary"}
 					end
 				end
 

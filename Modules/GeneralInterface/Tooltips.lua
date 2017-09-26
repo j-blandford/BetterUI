@@ -135,7 +135,7 @@ function BUI.Tooltips.UpdateGroupAnchorFrames(self)
     for unitTag, unitFrame in pairs(self.groupFrames) do
 	    if(unitFrame.healthBar.BUI_labelRef == nil) then
 		    unitFrame.healthBar.BUI_labelRef =  BUI.WindowManager:CreateControl(unitFrame.frame:GetName().."HealthLabel", unitFrame.frame, CT_LABEL)
-		    unitFrame.healthBar.BUI_labelRef:SetFont("$(GAMEPAD_MEDIUM_FONT)|20|soft-shadow-thick")
+		    unitFrame.healthBar.BUI_labelRef:SetFont("ZoFontGamepad20")
 		    unitFrame.healthBar.BUI_labelRef:SetText("100 (100%)")
 		    unitFrame.healthBar.BUI_labelRef:SetColor(1, 1, 1, 1)
 		    unitFrame.healthBar.BUI_labelRef:SetAnchor(CENTER, unitFrame.frame, TOP, 5,53)

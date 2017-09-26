@@ -143,12 +143,12 @@ end
 function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
 
     if label then
-    	local fontSize = 28
+    	local font = "ZoFontGamepad27"
 		if BUI.Settings.Modules["CIM"].biggerSkin then
-			fontSize = 42
+			font = "ZoFontGamepad42"
 		end
-		label:SetFont(string.format("$(GAMEPAD_MEDIUM_FONT)|%d|soft-shadow-thick", fontSize))
-
+		label:SetFont(font)
+		
         if data.modifyTextType then
             label:SetModifyTextType(data.modifyTextType)
         end
@@ -329,10 +329,10 @@ function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuri
     BUI_SharedGamepadEntryLabelSetup(control.label, data, selected)
 
 	if BUI.Settings.Modules["CIM"].biggerSkin then
-		control:GetNamedChild("ItemType"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-        control:GetNamedChild("Trait"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("Stat"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("Value"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("ItemType"):SetFont("ZoFontGamepad36")
+        control:GetNamedChild("Trait"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("Stat"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("Value"):SetFont("ZoFontGamepad36")
 	end
     control:GetNamedChild("ItemType"):SetText(string.upper(data.bestItemTypeName))
     local traitType = GetItemTrait(data.bagId, data.slotIndex)
@@ -340,9 +340,9 @@ function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuri
     local itemLink = GetItemLink(data.bagId, data.slotIndex)
     local itemType = GetItemLinkItemType(itemLink) --GetItemType(bagId, slotIndex) 
     if itemType == ITEMTYPE_RECIPE then
-        control:GetNamedChild("Stat"):SetText(IsItemLinkRecipeKnown(itemLink) and "Known" or "Unknown")
+        control:GetNamedChild("Stat"):SetText(IsItemLinkRecipeKnown(itemLink) and GetString(SI_BUI_INV_RECIPE_KNOWN) or GetString(SI_BUI_INV_RECIPE_UNKNOWN))
     elseif IsItemLinkBook(itemLink) then
-        control:GetNamedChild("Stat"):SetText(IsItemLinkBookKnown(itemLink) and "Known" or "Unknown")
+        control:GetNamedChild("Stat"):SetText(IsItemLinkBookKnown(itemLink) and GetString(SI_BUI_INV_RECIPE_KNOWN) or GetString(SI_BUI_INV_RECIPE_UNKNOWN))
     else
         control:GetNamedChild("Stat"):SetText((data.dataSource.statValue == 0) and "-" or data.dataSource.statValue)
     end

@@ -110,9 +110,9 @@ local function SetupListing(control, data)
     end
     control:GetNamedChild("ItemType"):SetText(string.upper(data.itemCategoryName))
     if currentItemType == ITEMTYPE_RECIPE then
-        control:GetNamedChild("Stat"):SetText(IsItemLinkRecipeKnown(itemLink) and "Known" or "Unknown")
+        control:GetNamedChild("Stat"):SetText(IsItemLinkRecipeKnown(itemLink) and GetString(SI_BUI_INV_RECIPE_KNOWN) or GetString(SI_BUI_INV_RECIPE_UNKNOWN))
     elseif IsItemLinkBook(itemLink) then
-        control:GetNamedChild("Stat"):SetText(IsItemLinkBookKnown(itemLink) and "Known" or "Unknown")
+        control:GetNamedChild("Stat"):SetText(IsItemLinkBookKnown(itemLink) and GetString(SI_BUI_INV_RECIPE_KNOWN) or GetString(SI_BUI_INV_RECIPE_UNKNOWN))
     else
         control:GetNamedChild("Stat"):SetText((data.statValue == 0) and "-" or data.statValue)
     end
@@ -140,7 +140,7 @@ end
 local function SetupLabelListing(control, data)
     control:GetNamedChild("Label"):SetText(data.label)
     if BUI.Settings.Modules["CIM"].biggerSkin then
-        control:GetNamedChild("Label"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+        control:GetNamedChild("Label"):SetFont("ZoFontGamepad36")
     end
 end
 

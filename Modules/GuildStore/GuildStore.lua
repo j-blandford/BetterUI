@@ -124,11 +124,11 @@ end
 -- Pretty much identical to whats in [Enhanced Inventory], just without the stolen icons
 local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selected)
     if label then
-    	local fontSize = 28
+    	local font = "ZoFontGamepadCondensed27"
 		if BUI.Settings.Modules["CIM"].biggerSkin then
-			fontSize = 42
+			font = "ZoFontGamepadCondensed42"
 		end
-		label:SetFont(string.format("$(GAMEPAD_MEDIUM_FONT)|%d|soft-shadow-thick", fontSize))
+		label:SetFont(font)
 		
         if data.modifyTextType then
             label:SetModifyTextType(data.modifyTextType)
@@ -228,11 +228,11 @@ local function SetupListing(control, data, selected, selectedDuringRebuild, enab
     local notEnoughMoney = data.purchasePrice > GetCarriedCurrencyAmount(CURT_MONEY)
 
 	if BUI.Settings.Modules["CIM"].biggerSkin then
-		control:GetNamedChild("Price"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("SellerName"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("UnitPrice"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("BuyingAdvice"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("TimeLeft"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("Price"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("SellerName"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("UnitPrice"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("BuyingAdvice"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("TimeLeft"):SetFont("ZoFontGamepad36")
 
         local iconControl = control:GetNamedChild("Icon")
 		iconControl:SetDimensions(48, 48)
@@ -627,10 +627,10 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
     BUI_SharedGamepadEntryIconSetup(control.icon, control.stackCountLabel, data, selected)
 
 	if BUI.Settings.Modules["CIM"].biggerSkin then
-		control:GetNamedChild("ItemType"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("BuyingAdvice"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("Trait"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
-		control:GetNamedChild("Price"):SetFont("$(GAMEPAD_MEDIUM_FONT)|36|soft-shadow-thick")
+		control:GetNamedChild("ItemType"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("BuyingAdvice"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("Trait"):SetFont("ZoFontGamepad36")
+		control:GetNamedChild("Price"):SetFont("ZoFontGamepad36")
 		
         local iconControl = control:GetNamedChild("Icon")
 		iconControl:SetDimensions(48, 48)
