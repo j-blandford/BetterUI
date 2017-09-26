@@ -106,16 +106,58 @@ function BUI_GamepadInventoryList:RefreshList()
 	--self:AddTemplate("BUI_HeaderRow_Template",SetupLabelListing)
 
     self.dataBySlotIndex = {}
-    local slots = self:GenerateSlotTable()
+    local filteredDataTable = self:GenerateSlotTable()
+	 
+	local tempDataTable = {}
+	for i = 1, #filteredDataTable  do
+		local itemData = filteredDataTable[i]
+		--use custom categories
+		local customCategory, matched, catName, catPriority = BUI.Helper.AutoCategory:GetCustomCategory(itemData)
+		if customCategory and not matched then
+            itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+            itemData.bestItemCategoryName = AC_UNGROUPED_NAME
+            itemData.sortPriorityName = string.format("%03d%s", 999 , catName) 
+		else
+			if customCategory then
+				itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+				itemData.bestItemCategoryName = catName
+				itemData.sortPriorityName = string.format("%03d%s", 100 - catPriority , catName) 
+			else
+				itemData.bestItemTypeName = zo_strformat(SI_INVENTORY_HEADER, GetBestItemCategoryDescription(itemData))
+				itemData.bestItemCategoryName = itemData.bestItemTypeName
+				itemData.sortPriorityName = itemData.bestItemCategoryName
+			end
+		end
+ 
+        table.insert(tempDataTable, itemData)
+	end
+	filteredDataTable = tempDataTable
+	
+	table.sort(filteredDataTable, BUI_GamepadInventory_DefaultItemSortComparator)
+	
     local currentBestCategoryName
 	--d("tt refresh list")
-    for i, itemData in ipairs(slots) do
+    for i, itemData in ipairs(filteredDataTable) do
         local entry = ZO_GamepadEntryData:New(itemData.name, itemData.iconFile)
         entry:SetFontScaleOnSelection(false)
 		if self.template == "BUI_Sell_Row" then entry.text = GetSellLabelText(itemData) end
-        self:SetupItemEntry(entry, itemData)
-        self.list:AddEntry(self.template, entry)
+        self:SetupItemEntry(entry, itemData) 
         self.dataBySlotIndex[itemData.slotIndex] = entry
+		
+		entry.bestItemCategoryName = itemData.bestItemCategoryName
+		entry.bestGamepadItemCategoryName = itemData.bestItemCategoryName 
+		
+		if entry.bestGamepadItemCategoryName ~= currentBestCategoryName then
+			currentBestCategoryName = entry.bestGamepadItemCategoryName
+			entry:SetHeader(currentBestCategoryName)
+			if AutoCategory then
+				self.list:AddEntryWithHeader("BUI_Sell_Row", entry)
+			else
+				self.list:AddEntry("BUI_Sell_Row", entry)
+			end
+		else
+			self.list:AddEntry("BUI_Sell_Row", entry)
+		end
     end
     self.list:Commit()
 end
@@ -124,9 +166,9 @@ end
 -- Pretty much identical to whats in [Enhanced Inventory], just without the stolen icons
 local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selected)
     if label then
-    	local font = "ZoFontGamepadCondensed27"
+    	local font = "ZoFontGamepad27"
 		if BUI.Settings.Modules["CIM"].biggerSkin then
-			font = "ZoFontGamepadCondensed42"
+			font = "ZoFontGamepad42"
 		end
 		label:SetFont(font)
 		
@@ -710,12 +752,14 @@ function BUI.GuildStore.Sell:InitializeList()
     local LISTINGS_ITEM_HEIGHT = 30
 
     self.messageControl = self.control:GetNamedChild("StatusMessage")
+	
     self.itemList = BUI_GamepadInventoryList:New(self.listControl, BAG_BACKPACK, SLOT_TYPE_ITEM, OnSelectionChanged, ENTRY_SETUP_CALLBACK,
                                                     CATEGORIZATION_FUNCTION, SORT_FUNCTION, USE_TRIGGERS, "BUI_Sell_Row", SetupSellListing)
     self.itemList:SetItemFilterFunction(function(slot) local isBound = IsItemBound(slot.bagId, slot.slotIndex)
                                                     return slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen and not isBound end)
 
     self.itemList:GetParametricList():SetAlignToScreenCenter(true, LISTINGS_ITEM_HEIGHT)
+	 
 end
 
 function BUI.GuildStore.Browse:UpdateNameFilter(newValue)
