@@ -2,7 +2,7 @@
 ## Description: Makes the gamepad interface usable!
 ## APIVersion: 100020
 ## Author: |c0066FFprasoc|r & |cff5533RockingDice|r
-## Version: 2.47
+## Version: 2.48
 ## DependsOn:
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## SavedVariables: BetterUISavedVars
