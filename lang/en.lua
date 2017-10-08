@@ -23,7 +23,6 @@ ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_MAIN","Main")
 ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_BACKUP","Backup")
 ZO_CreateStringId("SI_BUI_BANKING_WITHDRAW","WITHDRAW")
 ZO_CreateStringId("SI_BUI_BANKING_DEPOSIT","DEPOSIT")
-ZO_CreateStringId("SI_BUI_BANKING_BUYSPACE","Buy More Space (<<1>>)")
 
 ZO_CreateStringId("SI_BUI_INV_ACTION_TO_TEMPLATE","Go To <<1>>")
 

@@ -23,7 +23,6 @@ ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_MAIN","Primaire Wapen")
 ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_BACKUP","Secundaire Wapen")
 ZO_CreateStringId("SI_BUI_BANKING_WITHDRAW","Afhallen")
 ZO_CreateStringId("SI_BUI_BANKING_DEPOSIT","Storten")
-ZO_CreateStringId("SI_BUI_BANKING_BUYSPACE","Meer ruimten kopen (<<1>>)")
 
 ZO_CreateStringId("SI_BUI_INV_ACTION_TO_TEMPLATE","Ga naar <<1>>")
 

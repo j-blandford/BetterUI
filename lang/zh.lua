@@ -23,7 +23,6 @@ ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_MAIN","主要")
 ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_BACKUP","备用")
 ZO_CreateStringId("SI_BUI_BANKING_WITHDRAW","提取")
 ZO_CreateStringId("SI_BUI_BANKING_DEPOSIT","存入")
-ZO_CreateStringId("SI_BUI_BANKING_BUYSPACE","购买更多空间 (<<1>>)")
 
 ZO_CreateStringId("SI_BUI_INV_ACTION_TO_TEMPLATE","前往 <<1>>")
 
