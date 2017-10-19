@@ -659,6 +659,16 @@ local function GetMarketPrice(itemLink, stackCount)
         if (mmData.avgPrice ~= nil) then
             return mmData.avgPrice*stackCount
         end
+	end
+	if BUI.Settings.Modules["GuildStore"].ttcIntegration and TamrielTradeCentre then
+		local priceInfo = TamrielTradeCentrePrice:GetPriceInfo(itemLink)
+		if priceInfo then
+			if priceInfo.SuggestedPrice then
+				return priceInfo.SuggestedPrice * stackCount
+			else 
+				return priceInfo.Avg * stackCount, 1
+			end
+		end
     end
     return 0
 end
@@ -696,9 +706,13 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
     -- control:GetNamedChild("Price"):SetText(data.stackSellPrice)
 	-- Replace the "Value" with the market price of the item (in yellow)
     if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
-        local marketPrice = GetMarketPrice(GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex), data.stackCount)
+        local marketPrice, IsAverage = GetMarketPrice(GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex), data.stackCount)
         if(marketPrice ~= 0) then
-            control:GetNamedChild("Price"):SetColor(1,0.75,0,1)
+			if IsAverage then
+				control:GetNamedChild("Price"):SetColor(1,0.5,0.5,1) 
+			else
+				control:GetNamedChild("Price"):SetColor(1,0.75,0,1) 
+			end
             control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(math.floor(marketPrice), USE_SHORT_CURRENCY_FORMAT))
         else
             control:GetNamedChild("Price"):SetColor(1,1,1,1)

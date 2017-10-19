@@ -134,8 +134,15 @@ local function GetMarketPrice(itemLink, stackCount)
         end
     end
     if BUI.Settings.Modules["GuildStore"].ttcIntegration and TamrielTradeCentre ~= nil then
-        --TODO:ttc
-    end
+        local priceInfo = TamrielTradeCentrePrice:GetPriceInfo(itemLink)
+		if priceInfo then
+			if priceInfo.SuggestedPrice then
+				return priceInfo.SuggestedPrice * stackCount
+			else 
+				return priceInfo.Avg * stackCount, 1
+			end
+		end
+	end
     return 0
 end
 
@@ -349,9 +356,13 @@ function BUI_SharedGamepadEntry_OnSetup(control, data, selected, reselectingDuri
 
     -- Replace the "Value" with the market price of the item (in yellow)
     if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
-        local marketPrice = GetMarketPrice(GetItemLink(data.bagId,data.slotIndex), data.stackCount)
+        local marketPrice, isAverage = GetMarketPrice(GetItemLink(data.bagId,data.slotIndex), data.stackCount)
         if(marketPrice ~= 0) then
-            control:GetNamedChild("Value"):SetColor(1,0.75,0,1)
+			if isAverage then
+				control:GetNamedChild("Value"):SetColor(1,0.5,0.5,1)
+			else
+				control:GetNamedChild("Value"):SetColor(1,0.75,0,1)
+			end
             control:GetNamedChild("Value"):SetText(ZO_CurrencyControl_FormatCurrency(math.floor(marketPrice), USE_SHORT_CURRENCY_FORMAT))
         else
             control:GetNamedChild("Value"):SetColor(1,1,1,1)
