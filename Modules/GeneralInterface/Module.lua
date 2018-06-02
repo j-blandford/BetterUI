@@ -141,6 +141,7 @@ function BUI.Tooltips.Setup()
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_RIGHT_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
 	BUI.InventoryHook(GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_MOVABLE_TOOLTIP), "LayoutItem", BUI.ReturnItemLink)
 
+	--[[
 	-- ZOS have released a buggy tooltip which is blind to the stackCount of the item being displayed, let's fix that
 	local LEFT_TOOLTIP = GAMEPAD_TOOLTIPS:GetTooltip(GAMEPAD_LEFT_TOOLTIP)
 	LEFT_TOOLTIP.LayoutBagItem = function(self, bagId, slotIndex, enchantMode, showInventoryAndBagCount)
@@ -194,6 +195,7 @@ function BUI.Tooltips.Setup()
 	        return self:LayoutItem(itemLink, equipped, creatorName, forceFullDurability, enchantMode, previewValueToAdd, itemName, showInventoryCount, showBankCount)
 	    end
 	end
+	]]
 
 	ZO_PreHook(UNIT_FRAMES,"UpdateGroupAnchorFrames", BUI.Tooltips.UpdateGroupAnchorFrames)
 	UNIT_FRAMES.staticFrames.reticleover.RefreshControls = BUI.Tooltips.RefreshControls
