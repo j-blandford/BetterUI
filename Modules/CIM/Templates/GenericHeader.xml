@@ -1,8 +1,8 @@
 <GuiXml>
     <Controls>
         <Label name="BUI_GamepadScreenHeaderTitleTextTemplate" font="ZoFontGamepad36" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
-        <Label name="BUI_GamepadScreenHeaderEquipSlotTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" horizontalAlignment="RIGHT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE"  />
-        <Label name="BUI_GamepadScreenColumnBarTextTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
+        <Label name="BUI_GamepadScreenHeaderEquipSlotTemplate" font="ZoFontGamepad27" horizontalAlignment="RIGHT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE"  />
+        <Label name="BUI_GamepadScreenColumnBarTextTemplate" font="ZoFontGamepad27" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
 
         <Control name="BUI_GamepadHeaderHorizontalDivider" resizeToFitDescendents="true" virtual="true">
             <Controls>
@@ -113,25 +113,43 @@
                         <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" text="|cFF6600All|r" hidden="false">
                             <Anchor point="LEFT" />
                         </Label>
-                          <Label name="$(parent)EquipText" inherits="BUI_GamepadScreenHeaderEquipSlotTemplate" text="Equip:" hidden="false">
+                          <Label name="$(parent)BackupEquipText" inherits="BUI_GamepadScreenHeaderEquipSlotTemplate" text="Equip:" hidden="false">
                             <Anchor point="RIGHT" offsetX="-200" offsetY="-5"/>
                         </Label>
 						
-						<Texture name="$(parent)MainHandIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+						<Texture name="$(parent)BackupMainHandIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
 							<Dimensions x="32" y="32" />
 		                    <Anchor point="RIGHT" offsetX="-150" offsetY="-5"/>
 		                </Texture>
 						
-						<Texture name="$(parent)OffHandIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+						<Texture name="$(parent)BackupOffHandIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
 							<Dimensions x="32" y="32" />
 		                    <Anchor point="RIGHT" offsetX="-110" offsetY="-5"/>
 		                </Texture>
 						
-						<Texture name="$(parent)PoisonIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+						<Texture name="$(parent)BackupPoisonIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
 							<Dimensions x="32" y="32" />
 		                    <Anchor point="RIGHT" offsetX="-70" offsetY="-5"/>
 		                </Texture>
 						
+                        <Label name="$(parent)EquipText" inherits="BUI_GamepadScreenHeaderEquipSlotTemplate" text="Equip:" hidden="false">
+                            <Anchor point="RIGHT" relativeTo="$(parent)BackupEquipText" relativePoint="LEFT" offsetX="-200"/>
+                        </Label>
+                        
+                        <Texture name="$(parent)MainHandIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+                            <Dimensions x="32" y="32" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)BackupEquipText" relativePoint="LEFT" offsetX="-150"/>
+                        </Texture>
+                        
+                        <Texture name="$(parent)OffHandIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+                            <Dimensions x="32" y="32" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)BackupEquipText" relativePoint="LEFT" offsetX="-110"/>
+                        </Texture>
+                        
+                        <Texture name="$(parent)PoisonIcon" textureFile="/esoui/art/inventory/inventory_slot.dds">
+                            <Dimensions x="32" y="32" />
+                            <Anchor point="RIGHT" relativeTo="$(parent)BackupEquipText" relativePoint="LEFT" offsetX="-70"/>
+                        </Texture>
                     </Controls>
                 </Control>
 
@@ -142,20 +160,24 @@
 
                 <Control name="$(parent)ColumnBar" inherits="BUI_GamepadHeaderTitleAnchors">
                     <Controls>
-                         <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+                         <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_NAME">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="87" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
-                         <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Type">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="515" />
+                         <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_TYPE">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="637" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
-                         <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Stat">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="700" />
+                         <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_TRAIT">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="897" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
-                         <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Value">
-                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="770" />
+                         <Label name="$(parent)Column6Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_STAT">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="1067" />
+                                <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
+                         </Label>
+                         <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_VALUE">
+                                <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="1187" />
                                 <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                          </Label>
                     </Controls>

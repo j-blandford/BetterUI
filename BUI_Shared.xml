@@ -12,7 +12,7 @@
         <Texture name="BUI_GamepadMenuEntryStatusIndicationTemplate" inherits="ZO_MultiIcon" excludeFromResizeToFitExtents="true" hidden="true" virtual="true">
             <Dimensions x="24" y="24" />
            <!--  <Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="LEFT" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_ICON_X_OFFSET" /> -->
-           <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="RIGHT" offsetX="-22" />
+           <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="LEFT" offsetX="-10" />
         </Texture>
 
 
@@ -42,8 +42,22 @@
 
         <Control name="BUI_GamepadMenuEntryLabelSizedTemplate" virtual="true">
             <OnInitialized>
-                ZO_SharedGamepadEntry_OnInitialized(self)
-                ZO_SharedGamepadEntry_SetHeightFromLabel(self)
+				ZO_SharedGamepadEntry_OnInitialized(self)
+				local function ComputeHeightFromLabelAndItemType(control)
+					local height = control.label:GetTextHeight()
+					local itemTypeControl = control:GetNamedChild("ItemType")
+					if itemTypeControl ~= nil then
+						local typeheight = itemTypeControl:GetTextHeight()
+						if height > typeheight then
+							return height
+						else
+							return typeheight
+						end
+					end
+					return height
+				end
+
+				self.GetHeight = ComputeHeightFromLabelAndItemType
             </OnInitialized>
         </Control>
 
@@ -51,31 +65,36 @@
            <Anchor point="TOPLEFT" offsetX="BUI_GAMEPAD_DEFAULT_HORIZ_PADDING"/>
            <Dimensions x="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_WIDTH"/>
             <Controls>
-                <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick">
-                        <Anchor point="TOPLEFT" offsetX="15"/>
+                <Label name="$(parent)Label" inherits="BUI_MenuEntryLabelTemplate" font="ZoFontGamepad42">
+                    <Anchor point="TOPLEFT" offsetX="87"/>
+					  <Dimensions x="540"/>
                 </Label>
                 <Texture name="$(parent)Icon" inherits="BUI_MenuEntryIconTemplate" edgeColor="00000000">
-                    <Dimensions x="28" y="28" />
                 </Texture>
 
                 <Texture name="$(parent)EquippedMain" textureFile="BetterUI/Templates/Images/inv_equip.dds" excludeFromResizeToFitExtents="true" pixelRoundingEnabled="false">
                     <Dimensions x="28" y="24" />
-                    <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="RIGHT" offsetX="-35" />
+                    <Anchor point="RIGHT" relativeTo="$(parent)Icon" relativePoint="LEFT" offsetX="-25" />
                 </Texture>
 
-                <Texture name="$(parent)StatusIndicator" inherits="BUI_GamepadMenuEntryStatusIndicationTemplate" />
+                <Texture name="$(parent)StatusIndicator" inherits="BUI_GamepadMenuEntryStatusIndicationTemplate"/>
 
                 <Texture name="$(parent)PlayerLockedIcon" inherits="ZO_GamepadMenuEntryPlayerLockedTemplate" />
 
                 <!-- Will have to make the below more generic -->
-                <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="485"/>
+                <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true"  wrapMode="ELLIPSIS">
+                    <Anchor point="LEFT" relativeTo="$(parent)Label" offsetX="550"/>
+				      <Dimensions x="250"/>
                 </Label>
-                <Label name="$(parent)Stat" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="670"/>
+                <Label name="$(parent)Trait" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="LEFT" relativeTo="$(parent)Label" offsetX="810"/>
+                    <Dimensions x="160"/>
                 </Label>
-                <Label name="$(parent)Value" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="740"/>
+                <Label name="$(parent)Stat" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="LEFT" relativeTo="$(parent)Label" offsetX="980"/>
+                </Label>
+                <Label name="$(parent)Value" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="LEFT" relativeTo="$(parent)Label" offsetX="1100"/>
                 </Label>
             </Controls>
         </Control>

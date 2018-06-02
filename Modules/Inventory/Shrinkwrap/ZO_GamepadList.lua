@@ -13,7 +13,7 @@ end
 Initializes the ZO_GamepadInventoryList. This should not be called directly, as it will be called be New().
 
 control must be an XML control for intializing a parameteric list.
-inventoryType must be one of the Bag enum values.
+inventoryType must be one of the Bag enum values, or a table containing multiple bag enum values.
 selectedDataCallback may be a function to call when the selected item has changed. May be nil.
 entryEditCallback may be a function to call when initializing the ZO_GamepadEntryData for display.
     If specified, it should take a single argument which will be the ZO_GamepadEntryData, and will
@@ -27,7 +27,6 @@ useTriggers: Should the control bind the triggers to jump categories when activa
 ]]
 function ZOS_GamepadInventoryList:Initialize(control, inventoryType, slotType, selectedDataCallback, entrySetupCallback, categorizationFunction, sortFunction, useTriggers, template, templateSetupFunction)
     self.control = control
-    self.inventoryType = inventoryType
     self.selectedDataCallback = selectedDataCallback
     self.entrySetupCallback = entrySetupCallback
     self.categorizationFunction = categorizationFunction
@@ -36,6 +35,12 @@ function ZOS_GamepadInventoryList:Initialize(control, inventoryType, slotType, s
     self.isDirty = true
     self.useTriggers = (useTriggers ~= false) -- nil => true
     self.template = template or DEFAULT_TEMPLATE
+
+    if type(inventoryType) == "table" then
+        self.inventoryTypes = inventoryType
+    else
+        self.inventoryTypes = { inventoryType }
+    end
 
     local function VendorEntryTemplateSetup(control, data, selected, selectedDuringRebuild, enabled, activated)
         ZO_Inventory_BindSlot(data, slotType, data.slotIndex, data.bagId)
@@ -51,7 +56,6 @@ function ZOS_GamepadInventoryList:Initialize(control, inventoryType, slotType, s
     ZO_Gamepad_AddListTriggerKeybindDescriptors(self.triggerKeybinds, self.list)
 
     local function SelectionChangedCallback(list, selectedData)
-        local selectedControl = list:GetTargetControl()
         if self.selectedDataCallback then
             self.selectedDataCallback(list, selectedData)
         end
@@ -76,25 +80,29 @@ function ZOS_GamepadInventoryList:Initialize(control, inventoryType, slotType, s
     end
 
     local function OnInventoryUpdated(bagId)
-        if bagId == self.inventoryType then
-            self:RefreshList()
+        for k, inventoryType in ipairs(self.inventoryTypes) do
+            if bagId == inventoryType then
+                self:RefreshList()
+            end
         end
     end
 
     local function OnSingleSlotInventoryUpdate(bagId, slotIndex)
-        if bagId == self.inventoryType then
-            local entry = self.dataBySlotIndex[slotIndex]
-            if entry then
-                local itemData = SHARED_INVENTORY:GenerateSingleSlotData(self.inventoryType, slotIndex)
-                if itemData then
-                    itemData.bestGamepadItemCategoryName = ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription(itemData)
-                    self:SetupItemEntry(entry, itemData)
-                    self.list:RefreshVisible()
-                else -- The item was removed.
+        for k, inventoryType in ipairs(self.inventoryTypes) do
+            if bagId == inventoryType then
+                local entry = self.dataBySlotIndex[slotIndex]
+                if entry then
+                    local itemData = SHARED_INVENTORY:GenerateSingleSlotData(inventoryType, slotIndex)
+                    if itemData then
+                        itemData.bestGamepadItemCategoryName = ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription(itemData)
+                        self:SetupItemEntry(entry, itemData)
+                        self.list:RefreshVisible()
+                    else -- The item was removed.
+                        self:RefreshList()
+                    end
+                else -- The item is new.
                     self:RefreshList()
                 end
-            else -- The item is new.
-                self:RefreshList()
             end
         end
     end
@@ -108,17 +116,18 @@ function ZOS_GamepadInventoryList:Initialize(control, inventoryType, slotType, s
     SHARED_INVENTORY:RegisterCallback("SingleSlotInventoryUpdate", OnSingleSlotInventoryUpdate)
 end
 
---[[
-Change the inventory type specified during initialization to another value, and refreshes the list.
+function ZOS_GamepadInventoryList:ClearInventoryTypes()
+    self.inventoryTypes = {}
+    self:RefreshList()
+end
 
-inventoryType must be one of the Bag enum values.
-]]--
-function ZOS_GamepadInventoryList:SetInventoryType(inventoryType)
-    if self.inventoryType == inventoryType then
-        return
+function ZOS_GamepadInventoryList:AddInventoryType(inventoryType)
+    if self.inventoryTypes then
+        table.insert(self.inventoryTypes, inventoryType)
+    else
+        self.inventoryTypes = {inventoryType}
     end
 
-    self.inventoryType = inventoryType
     self:RefreshList()
 end
 
@@ -134,6 +143,20 @@ Remove a function called when the selected item is changed.
 ]]--
 function ZOS_GamepadInventoryList:RemoveOnSelectedDataChangedCallback(selectedDataCallback)
     self.list:RemoveOnSelectedDataChangedCallback(selectedDataCallback)
+end
+
+--[[
+Add a function called when the target data is changed.
+]]--
+function ZOS_GamepadInventoryList:SetOnTargetDataChangedCallback(selectedDataCallback)
+    self.list:SetOnTargetDataChangedCallback(selectedDataCallback)
+end
+
+--[[
+Remove a function called when the target data is changed.
+]]--
+function ZOS_GamepadInventoryList:RemoveOnTargetDataChangedCallback(selectedDataCallback)
+    self.list:RemoveOnTargetDataChangedCallback(selectedDataCallback)
 end
 
 --[[
@@ -235,16 +258,15 @@ do
     end
 
     function ZOS_GamepadInventoryList:IsEmpty()
-        local inventoryType = self.inventoryType
-        local filterFunction = self.itemFilterFunction
-
-        local bagId = self.inventoryType
-        local slotIndex = ZO_GetNextBagSlotIndex(bagId)
-        while slotIndex do
-            if HasSlotData(inventoryType, slotIndex, filterFunction) then
-                return false
+        for k, inventoryType in ipairs(self.inventoryTypes) do
+            local filterFunction = self.itemFilterFunction
+            local slotIndex = ZO_GetNextBagSlotIndex(inventoryType)
+            while slotIndex do
+                if HasSlotData(inventoryType, slotIndex, filterFunction) then
+                    return false
+                end
+                slotIndex = ZO_GetNextBagSlotIndex(inventoryType, slotIndex)
             end
-            slotIndex = ZO_GetNextBagSlotIndex(bagId, slotIndex)
         end
 
         return true
@@ -325,11 +347,10 @@ local function ItemSortFunc(data1, data2)
      return ZO_TableOrderingFunction(data1, data2, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
 
-function ZOS_GamepadInventoryList:AddSlotDataToTable(slotsTable, slotIndex)
+function ZOS_GamepadInventoryList:AddSlotDataToTable(slotsTable, inventoryType, slotIndex)
     local itemFilterFunction = self.itemFilterFunction
     local categorizationFunction = self.categorizationFunction or ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription
-
-    local slotData = SHARED_INVENTORY:GenerateSingleSlotData(self.inventoryType, slotIndex)
+    local slotData = SHARED_INVENTORY:GenerateSingleSlotData(inventoryType, slotIndex)
     if slotData then
         if (not itemFilterFunction) or itemFilterFunction(slotData) then
             -- itemData is shared in several places and can write their own value of bestItemCategoryName.
@@ -344,11 +365,12 @@ end
 function ZOS_GamepadInventoryList:GenerateSlotTable()
     local slots = {}
 
-    local bagId = self.inventoryType
-    local slotIndex = ZO_GetNextBagSlotIndex(bagId)
-    while slotIndex do
-        self:AddSlotDataToTable(slots, slotIndex)
-        slotIndex = ZO_GetNextBagSlotIndex(bagId, slotIndex)
+    for k, inventoryType in ipairs(self.inventoryTypes) do
+        local slotIndex = ZO_GetNextBagSlotIndex(inventoryType)
+        while slotIndex do
+            self:AddSlotDataToTable(slots, inventoryType, slotIndex)
+            slotIndex = ZO_GetNextBagSlotIndex(inventoryType, slotIndex)
+        end
     end
 
     table.sort(slots, self.sortFunction or ItemSortFunc)

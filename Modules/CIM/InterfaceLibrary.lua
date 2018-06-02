@@ -143,11 +143,11 @@ end
 
 function BUI.Interface.Window:SetupList(rowTemplate, SetupFunct)
     self.itemListTemplate = rowTemplate
-    self:GetList():AddDataTemplate(rowTemplate, SetupFunct, BUI_GamepadMenuEntryTemplateParametricListFunction)
+    self:GetList():AddDataTemplate(rowTemplate, SetupFunct, ZO_GamepadMenuEntryTemplateParametricListFunction)
 end
 
 function BUI.Interface.Window:AddTemplate(rowTemplate, SetupFunct)
-    self:GetList():AddDataTemplate(rowTemplate,SetupFunct, BUI_GamepadMenuEntryTemplateParametricListFunction)
+    self:GetList():AddDataTemplate(rowTemplate,SetupFunct, ZO_GamepadMenuEntryTemplateParametricListFunction)
 end
 
 function BUI.Interface.Window:AddEntryToList(data)

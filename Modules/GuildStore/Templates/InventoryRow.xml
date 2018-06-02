@@ -11,25 +11,32 @@
                 self.label = self:GetNamedChild("Label")
             </OnInitialized>
             <Controls>
-                <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate"/>
+                <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate">
+                    <Anchor point="TOPLEFT" offsetX="87"/>
+                    <Dimensions x="500"/>
+			     </Label>
 
-                <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true" />
+                <Texture name="$(parent)Icon" inherits="BUI_MenuEntryIconTemplate" hidden="true" />
 
                 <!-- Will have to make the below more generic -->
-	            <Label name="$(parent)SellerName" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="340"/>
-                </Label>
-                <Label name="$(parent)TimeLeft" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+	            <Label name="$(parent)SellerName" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="510"/>
+                    <Dimensions x="200"/>  
                 </Label>
-               <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0.00%" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="600"/>
+                <Label name="$(parent)TimeLeft" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="720"/>
+                    <Dimensions x="110"/>  
                 </Label>
-                <Label name="$(parent)UnitPrice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="665"/>
+               <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0.00%" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="840"/>
+                    <Dimensions x="135"/> 
                 </Label>
-                <Label name="$(parent)Price" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="745"/>
+                <Label name="$(parent)UnitPrice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="1085"/>
+                </Label>
+                <Label name="$(parent)Price" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="RIGHT" excludeFromResizeToFitExtents="true">
+                    <Dimensions x="120"/> 
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="960"/>
                 </Label>
             </Controls>
         </Control>
@@ -45,25 +52,32 @@
                 self.label = self:GetNamedChild("Label")
             </OnInitialized>
             <Controls>
-                <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate"/>
+                <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate">
+                    <Anchor point="TOPLEFT" offsetX="87"/>
+                    <Dimensions x="540"/>
+                </Label>
 
                 <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true" />
 
                 <!-- Will have to make the below more generic -->
-                <Label name="$(parent)SellerName" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true" hidden="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="340"/>
+                <Label name="$(parent)SellerName" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="NONE" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true" hidden="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="550"/>
+                    <Dimensions x="250"/>               
                 </Label>
-                <Label name="$(parent)TimeLeft" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="510"/>
+                <Label name="$(parent)TimeLeft" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="720"/>
+                    <Dimensions x="110"/>  
                 </Label>
-               <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0.00%" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="600"/>
+               <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0.00%" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="840"/>
+                    <Dimensions x="135"/> 
                 </Label>
-                <Label name="$(parent)UnitPrice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="665"/>
+                <Label name="$(parent)UnitPrice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="1085"/>
                 </Label>
-                <Label name="$(parent)Price" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="745"/>
+                <Label name="$(parent)Price" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="RIGHT" excludeFromResizeToFitExtents="true">
+                    <Dimensions x="120"/> 
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="960"/>
                 </Label>
             </Controls>
         </Control>
@@ -79,18 +93,26 @@
                 self.type = self:GetNamedChild("ItemType")
             </OnInitialized>
             <Controls>
-                <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate"/>
+                <Label name="$(parent)Label" inherits="BUI_GamepadSubMenuEntryLabelTemplate">
+                    <Anchor point="TOPLEFT" offsetX="87"/>
+                    <Dimensions x="540"/>
+                </Label>
 
                 <Texture name="$(parent)Icon" inherits="ZO_MultiIcon BUI_GamepadMenuEntryIconTemplate" hidden="true" />
 
-                <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text=" " font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="490"/>
+                <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text=" " font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="550"/>
+                      <Dimensions x="250"/>
                 </Label>
-               <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0.00%" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="650"/>
+                <Label name="$(parent)Trait" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="LEFT" relativeTo="$(parent)Label" offsetX="810"/>
+                    <Dimensions x="160"/>
                 </Label>
-                <Label name="$(parent)Price" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="745"/>
+               <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0.00%" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="980"/>
+                </Label>
+                <Label name="$(parent)Price" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="ZoFontGamepad27" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="1100"/>
                 </Label>
             </Controls>
         </Control>

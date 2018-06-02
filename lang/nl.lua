@@ -3,7 +3,7 @@ ZO_CreateStringId("SI_BUI_INV_ITEM_MATERIALS","Materialen")
 ZO_CreateStringId("SI_BUI_INV_ITEM_QUICKSLOT","|cFF6600Verbruikbaar|r")
 ZO_CreateStringId("SI_BUI_INV_ITEM_WEAPONS","Wapens")
 ZO_CreateStringId("SI_BUI_INV_ITEM_APPAREL","Kleding")
-ZO_CreateStringId("SI_BUI_INV_ITEM_CONSUMABLE","Quickslot")
+ZO_CreateStringId("SI_BUI_INV_ITEM_CONSUMABLE","Verbruiksgoederen")
 ZO_CreateStringId("SI_BUI_INV_ITEM_MISC","Diversen")
 ZO_CreateStringId("SI_BUI_INV_ITEM_JUNK","Rommel")
 
@@ -23,7 +23,6 @@ ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_MAIN","Primaire Wapen")
 ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_BACKUP","Secundaire Wapen")
 ZO_CreateStringId("SI_BUI_BANKING_WITHDRAW","Afhallen")
 ZO_CreateStringId("SI_BUI_BANKING_DEPOSIT","Storten")
-ZO_CreateStringId("SI_BUI_BANKING_BUYSPACE","Meer ruimten kopen (<<1>>)")
 
 ZO_CreateStringId("SI_BUI_INV_ACTION_TO_TEMPLATE","Ga naar <<1>>")
 

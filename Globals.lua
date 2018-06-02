@@ -1,7 +1,7 @@
 BUI = {}
 
 BUI.name = "BetterUI"
-BUI.version = "2.30"
+BUI.version = "2.49"
 
 -- Program Global (scope of BUI, though) variable initialization
 BUI.WindowManager = GetWindowManager()
@@ -55,6 +55,12 @@ BUI.Player = {
 
 BUI.Settings = {}
 
+BUI.Helper = {
+	GamePadBuddy = {},
+	IokaniGearChanger = {},
+	AutoCategory = {},
+}
+
 BUI.DefaultSettings = {
 	firstInstall = true,
 	Modules = {
@@ -85,7 +91,7 @@ function Init_ModulePanel(moduleName, moduleDesc)
 		type = "panel",
 		name = "|t24:24:/esoui/art/buttons/gamepad/xbox/nav_xbone_b.dds|t "..BUI.name.." ("..moduleName..")",
 		displayName = "|c0066ffBETTERUI|r :: "..moduleDesc,
-		author = "prasoc",
+		author = "prasoc, RockingDice",
 		version = BUI.version,
 		slashCommand = "/bui",
 		registerForRefresh = true,
@@ -96,4 +102,5 @@ end
 ZO_Store_OnInitialize_Gamepad = function(...) end
 
 -- Imagery, you dont need to localise these strings
-ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT","|cFF6600<<1>>|r")
+ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT_HIGHLIGHT","|cFF6600<<1>>|r")
+ZO_CreateStringId("SI_BUI_INV_EQUIP_TEXT_NORMAL","|cCCCCCC<<1>>|r")

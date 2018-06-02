@@ -23,7 +23,6 @@ ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_MAIN","Primeira Arma")
 ZO_CreateStringId("SI_BUI_INV_EQUIPSLOT_BACKUP","Segunda Arma")
 ZO_CreateStringId("SI_BUI_BANKING_WITHDRAW","Retirar")
 ZO_CreateStringId("SI_BUI_BANKING_DEPOSIT","Depósitar")
-ZO_CreateStringId("SI_BUI_BANKING_BUYSPACE","Comprar Mais espaço (<<1>>)")
 
 ZO_CreateStringId("SI_BUI_INV_ACTION_TO_TEMPLATE","Vai para o <<1>>")
 
