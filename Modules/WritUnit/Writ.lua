@@ -36,6 +36,7 @@ function BUI.Writs.Update()
 				if string.find(string.lower(qName),'enchant') then currentWrit = CRAFTING_TYPE_ENCHANTING end
 				if string.find(string.lower(qName),'provision') then currentWrit = CRAFTING_TYPE_PROVISIONING end
 				if string.find(string.lower(qName),'alchemist') then currentWrit = CRAFTING_TYPE_ALCHEMY end
+				if string.find(string.lower(qName),'jewelry') then currentWrit = CRAFTING_TYPE_JEWELRYCRAFTING end
 
 				if currentWrit ~= -1 then
 					BUI.Writs.List[currentWrit] = { id = qId, writLines = BUI.Writs.Get(qId) }
