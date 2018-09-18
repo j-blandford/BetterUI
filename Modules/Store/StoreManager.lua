@@ -210,12 +210,10 @@ function BUI.Store.Class:SetActiveComponents(componentTable)
 		end
     end
     self:RebuildHeaderTabs()
-end
-
-local function BUI_GamepadMenuEntryTemplateParametricListFunction(control, distanceFromCenter, continousParametricOffset) end
+end 
 
 local function SetupItemList(list)
-    list:AddDataTemplate("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, BUI_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
+    list:AddDataTemplate("BUI_GamepadItemSubEntryTemplate", BUI_SharedGamepadEntry_OnSetup, ZO_GamepadMenuEntryTemplateParametricListFunction, MenuEntryTemplateEquality)
 end
 
 function BUI.Store.Class:AddList(name, callbackParam, listClass, ...)

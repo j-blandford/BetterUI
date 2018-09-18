@@ -14,11 +14,11 @@
                                     <Anchor point="BOTTOMRIGHT" offsetX="200" offsetY="147" />
 								</Backdrop>
 
-                                <Label name="$(parent)WritName" font="$(GAMEPAD_MEDIUM_FONT)|30|soft-shadow-thick" horizontalAlignment="LEFT" inherits="ZO_TooltipIfTruncatedLabel" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
+                                <Label name="$(parent)WritName" font="ZoFontGamepad27" horizontalAlignment="LEFT" inherits="ZO_TooltipIfTruncatedLabel" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED">
                                     <Dimensions x="325" />
                                     <Anchor point="TOP" relativePoint="BOTTOM" />
                                 </Label>
-                                <Label name="$(parent)WritDesc" font="$(GAMEPAD_MEDIUM_FONT)|24|soft-shadow-thick" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" hidden="false">
+                                <Label name="$(parent)WritDesc" font="ZoFontGamepad25" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" hidden="false">
                                     <Dimensions x="325"/>
                                     <Anchor point="TOP" relativePoint="BOTTOM" offsetY="40" offsetX="35"/>
                                 </Label>

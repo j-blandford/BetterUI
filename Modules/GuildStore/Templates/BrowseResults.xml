@@ -1,7 +1,7 @@
 <GuiXml>
     <Controls>
-        <Label name="BUI_PagedListLabelTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE" verticalAlignment="CENTER" virtual="true" />
-        <Label name="BUI_PagedListValueTemplate" font="$(GAMEPAD_MEDIUM_FONT)|22|soft-shadow-thick" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" verticalAlignment="CENTER" virtual="true" />
+        <Label name="BUI_PagedListLabelTemplate" font="ZoFontGamepad27" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE" verticalAlignment="CENTER" virtual="true" />
+        <Label name="BUI_PagedListValueTemplate" font="ZoFontGamepad22" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" verticalAlignment="CENTER" virtual="true" />
         <Control name="BUI_PagedListFooterBar" virtual="true">
             <Dimensions y="14" />
             <Anchor point="BOTTOMLEFT" offsetY="-100" />
@@ -62,13 +62,13 @@
                 <Control name="$(parent)Container" inherits="BUI_GamepadGrid_NavQuadrant_1_ContainerAnchors">
                     <Controls>
                         <Control name="$(grandparent)List" inherits="BUI_VerticalParametricScrollListTemplate">
-                            <Anchor point="TOPLEFT" relativeTo="$(parent)Container" offsetX="BUI_GAMEPAD_DEFAULT_LIST_ENTRY_INDENT"/>
+                            <Anchor point="TOPLEFT" relativeTo="$(parent)Container" offsetX="0"/>
                         </Control>
                     </Controls>
                 </Control>
             </Controls>
         </Control>
-
+ 
         <Control name="BUI_Gamepad_EditBox" virtual="true">
             <OnInitialized>
                 self:GetParent().edit = self:GetNamedChild("Backdrop"):GetNamedChild("Edit")
@@ -78,19 +78,47 @@
                     <Anchor point="TOP" offsetY="-35"/>
                     <Dimensions x="340" y="37" />
                 </Label>
-                <Backdrop name="$(parent)Backdrop" inherits="ZO_EditBackdrop">
-                    <AnchorFill />
-                    <Controls>
-                        <EditBox name="$(parent)Edit" inherits="ZO_DefaultEditForBackdrop" font="ZoFontGamepad34">
-                            <Anchor point="TOPLEFT" offsetX="4" offsetY="8" />
-                            <Anchor point="BOTTOMRIGHT" offsetX="-6" offsetY="-2" />
+                
 
+                <Backdrop name="$(parent)Backdrop" inherits="ZO_SingleLineEditBackdrop_Gamepad">
+                    <Anchor point="TOPLEFT"/>
+                    <Anchor point="TOPRIGHT"/>
+                    <Controls>
+                        <EditBox name="$(parent)Edit" inherits="ZO_DefaultEditForBackdrop_Gamepad ZO_EditDefaultText_Gamepad">
                             <OnEnter>
                                 self:LoseFocus()
                             </OnEnter>
                         </EditBox>
                     </Controls>
                 </Backdrop>
+            </Controls>
+        </Control>
+		
+		<Control name="BUI_BrowseUnitPriceSelectorContainer" inherits="ZO_GamepadGoldSpinnerContainerTemplate" hidden="true" virtual="true">
+			<Anchor point="CENTER" relativePoint="TOPRIGHT" relativeTo="$(parent)ListListScreenCenterIsAlongTop"/>
+			<Dimensions x="ZO_GAMEPAD_CONTENT_WIDTH" y="50"/>
+		</Control>
+		
+		<Control name="BUI_BrowseFilterUnitPriceSelectorTemplate" inherits="ZO_GamepadMenuEntryDimensionsTemplate" virtual="true">
+            <OnInitialized>
+                ZO_SharedGamepadEntry_OnInitialized(self)
+                self.GetHeight = function(control)
+                    return control.priceAmount:GetTextHeight()
+                end
+
+                self.priceAmount = self:GetNamedChild("PriceAmount")
+            </OnInitialized>
+
+            <Controls>               
+                <Label name="$(parent)PriceAmount" font="ZoFontGamepad36" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)RootSpacer"/>
+                    <Dimensions y="42" />
+                </Label>
+
+                <Label name="$(parent)Label" inherits="ZO_GamepadMenuEntryLabelTemplate" font="ZoFontGamepad27" verticalAlignment="BOTTOM">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)RootSpacer" />
+                    <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)PriceAmount" relativePoint="BOTTOMLEFT" offsetX="-10" offsetY="7" />
+                </Label>
             </Controls>
         </Control>
 
@@ -150,24 +178,24 @@
                                 <Label name="$(parent)Title" inherits="BUI_GamepadScreenHeaderTitleTextTemplate" text="|cFF6600Search Results|r" hidden="false">
                                     <Anchor point="CENTER" offsetY="40" />
                                 </Label>
-                                 <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Name">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="25" />
+                                 <Label name="$(parent)Column1Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_NAME">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="95" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
-                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Seller">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="385" />
+                                 <Label name="$(parent)Column2Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_SELLER">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="605" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
-                                 <Label name="$(parent)Column3Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Time Left">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="535" />
+                                 <Label name="$(parent)Column3Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_TIME_LEFT">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="815" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
-                                 <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Deal">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="635" />
+                                 <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_DEAL">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="935" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
-                                 <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Price">
-                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="775" />
+                                 <Label name="$(parent)Column5Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="SI_BUI_BANKING_COLUMN_PRICE">
+                                        <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="1132" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
                             </Controls>
@@ -203,8 +231,8 @@
                         <Control name="$(grandparent)Footer" inherits="BUI_PagedListFooterBar BUI_GamepadGenericScreenFooter" />
 
                         <Control name="$(grandparent)List" override="true">
-                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="-28" offsetY="90"/>
-                            <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="15" />
+                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" relativeTo="$(grandparent)Headers" offsetX="0" offsetY="90"/>
+                            <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" relativeTo="$(grandparent)Footer" offsetY="28" />
                         </Control>
                     </Controls>
                 </Control>

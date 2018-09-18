@@ -6,6 +6,7 @@ local GENERAL_COLOR_GREY = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_2
 local GENERAL_COLOR_OFF_WHITE = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_3
 local GENERAL_COLOR_RED = GAMEPAD_TOOLTIP_COLOR_FAILED
 
+local changed = false
 
 local function Init(mId, moduleName)
 	local panelData = Init_ModulePanel(moduleName, "Inventory Improvement Settings")
@@ -13,7 +14,7 @@ local function Init(mId, moduleName)
 	local optionsTable = {
 		{
 			type = "header",
-			name = "|c0066FF[Enhanced Inventory]|r Behaviour",
+			name = "|c0066FF[Enhanced Banking]|r Behaviour",
 			width = "full",
 		},
 		{
@@ -67,14 +68,15 @@ local function Init(mId, moduleName)
 			tooltip = "Automatically formats the value column to shorten large numbers and to display the currency with commas.",
 			getFunc = function() return BUI.Settings.Modules["Inventory"].useShortFormat end,
 			setFunc = function(value) BUI.Settings.Modules["Inventory"].useShortFormat = value
-				ReloadUI() end,
+				changed = true
+				end,
 			width = "full",
-			warning="Reloads the UI for the change to propagate"
+			warning="Needs to reload UI."
 		},
 		{
             type = "checkbox",
-            name = "Display character attributes on the right tooltip?",
-            tooltip = "Show the character attributes on the right tooltip rather than seeing the current equipped item",
+            name = "Display character attributes on the switching tooltip?",
+            tooltip = "Show the character attributes on the switching tooltip rather than seeing the current equipped item",
             getFunc = function() return BUI.Settings.Modules["Inventory"].displayCharAttributes end,
             setFunc = function(value) BUI.Settings.Modules["Inventory"].displayCharAttributes = value end,
             width = "full",
@@ -85,10 +87,86 @@ local function Init(mId, moduleName)
 			tooltip = "Show a dialog before equipping Bind on Equip items.",
 			getFunc = function () return BUI.Settings.Modules["Inventory"].bindOnEquipProtection end,
 			setFunc = function (value) BUI.Settings.Modules["Inventory"].bindOnEquipProtection = value
-				ReloadUI() end,
+				changed = true
+				end,
 			width = "full",
-			warning="Reloads the UI for the change to propagate"
-		}
+			warning="Needs to reload UI."
+		},
+		{
+			type = "header",
+			name = "|c0066FF[Enhanced Inventory]|r Icon",
+			width = "full",
+		},
+		{
+			type = "checkbox",
+			name = "Item Icon - Unbound Items",
+			tooltip = "Show an icon after unbound items.",
+			getFunc = function () return BUI.Settings.Modules["Inventory"].showIconUnboundItem end,
+			setFunc = function (value) BUI.Settings.Modules["Inventory"].showIconUnboundItem = value
+				changed = true end,
+			width = "full",
+			warning="Needs to reload UI."
+		},
+		{
+			type = "checkbox",
+			name = "Item Icon - Enchantment",
+			tooltip = "Show an icon after enchanted item.",
+			getFunc = function () return BUI.Settings.Modules["Inventory"].showIconEnchantment end,
+			setFunc = function (value) BUI.Settings.Modules["Inventory"].showIconEnchantment = value
+				changed = true end,
+			width = "full",
+			warning="Needs to reload UI."
+		},
+		{
+			type = "checkbox",
+			name = "Item Icon - Set Gear",
+			tooltip = "Show an icon after set gears.",
+			getFunc = function () return BUI.Settings.Modules["Inventory"].showIconSetGear end,
+			setFunc = function (value) BUI.Settings.Modules["Inventory"].showIconSetGear = value
+				changed = true end,
+			width = "full",
+			warning="Needs to reload UI."
+		},
+		{
+			type = "checkbox",
+			name = "Item Icon - Iakoni's Gear Changer",
+			tooltip = "Show the first set number in Iakoni's settings.",
+			getFunc = function () return BUI.Settings.Modules["Inventory"].showIconIakoniGearChanger end,
+			setFunc = function (value) BUI.Settings.Modules["Inventory"].showIconIakoniGearChanger = value
+				changed = true end,
+			width = "full",
+			warning="Needs to reload UI."
+		},
+		{
+			type = "checkbox",
+			name = "            Show all sets instead",
+			tooltip = "Show all sets if in multiple Iakoni's settings.",
+			getFunc = function () return BUI.Settings.Modules["Inventory"].showIconIakoniGearChangerAllSets end,
+			setFunc = function (value) BUI.Settings.Modules["Inventory"].showIconIakoniGearChangerAllSets = value
+				changed = true end,
+			width = "full",
+			warning="Needs to reload UI.",
+			disabled = function() return not BUI.Settings.Modules["Inventory"].showIconIakoniGearChanger end,  
+		},		
+		{
+			type = "checkbox",
+			name = "Item Icon - GamePadBuddy's Status Indicator",
+			tooltip = "Show an icon to indicate gear's researchable/known/duplicated/researching/ornate/intricate status.",
+			getFunc = function () return BUI.Settings.Modules["Inventory"].showIconGamePadBuddyStatusIcon end,
+			setFunc = function (value) BUI.Settings.Modules["Inventory"].showIconGamePadBuddyStatusIcon = value
+				changed = true end,
+			width = "full",
+			warning="Needs to reload UI."
+		},
+		{ 			
+			type = "header", 		
+		},		         
+		{             
+			type = "button",             
+			name = "Apply Changes",             
+			func = function() ReloadUI() end, 			
+			disabled = function() return not changed end,         
+		},		 	
 	}
 	LAM:RegisterAddonPanel("BUI_"..mId, panelData)
 	LAM:RegisterOptionControls("BUI_"..mId, optionsTable)
@@ -103,6 +181,12 @@ function BUI.Inventory.InitModule(m_options)
 	m_options["displayCharAttributes"] = true
 	m_options["useShortFormat"] = true
 	m_options["bindOnEquipProtection"] = true
+	m_options["showIconEnchantment"] = true
+	m_options["showIconSetGear"] = true
+	m_options["showIconUnboundItem"] = true
+	m_options["showIconIakoniGearChanger"] = true
+	m_options["showIconIakoniGearChangerAllSets"] = false
+	m_options["showIconGamePadBuddyStatusIcon"] = true
 
     return m_options
 end
@@ -117,18 +201,6 @@ end
 
 function BUI.Inventory.Setup()
 	Init("Inventory", "Inventory")
-
-    -- -- Overwrite the destroy callback because everything called from GAMEPAD_INVENTORY will now be classed as "insecure"
-    ZO_InventorySlot_InitiateDestroyItem = function(inventorySlot)
-        SetCursorItemSoundsEnabled(false)
-        local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
-        CallSecureProtected("PickupInventoryItem",bag, index) -- > Here is the key change!
-        SetCursorItemSoundsEnabled(true)
-	
-        CallSecureProtected("PlaceInWorldLeftClick") -- DESTROY! (also needs to be a secure call)
-        return true
-    end
-
 
 	GAMEPAD_INVENTORY = BUI.Inventory.Class:New(BUI_GamepadInventoryTopLevel) -- Bam! Initialise the custom inventory class so it's integrated neatly
 
@@ -204,9 +276,6 @@ function BUI.Inventory.Setup()
     end
 	
 	if not SaveEquip ~= nil or not SaveEquip then
-		ZO_CreateStringId("SI_SAVE_EQUIP_CONFIRM_TITLE", "Equip Item")
-		ZO_CreateStringId("SI_SAVE_EQUIP_CONFIRM_EQUIP_BOE", "Equipping <<t:1>> will bind it to you. Continue?")
-		ZO_CreateStringId("SI_SAVE_EQUIP_EQUIP", "Equip")
 	
 		ZO_Dialogs_RegisterCustomDialog("CONFIRM_EQUIP_BOE", {
 			gamepadInfo =

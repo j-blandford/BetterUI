@@ -5,7 +5,7 @@
 		<!-- Currently, GenericFooter isn't actually generic but specifically used within GAMEPAD_INVENTORY to display the bottom status bar. Aiming to sort this in a future update where I need to use GenericFooter again -->
 
 
-       <Label name="BUI_GamepadScreenFooterTemplate" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
+       <Label name="BUI_GamepadScreenFooterTemplate" font="ZoFontGamepad27" horizontalAlignment="LEFT" wrapMode="ELLIPSIS" virtual="true" modifyTextType="UPPERCASE" />
 
         <Control name="BUI_GamepadFooterAnchors" virtual="true">
             <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="BOTTOMLEFT" />

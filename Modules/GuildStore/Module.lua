@@ -41,6 +41,17 @@ local function Init(mId, moduleName)
 		},
 		{
 			type = "checkbox",
+			name = "Tamriel Trade Centre integration",
+			tooltip = "Hooks TTC Price info into the guild store if MM is not presented",
+			getFunc = function() return BUI.Settings.Modules["GuildStore"].ttcIntegration end,
+			setFunc = function(value) BUI.Settings.Modules["GuildStore"].ttcIntegration = value
+									ReloadUI() end,
+			disabled = function() return TamrielTradeCentre == nil end,
+			width = "full",
+			warning="Reloads the UI for the change to propagate"
+		},
+		{
+			type = "checkbox",
 			name = "dataDaedra integration",
 			tooltip = "Hooks dataDaedra into the guild store and item tooltips",
 			getFunc = function() return BUI.Settings.Modules["GuildStore"].ddIntegration end,
