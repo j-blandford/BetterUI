@@ -162,7 +162,6 @@ function BUI_GamepadInventoryList:RefreshList()
     self.list:Commit()
 end
 
-
 -- Pretty much identical to whats in [Enhanced Inventory], just without the stolen icons
 local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selected)
     if label then
@@ -478,8 +477,24 @@ function BUI.GuildStore.BrowseResults:BuildList()
 	end
 	
 	for i = 1, numNonGuildItems do
-		local itemData = ZO_TradingHouse_CreateItemData(i, GetTradingHouseSearchResultItemInfo)
-		
+--		local itemData = ZO_TradingHouse_CreateItemData(i, GetTradingHouseSearchResultItemInfo)
+        local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType = GetTradingHouseSearchResultItemInfo(i)
+        local itemData = nil
+        if (name ~= "" and stackCount > 0) then
+            itemData =
+            {
+                slotIndex = i,
+                icon = icon,
+                name = name,
+                quality = quality,
+                stackCount = stackCount,
+                sellerName = sellerName,
+                timeRemaining = timeRemaining,
+                purchasePrice = purchasePrice,
+                currencyType = currencyType or CURT_MONEY
+            }
+        end
+
 		if itemData then
 			itemData.itemLink = GetTradingHouseSearchResultItemLink(itemData.slotIndex)
 			self:FormatItemDataFields(itemData)
@@ -625,7 +640,23 @@ end
 
 function BUI.GuildStore.Listings:BuildList()
     for i = 1, GetNumTradingHouseListings() do
-         local itemData = ZO_TradingHouse_CreateItemData(i, GetTradingHouseListingItemInfo)
+--        local itemData = ZO_TradingHouse_CreateItemData(i, GetTradingHouseListingItemInfo)
+        local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType = GetTradingHouseListingItemInfo(i)
+        local itemData = nil
+        if (name ~= "" and stackCount > 0) then
+            itemData =
+            {
+                slotIndex = i,
+                icon = icon,
+                name = name,
+                quality = quality,
+                stackCount = stackCount,
+                sellerName = sellerName,
+                timeRemaining = timeRemaining,
+                purchasePrice = purchasePrice,
+                currencyType = currencyType or CURT_MONEY
+            }
+        end
         if(itemData) then
             itemData.name = zo_strformat(SI_TOOLTIP_ITEM_NAME, itemData.name)
             itemData.price = itemData.purchasePrice
@@ -1251,7 +1282,7 @@ function BUI.GuildStore.Listings.Setup()
 	GAMEPAD_TRADING_HOUSE_LISTINGS:InitializeList()
 
     GAMEPAD_TRADING_HOUSE_LISTINGS.OnShowing = function(self)
-	    if wykkydsToolbar then
+		if wykkydsToolbar then
             wykkydsToolbar:SetHidden(true)
         end
     end
@@ -1273,7 +1304,7 @@ function BUI.GuildStore.Listings.Setup()
     GAMEPAD_TRADING_HOUSE_SELL.OnShowing = function(self)
 	    if wykkydsToolbar then
             wykkydsToolbar:SetHidden(true)
-end
+		end
     end
 
     GAMEPAD_TRADING_HOUSE_SELL.OnHiding = function(self)
